@@ -52,3 +52,35 @@
 - [ ] Gerçek hesap aktivasyonu
 - [ ] $1,500 sermaye ile başlangıç
 - [ ] Canlı trading
+
+
+## Dashboard İyileştirmeleri (Şu An)
+
+### Risk Yönetimi Paneli
+- [x] Günlük kayıp limiti göstergesi (%4 = $60)
+- [x] Kullanılan risk / Kalan risk
+- [x] İşlem başına risk ayarı (%2 = $30)
+- [x] Pozisyon boyutlandırma hesaplayıcısı
+- [x] Acil durdur butonu
+- [x] Risk seviyesi göstergesi (Düşük/Orta/Yüksek)
+- [x] Maksimum günlük işlem sayısı
+
+### Gerçek Zamanlı Fiyat Güncellemesi
+- [x] WebSocket bağlantısı simülasyonu (bot bağlanınca gerçek olacak)
+- [x] Açık pozisyonların anlık P&L güncelleme
+- [x] Fiyat değişim animasyonları
+- [x] Bağlantı durumu göstergesi
+- [x] LIVE badge gösterimi
+
+### AI Pattern Görselleştirme
+- [x] Pattern başarı oranı grafikleri
+- [x] Hangi pattern ne kadar kâr getirdi
+- [x] Pattern kullanım sıklığı
+- [x] Güven skoru dağılımı
+- [x] En iyi pattern vurgulama
+- [x] Pattern detay kartları
+
+### UI İyileştirmeleri
+- [x] Boş state UI'ları eklendi
+- [x] Bot bağlantı mesajları
+- [x] Gerçek zamanlı veri göstergeleri

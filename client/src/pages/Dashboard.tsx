@@ -3,12 +3,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, Activity, Brain, Target, AlertCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Brain, Target, AlertCircle, Wifi, WifiOff } from "lucide-react";
+import RiskManagementPanel from "@/components/RiskManagementPanel";
+import AIPatternStats from "@/components/AIPatternStats";
+import { useLivePrices } from "@/hooks/useLivePrices";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = trpc.dashboard.summary.useQuery();
   const { data: tradeHistory, isLoading: historyLoading } = trpc.dashboard.tradeHistory.useQuery();
-  const { data: performance, isLoading: perfLoading } = trpc.dashboard.performance.useQuery();
+  
+  // Gerçek zamanlı fiyat güncellemesi
+  const openSymbols = summary?.openPositions?.map(p => p.symbol) || [];
+  const { prices, isConnected } = useLivePrices({ 
+    symbols: openSymbols,
+    enabled: openSymbols.length > 0 
+  });
+
+  // Açık pozisyonların P&L'ini gerçek zamanlı güncelle
+  const [livePositions, setLivePositions] = useState(summary?.openPositions || []);
+
+  useEffect(() => {
+    if (summary?.openPositions && Object.keys(prices).length > 0) {
+      const updated = summary.openPositions.map(pos => {
+        const livePrice = prices[pos.symbol]?.price;
+        if (!livePrice) return pos;
+
+        // P&L hesapla
+        const entryPrice = parseFloat(pos.entryPrice);
+        const priceDiff = pos.direction === 'LONG' 
+          ? livePrice - entryPrice 
+          : entryPrice - livePrice;
+        
+        const pnlAmount = (priceDiff / entryPrice) * parseFloat(pos.positionSize);
+        const pnlPercentage = (priceDiff / entryPrice) * 100;
+
+        return {
+          ...pos,
+          currentPrice: livePrice.toFixed(2),
+          pnl: pnlAmount >= 0 ? `+${pnlAmount.toFixed(2)}` : pnlAmount.toFixed(2),
+          pnlPercentage: pnlPercentage >= 0 ? `+${pnlPercentage.toFixed(2)}` : pnlPercentage.toFixed(2),
+        };
+      });
+      setLivePositions(updated);
+    }
+  }, [prices, summary?.openPositions]);
 
   if (summaryLoading) {
     return <DashboardSkeleton />;
@@ -16,6 +55,13 @@ export default function Dashboard() {
 
   const todayPerf = summary?.todayPerformance;
   const aiLearning = summary?.aiLearning;
+
+  // AI Pattern istatistikleri (trade history'den hesapla)
+  const patternStats = calculatePatternStats(tradeHistory || []);
+
+  // Risk yönetimi parametreleri
+  const currentBalance = parseFloat(todayPerf?.endingBalance || '1500');
+  const dailyPnl = parseFloat(todayPerf?.dailyPnl || '0');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -34,6 +80,20 @@ export default function Dashboard() {
               <div className="text-right">
                 <p className="text-xs text-slate-400">Model Version</p>
                 <p className="text-sm font-semibold text-blue-400">{aiLearning?.modelVersion || 'v1.0'}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-400">WebSocket</p>
+                <Badge variant="outline" className={
+                  isConnected 
+                    ? "bg-green-500/10 text-green-400 border-green-500/30"
+                    : "bg-red-500/10 text-red-400 border-red-500/30"
+                }>
+                  {isConnected ? (
+                    <><Wifi className="w-3 h-3 mr-1" /> CONNECTED</>
+                  ) : (
+                    <><WifiOff className="w-3 h-3 mr-1" /> DISCONNECTED</>
+                  )}
+                </Badge>
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-400">Testnet Mode</p>
@@ -128,19 +188,41 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Risk Yönetimi ve AI Pattern Stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <RiskManagementPanel
+            currentBalance={currentBalance}
+            dailyPnl={dailyPnl}
+            dailyLossLimit={4} // %4
+            riskPerTrade={2} // %2
+            openPositionsCount={summary?.openPositionsCount || 0}
+          />
+
+          <AIPatternStats
+            patterns={patternStats}
+            modelVersion={aiLearning?.modelVersion || 'v1.0'}
+            lastUpdate={aiLearning?.lastFineTuneDate || new Date()}
+          />
+        </div>
+
         {/* Açık Pozisyonlar Tablosu */}
         <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm mb-8">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Activity className="w-5 h-5 text-blue-500" />
               Açık Pozisyonlar
+              {isConnected && (
+                <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-400 border-green-500/30 text-xs">
+                  LIVE
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription className="text-slate-400">
-              Şu anda aktif olan işlemler
+              Şu anda aktif olan işlemler (gerçek zamanlı güncelleme)
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {summary?.openPositions && summary.openPositions.length > 0 ? (
+            {livePositions && livePositions.length > 0 ? (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -157,7 +239,7 @@ export default function Dashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {summary.openPositions.map((pos) => (
+                    {livePositions.map((pos) => (
                       <TableRow key={pos.id} className="border-slate-800">
                         <TableCell className="font-semibold text-white">{pos.symbol}</TableCell>
                         <TableCell>
@@ -170,7 +252,7 @@ export default function Dashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-slate-300">${pos.entryPrice}</TableCell>
-                        <TableCell className="text-slate-300">${pos.currentPrice}</TableCell>
+                        <TableCell className="text-slate-300 font-semibold">${pos.currentPrice}</TableCell>
                         <TableCell className="text-red-400">${pos.stopLoss}</TableCell>
                         <TableCell className="text-green-400">${pos.takeProfit}</TableCell>
                         <TableCell className={parseFloat(pos.pnl) >= 0 ? 'text-green-400' : 'text-red-400'}>
@@ -199,6 +281,7 @@ export default function Dashboard() {
               <div className="text-center py-12">
                 <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                 <p className="text-slate-400">Şu anda açık pozisyon yok</p>
+                <p className="text-xs text-slate-500 mt-2">Bot aktif olduğunda pozisyonlar burada görünecek</p>
               </div>
             )}
           </CardContent>
@@ -281,6 +364,7 @@ export default function Dashboard() {
               <div className="text-center py-12">
                 <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                 <p className="text-slate-400">Henüz işlem geçmişi yok</p>
+                <p className="text-xs text-slate-500 mt-2">Bot işlem yaptıkça geçmiş burada görünecek</p>
               </div>
             )}
           </CardContent>
@@ -316,4 +400,45 @@ function getTimeDiff(date: Date | string): string {
     return `${diffHours} saat önce`;
   }
   return `${diffMins} dk önce`;
+}
+
+// Pattern istatistiklerini hesapla
+function calculatePatternStats(trades: any[]) {
+  const patternMap = new Map<string, {
+    totalTrades: number;
+    wins: number;
+    totalPnl: number;
+    totalRRatio: number;
+    confidences: number[];
+  }>();
+
+  trades.forEach(trade => {
+    const pattern = trade.pattern || 'Unknown';
+    const existing = patternMap.get(pattern) || {
+      totalTrades: 0,
+      wins: 0,
+      totalPnl: 0,
+      totalRRatio: 0,
+      confidences: [],
+    };
+
+    existing.totalTrades++;
+    if (trade.result === 'WIN') existing.wins++;
+    existing.totalPnl += parseFloat(trade.pnl);
+    existing.totalRRatio += parseFloat(trade.rRatio);
+    if (trade.confidence) existing.confidences.push(parseFloat(trade.confidence));
+
+    patternMap.set(pattern, existing);
+  });
+
+  return Array.from(patternMap.entries()).map(([name, stats]) => ({
+    name,
+    totalTrades: stats.totalTrades,
+    winRate: (stats.wins / stats.totalTrades) * 100,
+    avgRRatio: parseFloat((stats.totalRRatio / stats.totalTrades).toFixed(2)),
+    totalPnl: stats.totalPnl,
+    confidence: stats.confidences.length > 0 
+      ? parseFloat((stats.confidences.reduce((a, b) => a + b, 0) / stats.confidences.length).toFixed(2))
+      : 0,
+  })).sort((a, b) => b.totalPnl - a.totalPnl); // En kârlıdan en az kârlıya sırala
 }
