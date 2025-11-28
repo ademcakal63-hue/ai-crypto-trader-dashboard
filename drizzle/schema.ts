@@ -25,4 +25,96 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Açık pozisyonlar tablosu
+ */
+export const positions = mysqlTable("positions", {
+  id: int("id").autoincrement().primaryKey(),
+  symbol: varchar("symbol", { length: 20 }).notNull(), // BTCUSDT, ETHUSDT, etc.
+  direction: mysqlEnum("direction", ["LONG", "SHORT"]).notNull(),
+  entryPrice: varchar("entry_price", { length: 20 }).notNull(),
+  currentPrice: varchar("current_price", { length: 20 }).notNull(),
+  stopLoss: varchar("stop_loss", { length: 20 }).notNull(),
+  takeProfit: varchar("take_profit", { length: 20 }).notNull(),
+  positionSize: varchar("position_size", { length: 20 }).notNull(), // USDT cinsinden
+  riskAmount: varchar("risk_amount", { length: 20 }).notNull(), // Risk edilen miktar
+  pnl: varchar("pnl", { length: 20 }).notNull(), // Anlık kar/zarar
+  pnlPercentage: varchar("pnl_percentage", { length: 10 }).notNull(),
+  status: mysqlEnum("status", ["OPEN", "CLOSED"]).default("OPEN").notNull(),
+  pattern: text("pattern"), // Hangi pattern kullanıldı (FVG, OB, Sweep, etc.)
+  confidence: varchar("confidence", { length: 10 }), // Güven skoru
+  openedAt: timestamp("opened_at").defaultNow().notNull(),
+  closedAt: timestamp("closed_at"),
+});
+
+export type Position = typeof positions.$inferSelect;
+export type InsertPosition = typeof positions.$inferInsert;
+
+/**
+ * İşlem geçmişi tablosu
+ */
+export const tradeHistory = mysqlTable("trade_history", {
+  id: int("id").autoincrement().primaryKey(),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  direction: mysqlEnum("direction", ["LONG", "SHORT"]).notNull(),
+  entryPrice: varchar("entry_price", { length: 20 }).notNull(),
+  exitPrice: varchar("exit_price", { length: 20 }).notNull(),
+  stopLoss: varchar("stop_loss", { length: 20 }).notNull(),
+  takeProfit: varchar("take_profit", { length: 20 }).notNull(),
+  positionSize: varchar("position_size", { length: 20 }).notNull(),
+  riskAmount: varchar("risk_amount", { length: 20 }).notNull(),
+  pnl: varchar("pnl", { length: 20 }).notNull(),
+  pnlPercentage: varchar("pnl_percentage", { length: 10 }).notNull(),
+  rRatio: varchar("r_ratio", { length: 10 }).notNull(), // Reward/Risk oranı
+  result: mysqlEnum("result", ["WIN", "LOSS"]).notNull(),
+  exitReason: varchar("exit_reason", { length: 50 }).notNull(), // TP, SL, MANUAL
+  pattern: text("pattern"),
+  confidence: varchar("confidence", { length: 10 }),
+  duration: int("duration"), // Süre (dakika)
+  openedAt: timestamp("opened_at").notNull(),
+  closedAt: timestamp("closed_at").notNull(),
+});
+
+export type TradeHistory = typeof tradeHistory.$inferSelect;
+export type InsertTradeHistory = typeof tradeHistory.$inferInsert;
+
+/**
+ * Performans metrikleri tablosu (günlük)
+ */
+export const performanceMetrics = mysqlTable("performance_metrics", {
+  id: int("id").autoincrement().primaryKey(),
+  date: varchar("date", { length: 10 }).notNull().unique(), // YYYY-MM-DD
+  startingBalance: varchar("starting_balance", { length: 20 }).notNull(),
+  endingBalance: varchar("ending_balance", { length: 20 }).notNull(),
+  dailyPnl: varchar("daily_pnl", { length: 20 }).notNull(),
+  dailyPnlPercentage: varchar("daily_pnl_percentage", { length: 10 }).notNull(),
+  totalTrades: int("total_trades").notNull(),
+  winningTrades: int("winning_trades").notNull(),
+  losingTrades: int("losing_trades").notNull(),
+  winRate: varchar("win_rate", { length: 10 }).notNull(), // Percentage
+  averageRRatio: varchar("average_r_ratio", { length: 10 }).notNull(),
+  bestTrade: varchar("best_trade", { length: 20 }),
+  worstTrade: varchar("worst_trade", { length: 20 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type PerformanceMetrics = typeof performanceMetrics.$inferSelect;
+export type InsertPerformanceMetrics = typeof performanceMetrics.$inferInsert;
+
+/**
+ * AI öğrenme durumu tablosu
+ */
+export const aiLearning = mysqlTable("ai_learning", {
+  id: int("id").autoincrement().primaryKey(),
+  modelVersion: varchar("model_version", { length: 20 }).notNull(), // v1.0, v1.1, v1.2
+  patternsLearned: int("patterns_learned").notNull(), // Kaç pattern öğrenildi
+  expertTradesIntegrated: int("expert_trades_integrated").notNull(),
+  lastFineTuneDate: timestamp("last_fine_tune_date").notNull(),
+  improvements: text("improvements"), // JSON: hangi iyileştirmeler yapıldı
+  performanceBeforeTuning: varchar("performance_before_tuning", { length: 10 }),
+  performanceAfterTuning: varchar("performance_after_tuning", { length: 10 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type AiLearning = typeof aiLearning.$inferSelect;
+export type InsertAiLearning = typeof aiLearning.$inferInsert;

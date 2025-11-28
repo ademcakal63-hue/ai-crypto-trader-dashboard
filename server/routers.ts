@@ -17,12 +17,64 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  // Trading Dashboard Routers
+  dashboard: router({
+    summary: publicProcedure.query(async () => {
+      const { getDashboardSummary } = await import('./tradingDb');
+      return await getDashboardSummary();
+    }),
+    
+    openPositions: publicProcedure.query(async () => {
+      const { getOpenPositions } = await import('./tradingDb');
+      return await getOpenPositions();
+    }),
+    
+    tradeHistory: publicProcedure.query(async () => {
+      const { getTradeHistory } = await import('./tradingDb');
+      return await getTradeHistory(50);
+    }),
+    
+    performance: publicProcedure.query(async () => {
+      const { getPerformanceHistory } = await import('./tradingDb');
+      return await getPerformanceHistory(7);
+    }),
+    
+    aiLearning: publicProcedure.query(async () => {
+      const { getLatestAiLearning } = await import('./tradingDb');
+      return await getLatestAiLearning();
+    }),
+  }),
+  
+  // Binance API Routers
+  binance: router({
+    currentPrice: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'symbol' in val) {
+          return val as { symbol: string };
+        }
+        throw new Error('Invalid input');
+      })
+      .query(async ({ input }) => {
+        const { getCurrentPrice } = await import('./binance');
+        const price = await getCurrentPrice(input.symbol);
+        return { symbol: input.symbol, price };
+      }),
+    
+    allPrices: publicProcedure.query(async () => {
+      const { getAllPrices, SUPPORTED_PAIRS } = await import('./binance');
+      const allPrices = await getAllPrices();
+      
+      // Sadece desteklenen pair'leri döndür
+      const filtered: Record<string, number> = {};
+      for (const pair of SUPPORTED_PAIRS) {
+        if (allPrices[pair]) {
+          filtered[pair] = allPrices[pair];
+        }
+      }
+      
+      return filtered;
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
