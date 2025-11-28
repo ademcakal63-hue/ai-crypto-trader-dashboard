@@ -84,3 +84,34 @@
 - [x] Boş state UI'ları eklendi
 - [x] Bot bağlantı mesajları
 - [x] Gerçek zamanlı veri göstergeleri
+
+
+## Bot API Entegrasyonu ve İlave Özellikler (Tamamlandı)
+
+### Bot API Endpoints
+- [x] POST /api/bot/position/open - Yeni pozisyon aç
+- [x] POST /api/bot/position/close - Pozisyon kapat
+- [x] POST /api/bot/position/update - Pozisyon güncelle (SL/TP)
+- [x] POST /api/bot/trade/complete - İşlem tamamlandı
+- [x] POST /api/bot/metrics/update - Performans metriklerini güncelle
+- [x] POST /api/bot/emergency-stop - Acil durdur
+
+### Performans Grafikleri
+- [x] Equity curve grafiği (zaman serisi)
+- [x] Drawdown grafiği
+- [x] Günlük P&L bar chart
+- [x] R oranı dağılımı histogram
+- [x] Win/Loss oranı pie chart
+- [x] Recharts entegrasyonu
+- [x] Responsive tasarım
+
+### Bildirim Sistemi
+- [x] Gerçek zamanlı bildirim altyapısı
+- [x] Pozisyon açıldı bildirimi
+- [x] Pozisyon kapandı bildirimi
+- [x] Risk limiti aşıldı uyarısı
+- [x] Günlük limit doldu uyarısı
+- [x] Bağlantı kesildi uyarısı
+- [x] Bildirim paneli UI
+- [x] Okundu/okunmadı işaretleme
+- [x] Bildirim filtreleme

@@ -43,6 +43,97 @@ export const appRouter = router({
       const { getLatestAiLearning } = await import('./tradingDb');
       return await getLatestAiLearning();
     }),
+    
+    performanceMetrics: publicProcedure.query(async () => {
+      const { getAllPerformanceMetrics } = await import('./tradingDb');
+      return await getAllPerformanceMetrics();
+    }),
+  }),
+  
+  // Bot API Routers (Trading Bot'un veri göndermesi için)
+  bot: router({
+    openPosition: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { openPosition } = await import('./botApi');
+        return await openPosition(input);
+      }),
+    
+    updatePosition: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { updatePosition } = await import('./botApi');
+        return await updatePosition(input);
+      }),
+    
+    closePosition: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { closePosition } = await import('./botApi');
+        return await closePosition(input);
+      }),
+    
+    updateMetrics: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { updatePerformanceMetrics } = await import('./botApi');
+        return await updatePerformanceMetrics(input);
+      }),
+    
+    emergencyStop: publicProcedure.mutation(async () => {
+      const { emergencyStopAll } = await import('./botApi');
+      return await emergencyStopAll();
+    }),
+  }),
+  
+  // Bildirim Routers
+  notifications: router({
+    list: publicProcedure.query(async () => {
+      const { getNotifications } = await import('./notificationService');
+      return await getNotifications(50);
+    }),
+    
+    unread: publicProcedure.query(async () => {
+      const { getUnreadNotifications } = await import('./notificationService');
+      return await getUnreadNotifications();
+    }),
+    
+    markAsRead: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'id' in val) {
+          return val as { id: number };
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { markAsRead } = await import('./notificationService');
+        return await markAsRead(input.id);
+      }),
+    
+    markAllAsRead: publicProcedure.mutation(async () => {
+      const { markAllAsRead } = await import('./notificationService');
+      return await markAllAsRead();
+    }),
   }),
   
   // Binance API Routers

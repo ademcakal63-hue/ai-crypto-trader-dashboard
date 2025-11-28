@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -24,6 +24,31 @@ export const users = mysqlTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+/**
+ * Bildirimler tablosu
+ */
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  type: mysqlEnum("type", [
+    "POSITION_OPENED",
+    "POSITION_CLOSED",
+    "RISK_LIMIT_WARNING",
+    "DAILY_LIMIT_REACHED",
+    "CONNECTION_LOST",
+    "CONNECTION_RESTORED",
+    "EMERGENCY_STOP",
+  ]).notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  severity: mysqlEnum("severity", ["INFO", "WARNING", "ERROR", "SUCCESS"]).notNull(),
+  read: boolean("read").default(false).notNull(),
+  data: text("data"), // JSON string (pozisyon detayları vs.)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
 
 /**
  * Açık pozisyonlar tablosu

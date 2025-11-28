@@ -102,3 +102,13 @@ export async function getDashboardSummary() {
     aiLearning: latestAi,
   };
 }
+
+/**
+ * Tüm performans metriklerini getir (grafik için)
+ */
+export async function getAllPerformanceMetrics() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(performanceMetrics).orderBy(desc(performanceMetrics.date)).limit(30);
+}

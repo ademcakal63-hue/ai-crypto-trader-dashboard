@@ -3,15 +3,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, Activity, Brain, Target, AlertCircle, Wifi, WifiOff } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrendingUp, TrendingDown, Activity, Brain, Target, AlertCircle, Wifi, WifiOff, BarChart3, Bell } from "lucide-react";
 import RiskManagementPanel from "@/components/RiskManagementPanel";
 import AIPatternStats from "@/components/AIPatternStats";
+import PerformanceCharts from "@/components/PerformanceCharts";
+import NotificationPanel from "@/components/NotificationPanel";
 import { useLivePrices } from "@/hooks/useLivePrices";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = trpc.dashboard.summary.useQuery();
   const { data: tradeHistory, isLoading: historyLoading } = trpc.dashboard.tradeHistory.useQuery();
+  const { data: performanceHistory } = trpc.dashboard.performanceMetrics.useQuery();
+  const { data: unreadNotifications } = trpc.notifications.unread.useQuery();
   
   // Gerçek zamanlı fiyat güncellemesi
   const openSymbols = summary?.openPositions?.map(p => p.symbol) || [];
@@ -63,6 +68,8 @@ export default function Dashboard() {
   const currentBalance = parseFloat(todayPerf?.endingBalance || '1500');
   const dailyPnl = parseFloat(todayPerf?.dailyPnl || '0');
 
+  const unreadCount = unreadNotifications?.length || 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
@@ -101,6 +108,14 @@ export default function Dashboard() {
                   ACTIVE
                 </Badge>
               </div>
+              {unreadCount > 0 && (
+                <div className="relative">
+                  <Bell className="w-5 h-5 text-slate-400" />
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -188,187 +203,240 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Risk Yönetimi ve AI Pattern Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <RiskManagementPanel
-            currentBalance={currentBalance}
-            dailyPnl={dailyPnl}
-            dailyLossLimit={4} // %4
-            riskPerTrade={2} // %2
-            openPositionsCount={summary?.openPositionsCount || 0}
-          />
-
-          <AIPatternStats
-            patterns={patternStats}
-            modelVersion={aiLearning?.modelVersion || 'v1.0'}
-            lastUpdate={aiLearning?.lastFineTuneDate || new Date()}
-          />
-        </div>
-
-        {/* Açık Pozisyonlar Tablosu */}
-        <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm mb-8">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Activity className="w-5 h-5 text-blue-500" />
-              Açık Pozisyonlar
-              {isConnected && (
-                <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-400 border-green-500/30 text-xs">
-                  LIVE
+        {/* Tabs: Genel Bakış / Performans Grafikleri / Bildirimler */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="bg-slate-900/50 border border-slate-800">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-slate-800">
+              <Activity className="w-4 h-4 mr-2" />
+              Genel Bakış
+            </TabsTrigger>
+            <TabsTrigger value="charts" className="data-[state=active]:bg-slate-800">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Performans Grafikleri
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="data-[state=active]:bg-slate-800">
+              <Bell className="w-4 h-4 mr-2" />
+              Bildirimler
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="ml-2 text-xs">
+                  {unreadCount}
                 </Badge>
               )}
-            </CardTitle>
-            <CardDescription className="text-slate-400">
-              Şu anda aktif olan işlemler (gerçek zamanlı güncelleme)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {livePositions && livePositions.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-slate-800">
-                      <TableHead className="text-slate-400">Sembol</TableHead>
-                      <TableHead className="text-slate-400">Yön</TableHead>
-                      <TableHead className="text-slate-400">Giriş</TableHead>
-                      <TableHead className="text-slate-400">Mevcut</TableHead>
-                      <TableHead className="text-slate-400">SL</TableHead>
-                      <TableHead className="text-slate-400">TP</TableHead>
-                      <TableHead className="text-slate-400">P&L</TableHead>
-                      <TableHead className="text-slate-400">Pattern</TableHead>
-                      <TableHead className="text-slate-400">Süre</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {livePositions.map((pos) => (
-                      <TableRow key={pos.id} className="border-slate-800">
-                        <TableCell className="font-semibold text-white">{pos.symbol}</TableCell>
-                        <TableCell>
-                          <Badge variant={pos.direction === 'LONG' ? 'default' : 'destructive'} className={
-                            pos.direction === 'LONG' 
-                              ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                              : 'bg-red-500/20 text-red-400 border-red-500/30'
-                          }>
-                            {pos.direction}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-slate-300">${pos.entryPrice}</TableCell>
-                        <TableCell className="text-slate-300 font-semibold">${pos.currentPrice}</TableCell>
-                        <TableCell className="text-red-400">${pos.stopLoss}</TableCell>
-                        <TableCell className="text-green-400">${pos.takeProfit}</TableCell>
-                        <TableCell className={parseFloat(pos.pnl) >= 0 ? 'text-green-400' : 'text-red-400'}>
-                          <div className="flex flex-col">
-                            <span className="font-semibold">{pos.pnl}</span>
-                            <span className="text-xs">{pos.pnlPercentage}%</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <span className="text-xs text-slate-300">{pos.pattern}</span>
-                            <Badge variant="outline" className="w-fit text-xs bg-blue-500/10 text-blue-400 border-blue-500/30">
-                              {pos.confidence}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-slate-400 text-sm">
-                          {getTimeDiff(pos.openedAt)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">Şu anda açık pozisyon yok</p>
-                <p className="text-xs text-slate-500 mt-2">Bot aktif olduğunda pozisyonlar burada görünecek</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* İşlem Geçmişi */}
-        <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-white">İşlem Geçmişi</CardTitle>
-            <CardDescription className="text-slate-400">
-              Son 50 kapatılmış işlem
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {historyLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full bg-slate-800" />
-                ))}
-              </div>
-            ) : tradeHistory && tradeHistory.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-slate-800">
-                      <TableHead className="text-slate-400">Sembol</TableHead>
-                      <TableHead className="text-slate-400">Yön</TableHead>
-                      <TableHead className="text-slate-400">Giriş</TableHead>
-                      <TableHead className="text-slate-400">Çıkış</TableHead>
-                      <TableHead className="text-slate-400">P&L</TableHead>
-                      <TableHead className="text-slate-400">R Oranı</TableHead>
-                      <TableHead className="text-slate-400">Sonuç</TableHead>
-                      <TableHead className="text-slate-400">Pattern</TableHead>
-                      <TableHead className="text-slate-400">Tarih</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {tradeHistory.slice(0, 10).map((trade) => (
-                      <TableRow key={trade.id} className="border-slate-800">
-                        <TableCell className="font-semibold text-white">{trade.symbol}</TableCell>
-                        <TableCell>
-                          <Badge variant={trade.direction === 'LONG' ? 'default' : 'destructive'} className={
-                            trade.direction === 'LONG' 
-                              ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                              : 'bg-red-500/20 text-red-400 border-red-500/30'
-                          }>
-                            {trade.direction}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-slate-300 text-sm">${trade.entryPrice}</TableCell>
-                        <TableCell className="text-slate-300 text-sm">${trade.exitPrice}</TableCell>
-                        <TableCell className={parseFloat(trade.pnl) >= 0 ? 'text-green-400' : 'text-red-400'}>
-                          <div className="flex flex-col">
-                            <span className="font-semibold">{trade.pnl}</span>
-                            <span className="text-xs">{trade.pnlPercentage}%</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className={parseFloat(trade.rRatio) >= 0 ? 'text-green-400' : 'text-red-400'}>
-                          {trade.rRatio}R
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={trade.result === 'WIN' ? 'default' : 'destructive'} className={
-                            trade.result === 'WIN'
-                              ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                              : 'bg-red-500/20 text-red-400 border-red-500/30'
-                          }>
-                            {trade.result}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-slate-300 text-xs">{trade.pattern}</TableCell>
-                        <TableCell className="text-slate-400 text-sm">
-                          {new Date(trade.closedAt).toLocaleDateString('tr-TR')}
-                        </TableCell>
-                      </TableRow>
+          {/* Genel Bakış Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            {/* Risk Yönetimi ve AI Pattern Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <RiskManagementPanel
+                currentBalance={currentBalance}
+                dailyPnl={dailyPnl}
+                dailyLossLimit={4} // %4
+                riskPerTrade={2} // %2
+                openPositionsCount={summary?.openPositionsCount || 0}
+              />
+
+              <AIPatternStats
+                patterns={patternStats}
+                modelVersion={aiLearning?.modelVersion || 'v1.0'}
+                lastUpdate={aiLearning?.lastFineTuneDate || new Date()}
+              />
+            </div>
+
+            {/* Açık Pozisyonlar Tablosu */}
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-blue-500" />
+                  Açık Pozisyonlar
+                  {isConnected && (
+                    <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-400 border-green-500/30 text-xs">
+                      LIVE
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  Şu anda aktif olan işlemler (gerçek zamanlı güncelleme)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {livePositions && livePositions.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-slate-800">
+                          <TableHead className="text-slate-400">Sembol</TableHead>
+                          <TableHead className="text-slate-400">Yön</TableHead>
+                          <TableHead className="text-slate-400">Giriş</TableHead>
+                          <TableHead className="text-slate-400">Mevcut</TableHead>
+                          <TableHead className="text-slate-400">SL</TableHead>
+                          <TableHead className="text-slate-400">TP</TableHead>
+                          <TableHead className="text-slate-400">P&L</TableHead>
+                          <TableHead className="text-slate-400">Pattern</TableHead>
+                          <TableHead className="text-slate-400">Süre</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {livePositions.map((pos) => (
+                          <TableRow key={pos.id} className="border-slate-800">
+                            <TableCell className="font-semibold text-white">{pos.symbol}</TableCell>
+                            <TableCell>
+                              <Badge variant={pos.direction === 'LONG' ? 'default' : 'destructive'} className={
+                                pos.direction === 'LONG' 
+                                  ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                                  : 'bg-red-500/20 text-red-400 border-red-500/30'
+                              }>
+                                {pos.direction}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-slate-300">${pos.entryPrice}</TableCell>
+                            <TableCell className="text-slate-300 font-semibold">${pos.currentPrice}</TableCell>
+                            <TableCell className="text-red-400">${pos.stopLoss}</TableCell>
+                            <TableCell className="text-green-400">${pos.takeProfit}</TableCell>
+                            <TableCell className={parseFloat(pos.pnl) >= 0 ? 'text-green-400' : 'text-red-400'}>
+                              <div className="flex flex-col">
+                                <span className="font-semibold">{pos.pnl}</span>
+                                <span className="text-xs">{pos.pnlPercentage}%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col gap-1">
+                                <span className="text-xs text-slate-300">{pos.pattern}</span>
+                                <Badge variant="outline" className="w-fit text-xs bg-blue-500/10 text-blue-400 border-blue-500/30">
+                                  {pos.confidence}
+                                </Badge>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-slate-400 text-sm">
+                              {getTimeDiff(pos.openedAt)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-400">Şu anda açık pozisyon yok</p>
+                    <p className="text-xs text-slate-500 mt-2">Bot aktif olduğunda pozisyonlar burada görünecek</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* İşlem Geçmişi */}
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white">İşlem Geçmişi</CardTitle>
+                <CardDescription className="text-slate-400">
+                  Son 50 kapatılmış işlem
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {historyLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Skeleton key={i} className="h-12 w-full bg-slate-800" />
                     ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  </div>
+                ) : tradeHistory && tradeHistory.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-slate-800">
+                          <TableHead className="text-slate-400">Sembol</TableHead>
+                          <TableHead className="text-slate-400">Yön</TableHead>
+                          <TableHead className="text-slate-400">Giriş</TableHead>
+                          <TableHead className="text-slate-400">Çıkış</TableHead>
+                          <TableHead className="text-slate-400">P&L</TableHead>
+                          <TableHead className="text-slate-400">R Oranı</TableHead>
+                          <TableHead className="text-slate-400">Sonuç</TableHead>
+                          <TableHead className="text-slate-400">Pattern</TableHead>
+                          <TableHead className="text-slate-400">Tarih</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {tradeHistory.slice(0, 10).map((trade) => (
+                          <TableRow key={trade.id} className="border-slate-800">
+                            <TableCell className="font-semibold text-white">{trade.symbol}</TableCell>
+                            <TableCell>
+                              <Badge variant={trade.direction === 'LONG' ? 'default' : 'destructive'} className={
+                                trade.direction === 'LONG' 
+                                  ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                                  : 'bg-red-500/20 text-red-400 border-red-500/30'
+                              }>
+                                {trade.direction}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-slate-300 text-sm">${trade.entryPrice}</TableCell>
+                            <TableCell className="text-slate-300 text-sm">${trade.exitPrice}</TableCell>
+                            <TableCell className={parseFloat(trade.pnl) >= 0 ? 'text-green-400' : 'text-red-400'}>
+                              <div className="flex flex-col">
+                                <span className="font-semibold">{trade.pnl}</span>
+                                <span className="text-xs">{trade.pnlPercentage}%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className={parseFloat(trade.rRatio) >= 0 ? 'text-green-400' : 'text-red-400'}>
+                              {trade.rRatio}R
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={trade.result === 'WIN' ? 'default' : 'destructive'} className={
+                                trade.result === 'WIN'
+                                  ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                                  : 'bg-red-500/20 text-red-400 border-red-500/30'
+                              }>
+                                {trade.result}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-slate-300 text-xs">{trade.pattern}</TableCell>
+                            <TableCell className="text-slate-400 text-sm">
+                              {new Date(trade.closedAt).toLocaleDateString('tr-TR')}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-400">Henüz işlem geçmişi yok</p>
+                    <p className="text-xs text-slate-500 mt-2">Bot işlem yaptıkça geçmiş burada görünecek</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Performans Grafikleri Tab */}
+          <TabsContent value="charts">
+            {performanceHistory && performanceHistory.length > 0 ? (
+              <PerformanceCharts
+                performanceHistory={performanceHistory}
+                tradeHistory={tradeHistory || []}
+              />
             ) : (
-              <div className="text-center py-12">
-                <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">Henüz işlem geçmişi yok</p>
-                <p className="text-xs text-slate-500 mt-2">Bot işlem yaptıkça geçmiş burada görünecek</p>
-              </div>
+              <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
+                <CardContent className="py-12">
+                  <div className="text-center">
+                    <BarChart3 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-400">Henüz yeterli veri yok</p>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Bot işlem yaptıkça performans grafikleri burada görünecek
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
+          </TabsContent>
+
+          {/* Bildirimler Tab */}
+          <TabsContent value="notifications">
+            <NotificationPanel />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
