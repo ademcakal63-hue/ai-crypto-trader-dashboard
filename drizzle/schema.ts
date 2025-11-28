@@ -149,7 +149,9 @@ export type InsertAiLearning = typeof aiLearning.$inferInsert;
  */
 export const botSettings = mysqlTable("bot_settings", {
   id: int("id").autoincrement().primaryKey(),
-  totalCapital: varchar("total_capital", { length: 20 }).notNull(), // Toplam sermaye
+  binanceApiKey: text("binance_api_key"), // Binance API Key (encrypted)
+  binanceApiSecret: text("binance_api_secret"), // Binance API Secret (encrypted)
+  isConnected: boolean("is_connected").default(false).notNull(), // Hesap bağlı mı
   usedCapital: varchar("used_capital", { length: 20 }).notNull(), // Kullanılacak sermaye
   compoundEnabled: boolean("compound_enabled").default(false).notNull(), // Bileşik getiri aktif mi
   dailyLossLimitPercent: varchar("daily_loss_limit_percent", { length: 10 }).default('4.00').notNull(), // Günlük kayıp limiti %

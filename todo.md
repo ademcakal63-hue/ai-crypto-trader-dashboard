@@ -137,3 +137,19 @@
 - [x] Tüm demo verileri kaldırıldı
 - [x] Database temizlendi
 - [ ] Gerçek hesap için son testler
+
+
+## Son Düzeltmeler (Tamamlandı)
+
+### Sermaye Ayarları Düzeltmesi
+- [x] Toplam sermaye input'unu kaldır (Binance API'den otomatik gelecek)
+- [x] Sadece "Kullanılacak Miktar" input'u bırak
+- [x] Binance API Key/Secret input'u ekle
+- [x] API Key database'e güvenli kaydet
+- [x] Database schema güncellendi
+
+### Dashboard Boş State
+- [x] Hesap bağlanmadan bakiye gösterme
+- [x] "Hesap Bağla" butonu ekle
+- [x] Bağlantı durumu kontrolü
+- [x] Binance balance endpoint'i eklendi

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Settings as SettingsIcon, DollarSign, TrendingUp, Shield, Save, AlertCircle } from "lucide-react";
+import { Settings as SettingsIcon, DollarSign, TrendingUp, Shield, Save, AlertCircle, Key } from "lucide-react";
 
 export default function Settings() {
   const { data: settings, isLoading, refetch } = trpc.settings.get.useQuery();
@@ -22,19 +22,21 @@ export default function Settings() {
   });
 
   const [formData, setFormData] = useState({
-    totalCapital: settings?.totalCapital || "1000",
-    usedCapital: settings?.usedCapital || "500",
-    compoundEnabled: settings?.compoundEnabled || false,
-    dailyLossLimitPercent: settings?.dailyLossLimitPercent || "4.00",
-    riskPerTradePercent: settings?.riskPerTradePercent || "2.00",
-    maxDailyTrades: settings?.maxDailyTrades || 10,
+    binanceApiKey: "",
+    binanceApiSecret: "",
+    usedCapital: "500",
+    compoundEnabled: false,
+    dailyLossLimitPercent: "4.00",
+    riskPerTradePercent: "2.00",
+    maxDailyTrades: 10,
   });
 
   // Settings yüklendiğinde form'u güncelle
-  useState(() => {
+  useEffect(() => {
     if (settings) {
       setFormData({
-        totalCapital: settings.totalCapital,
+        binanceApiKey: settings.binanceApiKey || "",
+        binanceApiSecret: settings.binanceApiSecret || "",
         usedCapital: settings.usedCapital,
         compoundEnabled: settings.compoundEnabled,
         dailyLossLimitPercent: settings.dailyLossLimitPercent,
@@ -42,22 +44,21 @@ export default function Settings() {
         maxDailyTrades: settings.maxDailyTrades,
       });
     }
-  });
+  }, [settings]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validasyon
-    const totalCap = parseFloat(formData.totalCapital);
     const usedCap = parseFloat(formData.usedCapital);
-    
-    if (usedCap > totalCap) {
-      toast.error("Kullanılacak sermaye, toplam sermayeden fazla olamaz!");
-      return;
-    }
     
     if (usedCap < 100) {
       toast.error("Minimum kullanılacak sermaye 100 USDT olmalıdır!");
+      return;
+    }
+    
+    if (!formData.binanceApiKey || !formData.binanceApiSecret) {
+      toast.error("Binance API Key ve Secret gereklidir!");
       return;
     }
 
@@ -68,27 +69,106 @@ export default function Settings() {
     return <SettingsSkeleton />;
   }
 
-  const usedCapitalPercent = ((parseFloat(formData.usedCapital) / parseFloat(formData.totalCapital)) * 100).toFixed(1);
   const dailyLossLimit = (parseFloat(formData.usedCapital) * parseFloat(formData.dailyLossLimitPercent) / 100).toFixed(2);
   const riskPerTrade = (parseFloat(formData.usedCapital) * parseFloat(formData.riskPerTradePercent) / 100).toFixed(2);
+  const isConnected = settings?.isConnected || false;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center gap-3">
-            <SettingsIcon className="w-7 h-7 text-blue-500" />
-            <div>
-              <h1 className="text-2xl font-bold text-white">Bot Ayarları</h1>
-              <p className="text-sm text-slate-400 mt-1">Sermaye ve risk yönetimi parametrelerini yapılandır</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <SettingsIcon className="w-7 h-7 text-blue-500" />
+              <div>
+                <h1 className="text-2xl font-bold text-white">Bot Ayarları</h1>
+                <p className="text-sm text-slate-400 mt-1">Binance hesabını bağla ve risk parametrelerini ayarla</p>
+              </div>
             </div>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/'}
+              className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+            >
+              Dashboard'a Dön
+            </Button>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-6 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Binance API Bağlantısı */}
+          <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Key className="w-5 h-5 text-blue-500" />
+                Binance API Bağlantısı
+                {isConnected && (
+                  <span className="ml-2 px-2 py-1 text-xs bg-green-500/20 text-green-400 border border-green-500/30 rounded">
+                    Bağlı
+                  </span>
+                )}
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Binance hesabınızı bağlamak için API Key ve Secret girin
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* API Key */}
+              <div className="space-y-2">
+                <Label htmlFor="apiKey" className="text-slate-300">
+                  Binance API Key
+                </Label>
+                <Input
+                  id="apiKey"
+                  type="text"
+                  value={formData.binanceApiKey}
+                  onChange={(e) => setFormData({ ...formData, binanceApiKey: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white font-mono"
+                  placeholder="Binance API Key'inizi girin"
+                />
+                <p className="text-xs text-slate-500">
+                  Binance hesabınızdan API Key oluşturun (Spot Trading yetkisi yeterli)
+                </p>
+              </div>
+
+              {/* API Secret */}
+              <div className="space-y-2">
+                <Label htmlFor="apiSecret" className="text-slate-300">
+                  Binance API Secret
+                </Label>
+                <Input
+                  id="apiSecret"
+                  type="password"
+                  value={formData.binanceApiSecret}
+                  onChange={(e) => setFormData({ ...formData, binanceApiSecret: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white font-mono"
+                  placeholder="Binance API Secret'ınızı girin"
+                />
+                <p className="text-xs text-slate-500">
+                  API Secret güvenli bir şekilde şifrelenerek saklanır
+                </p>
+              </div>
+
+              {/* Uyarı */}
+              <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-yellow-300">
+                    <p className="font-semibold mb-1">Güvenlik Uyarısı</p>
+                    <p className="text-xs text-yellow-400">
+                      • API Key oluştururken sadece "Spot Trading" yetkisi verin<br />
+                      • "Withdraw" (çekim) yetkisi vermeyin<br />
+                      • IP kısıtlaması eklemek güvenliği artırır
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Sermaye Ayarları */}
           <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
             <CardHeader>
@@ -97,54 +177,28 @@ export default function Settings() {
                 Sermaye Ayarları
               </CardTitle>
               <CardDescription className="text-slate-400">
-                Hesabınızdaki toplam sermaye ve bot'un kullanacağı miktarı belirleyin
+                Bot'un kullanacağı sermaye miktarını belirleyin
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Toplam Sermaye */}
-              <div className="space-y-2">
-                <Label htmlFor="totalCapital" className="text-slate-300">
-                  Toplam Sermaye (USDT)
-                </Label>
-                <Input
-                  id="totalCapital"
-                  type="number"
-                  step="0.01"
-                  min="100"
-                  value={formData.totalCapital}
-                  onChange={(e) => setFormData({ ...formData, totalCapital: e.target.value })}
-                  className="bg-slate-800 border-slate-700 text-white"
-                  placeholder="1000.00"
-                />
-                <p className="text-xs text-slate-500">
-                  Binance hesabınızdaki toplam USDT miktarı
-                </p>
-              </div>
-
               {/* Kullanılacak Sermaye */}
               <div className="space-y-2">
                 <Label htmlFor="usedCapital" className="text-slate-300">
-                  Bot'un Kullanacağı Sermaye (USDT)
+                  Kullanılacak Sermaye (USDT)
                 </Label>
                 <Input
                   id="usedCapital"
                   type="number"
                   step="0.01"
                   min="100"
-                  max={formData.totalCapital}
                   value={formData.usedCapital}
                   onChange={(e) => setFormData({ ...formData, usedCapital: e.target.value })}
                   className="bg-slate-800 border-slate-700 text-white"
                   placeholder="500.00"
                 />
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">
-                    Toplam sermayenin <span className="text-blue-400 font-semibold">%{usedCapitalPercent}</span>'i
-                  </span>
-                  <span className="text-slate-500">
-                    Minimum: 100 USDT
-                  </span>
-                </div>
+                <p className="text-xs text-slate-500">
+                  Bot bu miktarı kullanarak işlem yapacak (Minimum: 100 USDT)
+                </p>
               </div>
 
               {/* Bileşik Getiri */}

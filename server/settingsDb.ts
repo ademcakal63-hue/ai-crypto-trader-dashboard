@@ -14,12 +14,12 @@ export async function getBotSettings() {
   // Eğer ayar yoksa, default ayarları oluştur
   if (!settings) {
     const defaultSettings: InsertBotSettings = {
-      totalCapital: "1000.00",
       usedCapital: "500.00",
       compoundEnabled: false,
       dailyLossLimitPercent: "4.00",
       riskPerTradePercent: "2.00",
       maxDailyTrades: 10,
+      isConnected: false,
     };
     
     await db.insert(botSettings).values(defaultSettings);

@@ -19,6 +19,19 @@ export const binanceClient = Binance({
 });
 
 /**
+ * Özel API key ile Binance client oluştur
+ */
+export function getBinanceClient(apiKey: string, apiSecret: string) {
+  return Binance({
+    apiKey,
+    apiSecret,
+    httpBase: TESTNET_BASE_URL,
+    wsBase: 'wss://testnet.binance.vision/ws',
+    getTime: () => Date.now(),
+  });
+}
+
+/**
  * Gerçek zamanlı fiyat çekme
  */
 export async function getCurrentPrice(symbol: string): Promise<number> {

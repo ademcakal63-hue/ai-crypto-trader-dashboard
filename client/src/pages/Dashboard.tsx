@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,13 +14,14 @@ import { useLivePrices } from "@/hooks/useLivePrices";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const { data: summary, isLoading: summaryLoading } = trpc.dashboard.summary.useQuery();
+  const { data: summary, isLoading: summaryLoading } = trpc.dashboard.overview.useQuery();
+  const { data: balance } = trpc.dashboard.balance.useQuery();
   const { data: tradeHistory, isLoading: historyLoading } = trpc.dashboard.tradeHistory.useQuery();
   const { data: performanceHistory } = trpc.dashboard.performanceMetrics.useQuery();
   const { data: unreadNotifications } = trpc.notifications.unread.useQuery();
   
   // Gerçek zamanlı fiyat güncellemesi
-  const openSymbols = summary?.openPositions?.map(p => p.symbol) || [];
+  const openSymbols = summary?.openPositions?.map((p: any) => p.symbol) || [];
   const { prices, isConnected } = useLivePrices({ 
     symbols: openSymbols,
     enabled: openSymbols.length > 0 
@@ -30,7 +32,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (summary?.openPositions && Object.keys(prices).length > 0) {
-      const updated = summary.openPositions.map(pos => {
+      const updated = summary.openPositions.map((pos: any) => {
         const livePrice = prices[pos.symbol]?.price;
         if (!livePrice) return pos;
 
@@ -136,14 +138,26 @@ export default function Dashboard() {
             <CardHeader className="pb-3">
               <CardDescription className="text-slate-400">Mevcut Bakiye</CardDescription>
               <CardTitle className="text-3xl text-white">
-                ${todayPerf?.endingBalance || '1,500.00'}
+                {balance ? `$${typeof balance.total === 'number' ? balance.total.toFixed(2) : balance.total}` : (
+                  <span className="text-slate-500 text-xl">Hesap Bağlı Değil</span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-slate-400">Başlangıç:</span>
-                <span className="text-slate-300">${todayPerf?.startingBalance || '1,500.00'}</span>
-              </div>
+              {balance ? (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-slate-400">Kullanılabilir:</span>
+                  <span className="text-slate-300">${typeof balance.available === 'number' ? balance.available.toFixed(2) : balance.available}</span>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => window.location.href = '/settings'}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                >
+                  Hesap Bağla
+                </Button>
+              )}
             </CardContent>
           </Card>
 

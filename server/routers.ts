@@ -19,7 +19,12 @@ export const appRouter = router({
 
   // Trading Dashboard Routers
   dashboard: router({
-    summary: publicProcedure.query(async () => {
+    balance: publicProcedure.query(async () => {
+      const { getBinanceBalance } = await import('./binanceBalance');
+      return await getBinanceBalance();
+    }),
+    
+    overview: publicProcedure.query(async () => {
       const { getDashboardSummary } = await import('./tradingDb');
       return await getDashboardSummary();
     }),
