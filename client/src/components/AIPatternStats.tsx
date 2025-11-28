@@ -18,6 +18,32 @@ interface AIPatternStatsProps {
 }
 
 export default function AIPatternStats({ patterns, modelVersion, lastUpdate }: AIPatternStatsProps) {
+  // Boş pattern kontrolü
+  if (!patterns || patterns.length === 0) {
+    return (
+      <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Brain className="w-5 h-5 text-purple-500" />
+            AI Pattern Analizi
+          </CardTitle>
+          <CardDescription className="text-slate-400">
+            Model {modelVersion} • Son güncelleme: {new Date(lastUpdate).toLocaleDateString('tr-TR')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <Brain className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+            <p className="text-slate-400">Henüz pattern verisi yok</p>
+            <p className="text-xs text-slate-500 mt-2">
+              Bot işlem yaptıkça pattern'ler burada görünecek
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // En başarılı pattern
   const bestPattern = patterns.reduce((best, current) => 
     current.totalPnl > best.totalPnl ? current : best
@@ -25,7 +51,7 @@ export default function AIPatternStats({ patterns, modelVersion, lastUpdate }: A
 
   // Toplam istatistikler
   const totalTrades = patterns.reduce((sum, p) => sum + p.totalTrades, 0);
-  const avgWinRate = patterns.reduce((sum, p) => sum + p.winRate, 0) / patterns.length;
+  const avgWinRate = totalTrades > 0 ? patterns.reduce((sum, p) => sum + p.winRate, 0) / patterns.length : 0;
 
   return (
     <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">

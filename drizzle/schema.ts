@@ -143,3 +143,21 @@ export const aiLearning = mysqlTable("ai_learning", {
 
 export type AiLearning = typeof aiLearning.$inferSelect;
 export type InsertAiLearning = typeof aiLearning.$inferInsert;
+
+/**
+ * Bot ayarları tablosu
+ */
+export const botSettings = mysqlTable("bot_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  totalCapital: varchar("total_capital", { length: 20 }).notNull(), // Toplam sermaye
+  usedCapital: varchar("used_capital", { length: 20 }).notNull(), // Kullanılacak sermaye
+  compoundEnabled: boolean("compound_enabled").default(false).notNull(), // Bileşik getiri aktif mi
+  dailyLossLimitPercent: varchar("daily_loss_limit_percent", { length: 10 }).default('4.00').notNull(), // Günlük kayıp limiti %
+  riskPerTradePercent: varchar("risk_per_trade_percent", { length: 10 }).default('2.00').notNull(), // İşlem başına risk %
+  maxDailyTrades: int("max_daily_trades").default(10).notNull(), // Maksimum günlük işlem sayısı
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type BotSettings = typeof botSettings.$inferSelect;
+export type InsertBotSettings = typeof botSettings.$inferInsert;

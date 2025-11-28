@@ -115,3 +115,25 @@
 - [x] Bildirim paneli UI
 - [x] Okundu/okunmadı işaretleme
 - [x] Bildirim filtreleme
+
+
+## Dashboard Düzeltmeleri ve Ayarlar (Tamamlandı)
+
+### Error Düzeltmeleri
+- [x] Boş state error'larını düzelt
+- [x] Tüm component'lerde null check ekle
+- [x] AI Pattern Stats NaN error'ı düzeltildi
+
+### Ayarlar Sayfası
+- [x] Ayarlar sayfası oluşturuldu
+- [x] Kullanılacak sermaye input'u (örn: 500 USDT)
+- [x] Bileşik getiri (Compound) toggle
+- [x] Risk parametreleri (günlük limit %, işlem başına risk %)
+- [x] Ayarları database'e kaydet
+- [x] Settings router ve database helper
+- [x] Dashboard'a Ayarlar butonu eklendi
+
+### Son Hazırlıklar
+- [x] Tüm demo verileri kaldırıldı
+- [x] Database temizlendi
+- [ ] Gerçek hesap için son testler

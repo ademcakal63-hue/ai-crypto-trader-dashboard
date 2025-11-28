@@ -136,6 +136,26 @@ export const appRouter = router({
     }),
   }),
   
+  // Settings Routers
+  settings: router({
+    get: publicProcedure.query(async () => {
+      const { getBotSettings } = await import('./settingsDb');
+      return await getBotSettings();
+    }),
+    
+    update: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { updateBotSettings } = await import('./settingsDb');
+        return await updateBotSettings(input);
+      }),
+  }),
+  
   // Binance API Routers
   binance: router({
     currentPrice: publicProcedure

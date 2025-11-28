@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, Activity, Brain, Target, AlertCircle, Wifi, WifiOff, BarChart3, Bell } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Brain, Target, AlertCircle, Wifi, WifiOff, BarChart3, Bell, Settings as SettingsIcon } from "lucide-react";
 import RiskManagementPanel from "@/components/RiskManagementPanel";
 import AIPatternStats from "@/components/AIPatternStats";
 import PerformanceCharts from "@/components/PerformanceCharts";
@@ -116,6 +116,13 @@ export default function Dashboard() {
                   </span>
                 </div>
               )}
+              <button
+                onClick={() => window.location.href = '/settings'}
+                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
+                title="Ayarlar"
+              >
+                <SettingsIcon className="w-5 h-5 text-slate-400" />
+              </button>
             </div>
           </div>
         </div>
