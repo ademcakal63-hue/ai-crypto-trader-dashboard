@@ -11,13 +11,29 @@ import { Settings as SettingsIcon, DollarSign, TrendingUp, Shield, Save, AlertCi
 
 export default function Settings() {
   const { data: settings, isLoading, refetch } = trpc.settings.get.useQuery();
-  const updateMutation = trpc.settings.update.useMutation({
+  const saveMutation = trpc.settings.update.useMutation({
     onSuccess: () => {
-      toast.success("Ayarlar başarıyla kaydedildi!");
+      toast.success('✅ Ayarlar kaydedildi!');
       refetch();
     },
     onError: (error: any) => {
-      toast.error(`Hata: ${error.message}`);
+      toast.error(`❌ Hata: ${error.message}`);
+    },
+  });
+  
+  const validateMutation = trpc.settings.validateApiKey.useMutation({
+    onSuccess: (data) => {
+      if (data.valid) {
+        toast.success(`✅ ${data.message}`);
+        if (data.balance) {
+          toast.success(`💰 Bakiye: $${data.balance.total.toFixed(2)} USDT`);
+        }
+      } else {
+        toast.error(`❌ ${data.message}`);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(`❌ Bağlantı hatası: ${error.message}`);
     },
   });
 
@@ -62,7 +78,7 @@ export default function Settings() {
       return;
     }
 
-    updateMutation.mutate(formData);
+    saveMutation.mutate(formData);
   };
 
   if (isLoading) {
@@ -151,6 +167,26 @@ export default function Settings() {
                   API Secret güvenli bir şekilde şifrelenerek saklanır
                 </p>
               </div>
+
+              {/* Test Bağlantısı Butonu */}
+              <Button
+                type="button"
+                onClick={() => {
+                  if (!formData.binanceApiKey || !formData.binanceApiSecret) {
+                    toast.error('❌ API Key ve Secret giriniz!');
+                    return;
+                  }
+                  validateMutation.mutate({
+                    apiKey: formData.binanceApiKey,
+                    apiSecret: formData.binanceApiSecret,
+                  });
+                }}
+                disabled={validateMutation.isPending}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Key className="w-4 h-4 mr-2" />
+                {validateMutation.isPending ? 'Test Ediliyor...' : 'Bağlantıyı Test Et'}
+              </Button>
 
               {/* Uyarı */}
               <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
@@ -351,11 +387,11 @@ export default function Settings() {
             </Button>
             <Button
               type="submit"
-              disabled={updateMutation.isPending}
+              disabled={saveMutation.isPending}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Save className="w-4 h-4 mr-2" />
-              {updateMutation.isPending ? "Kaydediliyor..." : "Ayarları Kaydet"}
+              {saveMutation.isPending ? "Kaydediliyor..." : "Ayarları Kaydet"}
             </Button>
           </div>
         </form>
