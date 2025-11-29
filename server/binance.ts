@@ -9,7 +9,10 @@ import Binance from 'binance-api-node';
 // Gerçek API key eklemek için .env'e BINANCE_API_KEY ve BINANCE_API_SECRET ekle
 const TESTNET_BASE_URL = 'https://testnet.binance.vision';
 
-export const binanceClient = Binance({
+// @ts-ignore - Binance default export
+const BinanceConstructor = Binance.default || Binance;
+
+export const binanceClient = BinanceConstructor({
   apiKey: process.env.BINANCE_API_KEY || '',
   apiSecret: process.env.BINANCE_API_SECRET || '',
   httpBase: TESTNET_BASE_URL,
@@ -22,7 +25,7 @@ export const binanceClient = Binance({
  * Özel API key ile Binance client oluştur
  */
 export function getBinanceClient(apiKey: string, apiSecret: string) {
-  return Binance({
+  return BinanceConstructor({
     apiKey,
     apiSecret,
     httpBase: TESTNET_BASE_URL,
