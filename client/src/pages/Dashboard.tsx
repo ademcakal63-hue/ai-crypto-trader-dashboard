@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, Activity, Brain, Target, AlertCircle, Wifi, WifiOff, BarChart3, Bell, Settings as SettingsIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Brain, Target, AlertCircle, Wifi, WifiOff, BarChart3, Bell, Settings as SettingsIcon, Clock } from "lucide-react";
 import RiskManagementPanel from "@/components/RiskManagementPanel";
 import AIPatternStats from "@/components/AIPatternStats";
 import PerformanceCharts from "@/components/PerformanceCharts";
@@ -118,6 +118,24 @@ export default function Dashboard() {
                   </span>
                 </div>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.href = '/backtesting'}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <Activity className="w-4 h-4 mr-2" />
+                Backtesting
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.href = '/multi-timeframe'}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                Multi-TF
+              </Button>
               <button
                 onClick={() => window.location.href = '/settings'}
                 className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"

@@ -182,3 +182,37 @@
 - [x] Gerçek zamanlı fiyat stream'i
 - [x] Binance WebSocket entegrasyonu
 - [x] Socket.io kurulumu
+
+
+## Son Özellikler (Tamamlandı)
+
+### Önizleme Düzeltme
+- [x] Server restart ve kontrol
+- [x] WebSocket geçici olarak devre dışı bırakıldı
+- [x] Önizleme çalışıyor
+
+### Bugünün Raporu
+- [x] Gün 11 (Hafta 2, Gün 4) raporu hazırlandı
+- [x] Dashboard tamamlanma raporu
+- [x] Haftalık özet (Gün 8-11)
+
+### Strateji Backtesting
+- [x] Backtesting modülü oluşturuldu
+- [x] Geçmiş veri analizi UI
+- [x] Equity curve grafiği
+- [x] Drawdown analizi
+- [x] Sharpe ratio hesaplama
+- [x] Win/Loss dağılımı
+- [x] Aylık getiri grafikleri
+- [x] Pattern performans analizi
+- [x] Test parametreleri (tarih, sermaye, risk, strateji)
+
+### Multi-Timeframe Analiz
+- [x] 1m, 5m, 15m, 1h, 4h timeframe'ler
+- [x] Her timeframe için pattern tespiti
+- [x] Trend analizi (yükselİş/düşüş/yatay)
+- [x] Timeframe uyumu kontrolü
+- [x] Dashboard görselleştirme
+- [x] Güven skoru göstergesi
+- [x] Sinyal önerileri (AL/SAT/NÖTR)
+- [x] Navigation butonları eklendi
