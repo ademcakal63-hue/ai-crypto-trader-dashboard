@@ -9,8 +9,8 @@ import time
 from datetime import datetime
 from typing import Dict, Any
 
-# Dashboard API URL
-DASHBOARD_API_URL = "https://3000-ikaiwbprvfhkce8zuz9o8-2c56880c.manus-asia.computer/api/bot"
+# Dashboard API URL (Kendi dashboard URL'inizi buraya yazın)
+DASHBOARD_API_URL = "https://YOUR_DASHBOARD_URL/api/bot"
 
 class TradingBotDashboard:
     """Trading Bot Dashboard API Client"""
