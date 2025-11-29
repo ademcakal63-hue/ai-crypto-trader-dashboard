@@ -279,3 +279,12 @@
 - [x] Gereksiz dosyalar silindi
 - [x] Demo seed script kaldırıldı
 - [x] Migration script'leri temizlendi
+
+
+## Futures API Yetkisi Düzeltmesi (Tamamlandı)
+
+- [x] Settings sayfasındaki güvenlik uyarısını güncelle (Spot → Futures)
+- [x] README.md'de API yetkileri bölümünü düzelt
+- [x] "Enable Futures" yetkisi gerektiğini vurgula
+- [x] "Enable Withdrawals" yetkisinin verilmemesi gerektiğini vurgula
+- [x] IP Whitelist kullanımını vurgula

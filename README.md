@@ -21,8 +21,11 @@
 
 1. [Binance](https://www.binance.com) hesabına giriş yap
 2. **API Management** → **Create API**
-3. **Spot Trading** yetkisi ver (Futures gerekmez)
-4. API Key ve Secret'ı kaydet
+3. **Enable Futures** yetkisi ver (kaldıraçlı işlem için gerekli)
+4. **Enable Spot & Margin Trading** yetkisi ver
+5. **Enable Withdrawals** yetkisini VERME (güvenlik için)
+6. IP Whitelist ekle (sadece dashboard IP'sinden erişim)
+7. API Key ve Secret'ı kaydet
 
 ### 2. Dashboard'a Bağlan
 
@@ -101,9 +104,9 @@ dashboard.open_position(
 ## 🔐 Güvenlik
 
 - API Secret'lar şifreli saklanır
-- Sadece Spot Trading yetkisi gerekir
-- Withdrawal yetkisi verilmemelidir
-- IP whitelist kullanılması önerilir
+- **Enable Futures** yetkisi gereklidir (kaldıraçlı işlem)
+- **Enable Withdrawals** yetkisi verilmemelidir (güvenlik)
+- IP Whitelist kullanılması şiddetle önerilir
 
 ---
 
