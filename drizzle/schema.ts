@@ -153,6 +153,7 @@ export const botSettings = mysqlTable("bot_settings", {
   binanceApiSecret: text("binance_api_secret"), // Binance API Secret (encrypted)
   isConnected: boolean("is_connected").default(false).notNull(), // Hesap bağlı mı
   usedCapital: varchar("used_capital", { length: 20 }).notNull(), // Kullanılacak sermaye
+  useAllBalance: boolean("use_all_balance").default(false).notNull(), // Tüm bakiyeyi kullan
   compoundEnabled: boolean("compound_enabled").default(false).notNull(), // Bileşik getiri aktif mi
   dailyLossLimitPercent: varchar("daily_loss_limit_percent", { length: 10 }).default('4.00').notNull(), // Günlük kayıp limiti %
   riskPerTradePercent: varchar("risk_per_trade_percent", { length: 10 }).default('2.00').notNull(), // İşlem başına risk %

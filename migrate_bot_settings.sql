@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS bot_settings;
+
+CREATE TABLE bot_settings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  binance_api_key TEXT,
+  binance_api_secret TEXT,
+  is_connected BOOLEAN DEFAULT FALSE NOT NULL,
+  used_capital VARCHAR(20) NOT NULL,
+  use_all_balance BOOLEAN DEFAULT FALSE NOT NULL,
+  compound_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  daily_loss_limit_percent VARCHAR(10) DEFAULT '4.00' NOT NULL,
+  risk_per_trade_percent VARCHAR(10) DEFAULT '2.00' NOT NULL,
+  max_daily_trades INT DEFAULT 10 NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL
+);

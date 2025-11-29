@@ -216,3 +216,20 @@
 - [x] Güven skoru göstergesi
 - [x] Sinyal önerileri (AL/SAT/NÖTR)
 - [x] Navigation butonları eklendi
+
+
+## Dashboard Basitleştirme (Tamamlandı)
+
+### Gereksiz Özellikleri Kaldır
+- [x] Backtesting sayfasını kaldır
+- [x] Multi-Timeframe sayfasını kaldır
+- [x] Navigation butonlarını kaldır (Backtesting, Multi-TF)
+- [x] Testnet badge'i kaldır
+- [x] App.tsx route'ları temizlendi
+
+### "Tüm Bakiyeyi Kullan" Özelliği
+- [x] Ayarlar sayfasına "Tüm Bakiyeyi Kullan" toggle ekle
+- [x] Toggle aktifse kullanılacak miktar input'u devre dışı
+- [x] Database schema güncellendi (useAllBalance)
+- [x] Settings formData güncellendi
+- [x] settingsDb.ts güncellendi

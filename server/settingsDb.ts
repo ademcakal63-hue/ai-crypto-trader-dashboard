@@ -15,6 +15,7 @@ export async function getBotSettings() {
   if (!settings) {
     const defaultSettings: InsertBotSettings = {
       usedCapital: "500.00",
+      useAllBalance: false,
       compoundEnabled: false,
       dailyLossLimitPercent: "4.00",
       riskPerTradePercent: "2.00",

@@ -5,8 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
-import Backtesting from "./pages/Backtesting";
-import MultiTimeframe from "./pages/MultiTimeframe";
+
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 
@@ -16,8 +15,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Dashboard} />
       <Route path={"/settings"} component={Settings} />
-      <Route path={"/backtesting"} component={Backtesting} />
-      <Route path={"/multi-timeframe"} component={MultiTimeframe} />
+
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

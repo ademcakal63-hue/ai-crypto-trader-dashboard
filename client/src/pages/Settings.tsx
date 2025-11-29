@@ -41,6 +41,7 @@ export default function Settings() {
     binanceApiKey: "",
     binanceApiSecret: "",
     usedCapital: "500",
+    useAllBalance: false,
     compoundEnabled: false,
     dailyLossLimitPercent: "4.00",
     riskPerTradePercent: "2.00",
@@ -54,6 +55,7 @@ export default function Settings() {
         binanceApiKey: settings.binanceApiKey || "",
         binanceApiSecret: settings.binanceApiSecret || "",
         usedCapital: settings.usedCapital,
+        useAllBalance: settings.useAllBalance || false,
         compoundEnabled: settings.compoundEnabled,
         dailyLossLimitPercent: settings.dailyLossLimitPercent,
         riskPerTradePercent: settings.riskPerTradePercent,
@@ -231,10 +233,31 @@ export default function Settings() {
                   onChange={(e) => setFormData({ ...formData, usedCapital: e.target.value })}
                   className="bg-slate-800 border-slate-700 text-white"
                   placeholder="500.00"
+                  disabled={formData.useAllBalance}
                 />
                 <p className="text-xs text-slate-500">
                   Bot bu miktarı kullanarak işlem yapacak (Minimum: 100 USDT)
                 </p>
+              </div>
+
+              {/* Tüm Bakiyeyi Kullan */}
+              <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-5 h-5 text-yellow-500" />
+                  <div>
+                    <Label htmlFor="useAllBalance" className="text-slate-300 cursor-pointer">
+                      Tüm Bakiyeyi Kullan
+                    </Label>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Hesaptaki tüm USDT bakiyesini kullan (Yukarıdaki miktar devre dışı kalır)
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="useAllBalance"
+                  checked={formData.useAllBalance}
+                  onCheckedChange={(checked) => setFormData({ ...formData, useAllBalance: checked })}
+                />
               </div>
 
               {/* Bileşik Getiri */}
