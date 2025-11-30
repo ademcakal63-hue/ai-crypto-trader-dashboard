@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Settings as SettingsIcon, DollarSign, TrendingUp, Shield, Save, AlertCircle, Key } from "lucide-react";
+import { Settings as SettingsIcon, DollarSign, TrendingUp, Shield, Save, AlertCircle, Key, Copy, Globe } from "lucide-react";
 
 export default function Settings() {
   const { data: settings, isLoading, refetch } = trpc.settings.get.useQuery();
@@ -141,6 +141,38 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Dashboard IP Adresi */}
+              <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <Globe className="w-5 h-5 text-blue-400 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-blue-400 mb-1">
+                      Dashboard IP Adresi (IP Whitelist için)
+                    </h4>
+                    <p className="text-xs text-slate-400 mb-2">
+                      Binance API Management'ta "Restrict access to trusted IPs only" seçeneğini işaretleyip bu IP'yi ekleyin.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-green-400 font-mono">
+                        {window.location.hostname}
+                      </code>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(window.location.hostname);
+                          toast.success('✅ IP adresi kopyalandı!');
+                        }}
+                        className="bg-slate-800 border-slate-700 hover:bg-slate-700"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* API Key */}
               <div className="space-y-2">
                 <Label htmlFor="apiKey" className="text-slate-300">

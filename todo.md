@@ -330,3 +330,10 @@
 ### 🟢 İyileştirmeler
 - [ ] IP Whitelist bilgisi göster (Settings sayfası)
 - [ ] Balance sync gerçek API ile test et
+
+
+## Settings İyileştirmeleri (Tamamlandı)
+
+- [x] Settings sayfasına Dashboard IP adresi gösterme ekle
+- [x] API Key kaydetme sonrası form temizlenmesin (useEffect ile otomatik doldurma)
+- [x] IP Whitelist uyarısı ve kopyalama butonu ekle
