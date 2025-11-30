@@ -1,6 +1,7 @@
 import { spawn, ChildProcess } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { processLogLine } from './logKeywordMonitor';
 
 interface BotProcess {
   symbol: string;
@@ -79,15 +80,23 @@ export async function startBot(symbol: string) {
     const logFile = path.join(logDir, `${symbol}.log`);
     
     botProcess.stdout?.on('data', (data) => {
-      const logLine = `[${new Date().toISOString()}] [INFO] ${data.toString().trim()}\n`;
-      console.log(`[${symbol}] ${data.toString().trim()}`);
+      const rawLine = data.toString().trim();
+      const logLine = `[${new Date().toISOString()}] [INFO] ${rawLine}\n`;
+      console.log(`[${symbol}] ${rawLine}`);
       fs.appendFile(logFile, logLine).catch(console.error);
+      
+      // Check for keywords and send notifications
+      processLogLine(symbol, rawLine).catch(console.error);
     });
 
     botProcess.stderr?.on('data', (data) => {
-      const logLine = `[${new Date().toISOString()}] [ERROR] ${data.toString().trim()}\n`;
-      console.error(`[${symbol}] ERROR: ${data.toString().trim()}`);
+      const rawLine = data.toString().trim();
+      const logLine = `[${new Date().toISOString()}] [ERROR] ${rawLine}\n`;
+      console.error(`[${symbol}] ERROR: ${rawLine}`);
       fs.appendFile(logFile, logLine).catch(console.error);
+      
+      // Check for keywords and send notifications
+      processLogLine(symbol, `ERROR: ${rawLine}`).catch(console.error);
     });
 
     // Save status to file

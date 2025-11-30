@@ -22,7 +22,11 @@ type NotificationType =
   | "FINETUNING_SUCCESS"
   | "FINETUNING_FAILED"
   | "ROLLOUT_PHASE_UPDATE"
-  | "CHECKPOINT_SAVED";
+  | "CHECKPOINT_SAVED"
+  | "BOT_ERROR"
+  | "TRADE_EXECUTED"
+  | "TRADE_SUCCESS"
+  | "BOT_WARNING";
 
 type NotificationSeverity = "INFO" | "WARNING" | "ERROR" | "SUCCESS";
 

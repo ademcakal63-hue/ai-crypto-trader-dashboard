@@ -24,6 +24,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { BotControlPanel } from "@/components/BotControlPanel";
 import { BotLogViewer } from "@/components/BotLogViewer";
+import { PerformanceChart } from "@/components/PerformanceChart";
 
 const SUPPORTED_COINS = [
   { value: "BTCUSDT", label: "Bitcoin (BTC)", icon: "₿" },
@@ -240,30 +241,18 @@ export default function Home() {
         </CardContent>
       </Card>
 
-      {/* Performance Chart Placeholder */}
-      <Card>
-        <CardHeader>
-          <CardTitle>7 Günlük Performans</CardTitle>
-          <CardDescription>
-            Son 7 günün günlük P&L grafiği
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {performance && performance.length > 0 ? (
-            <div className="space-y-2">
-              {performance.map((day: any) => (
-                <div key={day.date} className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{day.date}</span>
-                  <span className={cn(
-                    "text-sm font-medium",
-                    day.pnl >= 0 ? "text-green-600" : "text-red-600"
-                  )}>
-                    {day.pnl >= 0 ? "+" : ""}${day.pnl.toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
+      {/* Performance Chart */}
+      {performance && performance.length > 0 ? (
+        <PerformanceChart data={performance} />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>7 Günlük Performans</CardTitle>
+            <CardDescription>
+              Son 7 günün günlük P&L grafiği
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Activity className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <p className="text-muted-foreground">Henüz performans verisi yok</p>
@@ -271,9 +260,9 @@ export default function Home() {
                 Bot işlem yaptıkça veriler burada görünecek
               </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

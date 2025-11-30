@@ -642,3 +642,32 @@ Dashboard'dan tek tıkla:
 - Bot durumuna göre dinamik güncelleme
 - Bot çalışmıyorsa: "Bot is not running. Start the bot to see logs."
 - Bot çalışıyorsa: Real-time log akışı (2s refresh)
+
+
+## Performans Grafiği ve Log Bildirimleri (Tamamlandı)
+
+### 7 Günlük Performans Grafiği
+- [x] Chart.js kütüphanesini ekle (chart.js, react-chartjs-2)
+- [x] PerformanceChart komponenti oluştur
+- [x] 7 günlük P&L verisi çizgi grafiği
+- [x] Hover'da detaylı bilgi (tarih, P&L, win rate, işlem sayısı)
+- [x] Responsive tasarım
+- [x] Renk kodlaması (yeşil: kar, kırmızı: zarar)
+- [x] Özet istatistikler (toplam P&L, ortalama win rate, toplam işlem, günlük ortalama)
+- [x] Gradient fill effect
+
+### Log Anahtar Kelime Bildirim Sistemi
+- [x] Anahtar kelime listesi tanımla (ERROR, TRADE, FAILED, SUCCESS, POSITION_OPENED, POSITION_CLOSED, WARNING)
+- [x] Log monitoring servisi oluştur (logKeywordMonitor.ts)
+- [x] Anahtar kelime tespit algoritması (detectKeywords)
+- [x] Otomatik bildirim gönderme (processLogLine)
+- [x] Bildirim throttling (spam önleme - 1 dakika)
+- [x] Backend log parser entegrasyonu (botControl.ts)
+- [x] Yeni bildirim tipleri (BOT_ERROR, TRADE_EXECUTED, TRADE_SUCCESS, BOT_WARNING)
+- [x] Database schema güncelleme
+
+### Anahtar Kelime Kategorileri
+- **ERROR:** ERROR, FAILED, EXCEPTION, CRASH → Bildirim: BOT_ERROR (Yüksek öncelik)
+- **TRADE:** POSITION_OPENED, POSITION_CLOSED, TRADE_EXECUTED, ORDER_FILLED → Bildirim: TRADE_EXECUTED
+- **SUCCESS:** SUCCESS, COMPLETED, PROFIT → Bildirim: TRADE_SUCCESS
+- **WARNING:** WARNING, WARN, RISK → Bildirim: BOT_WARNING
