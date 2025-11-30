@@ -173,6 +173,13 @@ class FineTuningSystem:
             self.finetuning_date = datetime.now()
             self._save_model_info(fine_tuned_model)
             
+            # Başarı bildirimi gönder
+            self.dashboard.send_finetuning_success(
+                fine_tuned_model,
+                len(train_trades),
+                accuracy
+            )
+            
             print(f"✅ Fine-tuning tamamlandı! Yeni model: {fine_tuned_model}")
             print(f"📊 Validation Accuracy: %{accuracy*100:.0f}")
             print(f"💾 Checkpoint: {checkpoint_id}")
@@ -193,6 +200,10 @@ class FineTuningSystem:
             print(f"❌ Hata: {e}")
             self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "cancelled")
             self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "cancelled")
+            
+            # Hata bildirimi gönder
+            self.dashboard.send_finetuning_failed(str(e), checkpoint_id)
+            
             return {"success": False, "reason": str(e), "checkpoint_id": checkpoint_id}
     
     def _get_new_trades(self) -> List[Dict]:

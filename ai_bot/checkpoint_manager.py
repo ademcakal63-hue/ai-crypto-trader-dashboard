@@ -45,6 +45,18 @@ class CheckpointManager:
         print(f"   - Win rate: {metadata.get('win_rate', 0):.1%}")
         print(f"   - Tahmini maliyet: ${metadata.get('estimated_cost', 0):.2f}")
         
+        # Bildirim gönder
+        try:
+            from dashboard_client import DashboardClient
+            dashboard = DashboardClient()
+            dashboard.send_checkpoint_saved(
+                checkpoint_id,
+                len(trades),
+                metadata.get('estimated_cost', 0)
+            )
+        except Exception as e:
+            print(f"⚠️ Bildirim gönderme hatası: {e}")
+        
         return checkpoint_id
     
     def load_checkpoint(self, checkpoint_id: str) -> Optional[Dict]:

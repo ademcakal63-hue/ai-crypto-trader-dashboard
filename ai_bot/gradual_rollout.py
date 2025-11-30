@@ -92,6 +92,18 @@ class GradualRollout:
                 print(f"📈 Rollout fazı güncellendi:")
                 print(f"   - Gün {days_passed}: %{phase['percentage']}")
                 
+                # Bildirim gönder
+                try:
+                    from dashboard_client import DashboardClient
+                    dashboard = DashboardClient()
+                    dashboard.send_rollout_phase_update(
+                        i + 1,
+                        phase["percentage"],
+                        self.rollout_data["model"]
+                    )
+                except Exception as e:
+                    print(f"⚠️ Bildirim gönderme hatası: {e}")
+                
                 # Son faz mı?
                 if phase["percentage"] == 100:
                     print("🎉 Gradual rollout tamamlandı! Fine-tuned model %100 aktif.")

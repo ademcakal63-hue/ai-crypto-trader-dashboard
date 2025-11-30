@@ -508,3 +508,23 @@
 - [ ] Gerçek fine-tuning testi (Hafta 3'te)
 
 
+
+
+## OpenAI API Key Ekleme ve Bildirim Sistemi (Tamamlandı)
+
+### OpenAI API Key Ekleme
+- [x] OpenAI hesap oluşturma rehberi
+- [x] API Key oluşturma adımları
+- [x] .env dosyasına ekleme (webdev_request_secrets)
+- [x] API Key validation testi (vitest)
+- [x] Kullanıcıya interaktif yardım
+
+### Bildirim Sistemi Entegrasyonu
+- [x] NotificationWriter (direkt database yazma)
+- [x] Maliyet aşımı bildirimleri (send_cost_warning, send_cost_exceeded)
+- [x] Performans düşüşü bildirimleri (send_performance_drop_alert)
+- [x] Fine-tuning başarı/başarısızlık bildirimleri (send_finetuning_success/failed)
+- [x] Gradual rollout faz geçişi bildirimleri (send_rollout_phase_update)
+- [x] Checkpoint kaydetme bildirimleri (send_checkpoint_saved)
+- [x] Aylık limit doldu bildirimi (send_monthly_limit_reached)
+- [x] Tüm bildirim tipleri test edildi ve çalışıyor

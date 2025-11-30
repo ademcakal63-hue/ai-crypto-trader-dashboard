@@ -200,14 +200,10 @@ class PerformanceMonitor:
             self.rollout.stop_rollout()
             
             # Dashboard'a bildirim gönder
-            self.dashboard.send_notification(
-                notification_type="ERROR",
-                title="🚨 Model Geri Alındı",
-                message=f"Fine-tuned model performansı düştü!\n\n"
-                        f"Base model: {comparison['base_model']['win_rate']:.1%}\n"
-                        f"Fine-tuned model: {comparison['finetuned_model']['win_rate']:.1%}\n"
-                        f"Fark: {win_rate_diff:.1%}\n\n"
-                        f"Base model'e geri dönüldü."
+            self.dashboard.send_performance_drop_alert(
+                comparison['base_model']['win_rate'],
+                comparison['finetuned_model']['win_rate'],
+                win_rate_diff
             )
             
             return True, "Performans düşüşü nedeniyle rollback yapıldı"

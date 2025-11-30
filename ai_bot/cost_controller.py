@@ -182,47 +182,22 @@ class CostController:
     def _send_cost_warning(self, estimated_cost: float, limit: float):
         """Maliyet uyarısı gönder"""
         
-        self.dashboard.send_notification(
-            notification_type="WARNING",
-            title="⚠️ Maliyet Limiti Yaklaşıyor",
-            message=f"Fine-tuning maliyeti ${estimated_cost:.2f} (Limit: ${limit:.2f})\n\n"
-                    f"Seçenek A ile devam etmeyi düşünebilirsiniz."
-        )
+        self.dashboard.send_cost_warning(estimated_cost, limit, "fine-tuning")
     
     def _send_monthly_cost_warning(self, current_cost: float, limit: float):
         """Aylık maliyet uyarısı gönder"""
         
-        self.dashboard.send_notification(
-            notification_type="WARNING",
-            title="⚠️ Aylık Maliyet Limiti Yaklaşıyor",
-            message=f"Bu ay ${current_cost:.2f} harcandı (Limit: ${limit:.2f})\n\n"
-                    f"Kalan: ${limit - current_cost:.2f}"
-        )
+        self.dashboard.send_cost_warning(current_cost, limit, "aylık")
     
     def send_cost_exceeded_notification(self, estimated_cost: float, limit: float, reason: str):
         """Maliyet limiti aşıldı bildirimi"""
         
-        self.dashboard.send_notification(
-            notification_type="ERROR",
-            title="🚨 Fine-Tuning İptal Edildi",
-            message=f"Maliyet limiti aşıldı: ${estimated_cost:.2f} > ${limit:.2f}\n\n"
-                    f"Sebep: {reason}\n\n"
-                    f"✅ Veriler checkpoint olarak kaydedildi.\n"
-                    f"Bir sonraki fine-tuning'de bu veriler kullanılacak."
-        )
+        self.dashboard.send_cost_exceeded(estimated_cost, limit, "fine-tuning")
     
     def send_monthly_limit_reached_notification(self, monthly_cost: float):
         """Aylık limit doldu bildirimi"""
         
-        next_month = (datetime.now() + timedelta(days=30)).strftime("%B %Y")
-        
-        self.dashboard.send_notification(
-            notification_type="INFO",
-            title="📊 Aylık Maliyet Limiti Doldu",
-            message=f"Bu ay ${monthly_cost:.2f} harcandı.\n\n"
-                    f"{next_month} başında fine-tuning otomatik aktifleşecek.\n\n"
-                    f"Seçenek A ile devam ediliyor."
-        )
+        self.dashboard.send_monthly_limit_reached(monthly_cost, self.MAX_MONTHLY_COST)
 
 
 # Test

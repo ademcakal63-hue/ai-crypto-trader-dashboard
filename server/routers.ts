@@ -110,6 +110,18 @@ export const appRouter = router({
       const { emergencyStopAll } = await import('./botApi');
       return await emergencyStopAll();
     }),
+    
+    notification: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { createNotification } = await import('./notificationService');
+        return await createNotification(input);
+      }),
   }),
   
   // Bildirim Routers
