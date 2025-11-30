@@ -10,6 +10,9 @@ from datetime import datetime, timedelta
 from typing import Dict, List
 from dashboard_client import DashboardClient
 from finetuning_safety import FineTuningSafety
+from checkpoint_manager import CheckpointManager
+from incremental_finetuning import IncrementalFineTuning
+from cost_controller import CostController
 
 class FineTuningSystem:
     """Seçenek B: Gerçek OpenAI fine-tuning"""
@@ -19,92 +22,204 @@ class FineTuningSystem:
         self.openai_base_url = "https://api.openai.com/v1"
         self.dashboard = DashboardClient()
         self.safety = FineTuningSafety()
+        self.checkpoint_manager = CheckpointManager()
+        self.incremental_ft = IncrementalFineTuning()
+        self.cost_controller = CostController()
         self.current_model = "gpt-4o-2024-08-06"  # Base model
         self.fine_tuned_model = None
         self.finetuning_date = None
     
     def weekly_finetuning(self) -> Dict:
-        """Haftalık fine-tuning job başlat"""
+        """Haftalık fine-tuning job başlat (checkpoint ve maliyet kontrolü ile)"""
         
         print("\n🚀 Haftalık fine-tuning başlıyor...")
         
-        # 1. Training data hazırla
-        trades = self._get_all_trades()
+        # 1. Training data hazırla (incremental)
+        new_trades = self._get_new_trades()  # Sadece yeni işlemler
+        all_trades = self.incremental_ft.prepare_incremental_training_data(new_trades)
         
-        if len(trades) < 50:
-            print(f"⚠️ Yetersiz veri ({len(trades)} işlem). En az 50 işlem gerekli.")
+        if len(all_trades) < 50:
+            print(f"⚠️ Yetersiz veri ({len(all_trades)} işlem). En az 50 işlem gerekli.")
             return {"success": False, "reason": "Yetersiz veri"}
         
         # 2. Güvenlik kontrolü
-        is_safe, reason = self.safety.validate_before_finetuning(trades)
+        is_safe, reason = self.safety.validate_before_finetuning(all_trades)
         
         if not is_safe:
             print(f"❌ Fine-tuning iptal edildi: {reason}")
             return {"success": False, "reason": reason}
         
         # 3. Outlier'ları temizle
-        trades = self.safety.remove_outliers(trades)
+        all_trades = self.safety.remove_outliers(all_trades)
         
         # 4. Train/validation split
-        train_trades, validation_trades = self.safety.split_train_validation(trades)
+        train_trades, validation_trades = self.safety.split_train_validation(all_trades)
         
-        training_file_path = self._prepare_training_data(train_trades)
+        # 5. Maliyet tahmini
+        estimated_cost = self.cost_controller.estimate_finetuning_cost(train_trades)
         
-        # 2. Training dosyasını OpenAI'ya yükle
-        file_id = self._upload_training_file(training_file_path)
-        
-        if not file_id:
-            return {"success": False, "reason": "Dosya yükleme başarısız"}
-        
-        # 3. Fine-tuning job başlat
-        job_id = self._start_finetuning_job(file_id)
-        
-        if not job_id:
-            return {"success": False, "reason": "Job başlatma başarısız"}
-        
-        # 4. Job tamamlanana kadar bekle (30-60 dakika)
-        fine_tuned_model = self._wait_for_completion(job_id)
-        
-        if not fine_tuned_model:
-            return {"success": False, "reason": "Fine-tuning başarısız"}
-        
-        # 5. Model validation
-        is_valid, accuracy = self.safety.validate_finetuned_model(
-            fine_tuned_model,
-            validation_trades
+        # 6. Checkpoint kaydet (fine-tuning başlamadan önce)
+        checkpoint_id = self.checkpoint_manager.save_checkpoint(
+            trades=train_trades,
+            metadata={
+                "win_rate": self._calculate_win_rate(train_trades),
+                "patterns": self._get_pattern_list(train_trades),
+                "estimated_cost": estimated_cost,
+                "status": "pending"
+            }
         )
         
-        if not is_valid:
-            print(f"❌ Model validation başarısız! Accuracy: %{accuracy*100:.0f}")
+        # 7. Maliyet kontrolü - Fine-tuning limiti
+        can_proceed, reason = self.cost_controller.check_finetuning_cost_limit(estimated_cost)
+        
+        if not can_proceed:
+            print(f"❌ Fine-tuning iptal edildi: {reason}")
+            
+            # Checkpoint'i "cancelled" olarak işaretle
+            self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "cancelled")
+            
+            # Maliyet kaydı
+            self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "cancelled")
+            
+            # Dashboard'a bildirim gönder
+            self.cost_controller.send_cost_exceeded_notification(
+                estimated_cost,
+                self.cost_controller.MAX_COST_PER_FINETUNING,
+                reason
+            )
+            
             return {
                 "success": False,
-                "reason": f"Validation accuracy too low: {accuracy:.2f}"
+                "reason": reason,
+                "checkpoint_id": checkpoint_id,
+                "saved_trades": len(train_trades)
             }
         
-        # 6. Yeni modeli kaydet
-        self.fine_tuned_model = fine_tuned_model
-        self.finetuning_date = datetime.now()
-        self._save_model_info(fine_tuned_model)
+        # 8. Maliyet kontrolü - Aylık limit
+        can_proceed, reason = self.cost_controller.check_monthly_cost_limit(estimated_cost)
         
-        print(f"✅ Fine-tuning tamamlandı! Yeni model: {fine_tuned_model}")
-        print(f"📊 Validation Accuracy: %{accuracy*100:.0f}")
+        if not can_proceed:
+            print(f"❌ Fine-tuning iptal edildi: {reason}")
+            
+            # Checkpoint'i "cancelled" olarak işaretle
+            self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "cancelled")
+            
+            # Maliyet kaydı
+            self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "cancelled")
+            
+            # Dashboard'a bildirim gönder
+            monthly_cost = self.cost_controller.get_monthly_cost()
+            self.cost_controller.send_monthly_limit_reached_notification(monthly_cost)
+            
+            return {
+                "success": False,
+                "reason": reason,
+                "checkpoint_id": checkpoint_id,
+                "saved_trades": len(train_trades)
+            }
         
-        return {
-            "success": True,
-            "model": fine_tuned_model,
-            "training_samples": len(train_trades),
-            "validation_samples": len(validation_trades),
-            "validation_accuracy": accuracy,
-            "job_id": job_id
-        }
+        # 9. Fine-tuning başlat
+        try:
+            training_file_path = self._prepare_training_data(train_trades)
+            
+            # Training dosyasını OpenAI'ya yükle
+            file_id = self._upload_training_file(training_file_path)
+            
+            if not file_id:
+                self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "cancelled")
+                self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "cancelled")
+                return {"success": False, "reason": "Dosya yükleme başarısız", "checkpoint_id": checkpoint_id}
+            
+            # Fine-tuning job başlat
+            job_id = self._start_finetuning_job(file_id)
+            
+            if not job_id:
+                self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "cancelled")
+                self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "cancelled")
+                return {"success": False, "reason": "Job başlatma başarısız", "checkpoint_id": checkpoint_id}
+            
+            # Job tamamlanana kadar bekle (30-60 dakika)
+            fine_tuned_model = self._wait_for_completion(job_id)
+            
+            if not fine_tuned_model:
+                self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "cancelled")
+                self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "cancelled")
+                return {"success": False, "reason": "Fine-tuning başarısız", "checkpoint_id": checkpoint_id}
+            
+            # Model validation
+            is_valid, accuracy = self.safety.validate_finetuned_model(
+                fine_tuned_model,
+                validation_trades
+            )
+            
+            if not is_valid:
+                print(f"❌ Model validation başarısız! Accuracy: %{accuracy*100:.0f}")
+                self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "cancelled")
+                self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "cancelled")
+                return {
+                    "success": False,
+                    "reason": f"Validation accuracy too low: {accuracy:.2f}",
+                    "checkpoint_id": checkpoint_id
+                }
+            
+            # Başarılı! Checkpoint'i "completed" olarak işaretle
+            self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "completed")
+            
+            # Maliyet kaydı
+            self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "completed")
+            
+            # Yeni modeli kaydet
+            self.fine_tuned_model = fine_tuned_model
+            self.finetuning_date = datetime.now()
+            self._save_model_info(fine_tuned_model)
+            
+            print(f"✅ Fine-tuning tamamlandı! Yeni model: {fine_tuned_model}")
+            print(f"📊 Validation Accuracy: %{accuracy*100:.0f}")
+            print(f"💾 Checkpoint: {checkpoint_id}")
+            
+            return {
+                "success": True,
+                "model": fine_tuned_model,
+                "checkpoint_id": checkpoint_id,
+                "training_samples": len(train_trades),
+                "validation_samples": len(validation_trades),
+                "validation_accuracy": accuracy,
+                "estimated_cost": estimated_cost,
+                "job_id": job_id
+            }
+        
+        except Exception as e:
+            # Beklenmedik hata, checkpoint'i koru
+            print(f"❌ Hata: {e}")
+            self.checkpoint_manager.update_checkpoint_status(checkpoint_id, "cancelled")
+            self.cost_controller.record_finetuning_cost(checkpoint_id, estimated_cost, "cancelled")
+            return {"success": False, "reason": str(e), "checkpoint_id": checkpoint_id}
     
-    def _get_all_trades(self) -> List[Dict]:
-        """Tüm işlemleri al (Dashboard API'den)"""
+    def _get_new_trades(self) -> List[Dict]:
+        """Yeni işlemleri al (son checkpoint'ten sonraki)"""
         # TODO: Dashboard API entegrasyonu
-        # return self.dashboard.get_all_trades()
+        # last_checkpoint = self.checkpoint_manager.get_last_successful_checkpoint()
+        # if last_checkpoint:
+        #     last_date = last_checkpoint["created_at"]
+        #     return self.dashboard.get_trades_after(last_date)
+        # else:
+        #     return self.dashboard.get_all_trades()
         
         # Şimdilik mock data
         return []
+    
+    def _calculate_win_rate(self, trades: List[Dict]) -> float:
+        """Win rate hesapla"""
+        if not trades:
+            return 0.0
+        
+        wins = sum(1 for t in trades if t.get("result") == "WIN")
+        return wins / len(trades)
+    
+    def _get_pattern_list(self, trades: List[Dict]) -> List[str]:
+        """Unique pattern listesi"""
+        patterns = set(t.get("pattern", "Unknown") for t in trades)
+        return list(patterns)
     
     def _prepare_training_data(self, trades: List[Dict]) -> str:
         """Training data hazırla (JSONL formatı)"""

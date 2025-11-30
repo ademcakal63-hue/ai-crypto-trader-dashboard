@@ -12,6 +12,8 @@ from learning_system_a import PromptLearningSystem
 from learning_system_b import FineTuningSystem
 from dashboard_client import DashboardClient
 from finetuning_safety import FineTuningSafety
+from gradual_rollout import GradualRollout
+from performance_monitor import PerformanceMonitor
 
 class HybridLearningManager:
     """Hybrid öğrenme sistemi yöneticisi"""
@@ -19,6 +21,8 @@ class HybridLearningManager:
     def __init__(self):
         self.dashboard = DashboardClient()
         self.safety = FineTuningSafety()
+        self.rollout = GradualRollout()
+        self.performance_monitor = PerformanceMonitor()
         self.system_a = PromptLearningSystem()
         self.system_b = None  # Hafta 3'te aktif olacak
         self.current_system = "A"  # Başlangıçta A
@@ -150,15 +154,25 @@ class HybridLearningManager:
             if result["success"]:
                 print(f"✅ Fine-tuning tamamlandı! Model: {result['model']}")
                 
+                # Gradual rollout başlat
+                self.rollout.start_rollout(result['model'])
+                self.finetuning_date = datetime.now()
+                
                 # Dashboard'a bildirim
                 self.dashboard.send_notification({
                     "type": "FINETUNING_COMPLETE",
                     "title": "Fine-Tuning Tamamlandı",
-                    "message": f"Yeni model: {result['model']} ({result['training_samples']} işlem ile eğitildi)",
+                    "message": f"Yeni model: {result['model']} ({result['training_samples']} işlem ile eğitildi)\n\n"
+                              f"Gradual rollout başlatıldı: %25 → %100 (7 gün)",
                     "severity": "INFO"
                 })
             else:
                 print(f"❌ Fine-tuning başarısız: {result['reason']}")
+                
+                # Checkpoint kaydedildi mi?
+                if "checkpoint_id" in result:
+                    print(f"✅ Veriler checkpoint olarak kaydedildi: {result['checkpoint_id']}")
+                    print(f"   Bir sonraki fine-tuning'de bu veriler kullanılacak.")
     
     def get_active_model(self) -> str:
         """Aktif modeli döndür (gradual rollout ile)"""
@@ -167,16 +181,8 @@ class HybridLearningManager:
             return self.system_a.get_model_version()
         else:
             # Seçenek B: Gradual rollout
-            if not self.finetuning_date:
-                return self.system_b.get_active_model()
-            
-            days_since = (datetime.now() - self.finetuning_date).days
-            use_finetuned = self.safety.should_use_finetuned_model(days_since)
-            
-            if use_finetuned:
-                return self.system_b.get_active_model()
-            else:
-                return self.system_b.current_model  # Base model
+            base_model = self.system_b.current_model
+            return self.rollout.get_active_model(base_model)
     
     def get_learned_rules(self) -> str:
         """Öğrenilen kuralları döndür (Seçenek A için)"""
@@ -194,22 +200,49 @@ class HybridLearningManager:
         
         print("\n📊 Performans izleme başlıyor...")
         
-        is_ok, result = self.safety.monitor_performance()
+        # Performans karşılaştırması yap
+        rolled_back, reason = self.performance_monitor.check_and_rollback_if_needed()
         
-        if not is_ok:
-            print("🚨 Performans düşüşü tespit edildi!")
+        if rolled_back:
+            print(f"🚨 Performans düşüşü tespit edildi: {reason}")
             
-            # Base model'e geri dön
-            self.safety.rollback_to_base_model()
+            # Gradual rollout'u durdur
+            self.rollout.stop_rollout()
+            
+            # Seçenek A'ya geri dön
             self.current_system = "A"
             
-            # Dashboard'a bildirim
-            self.dashboard.send_notification({
-                "type": "MODEL_ROLLBACK",
-                "title": "Model Geri Alındı",
-                "message": f"Fine-tuned model performansı düştü. Seçenek A'ya dönüldü.",
-                "severity": "WARNING"
-            })
+            print("🔄 Seçenek A'ya geri dönüldü.")
+        else:
+            print(f"✅ Performans normal: {reason}")
+    
+    def record_trade_result(self, trade: dict):
+        """İşlem sonucunu kaydet (performans izleme için)"""
+        
+        if self.current_system != "B":
+            return
+        
+        # Hangi model kullanıldı?
+        model_used = self.get_active_model()
+        
+        # Performans monitöre kaydet
+        self.performance_monitor.record_trade(trade, model_used)
+    
+    def get_system_status(self) -> dict:
+        """Sistem durumunu getir"""
+        
+        status = {
+            "current_system": self.current_system,
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "weeks_passed": (datetime.now() - self.start_date).days // 7 if self.start_date else 0,
+            "openai_api_key_set": bool(self.openai_api_key)
+        }
+        
+        if self.current_system == "B":
+            status["rollout"] = self.rollout.get_rollout_status()
+            status["performance"] = self.performance_monitor.get_performance_summary()
+        
+        return status
     
     def run_scheduler(self):
         """Scheduler'ı çalıştır (sürekli loop)"""

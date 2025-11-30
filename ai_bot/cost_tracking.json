@@ -1,0 +1,14 @@
+{
+  "finetuning_jobs": [
+    {
+      "checkpoint_id": "checkpoint_test",
+      "date": "2025-11-30T09:53:52.213788",
+      "estimated_cost": 0.625,
+      "status": "completed",
+      "month": "2025-11"
+    }
+  ],
+  "monthly_costs": {
+    "2025-11": 0.625
+  }
+}

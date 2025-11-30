@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "model": "ft:gpt-4o-2024-08-06:abc123",
+  "start_date": "2025-11-30T09:53:57.480363",
+  "current_percentage": 25,
+  "phase": 0,
+  "phases": [
+    {
+      "day": 1,
+      "percentage": 25
+    },
+    {
+      "day": 3,
+      "percentage": 50
+    },
+    {
+      "day": 5,
+      "percentage": 75
+    },
+    {
+      "day": 7,
+      "percentage": 100
+    }
+  ]
+}
