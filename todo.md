@@ -528,3 +528,28 @@
 - [x] Checkpoint kaydetme bildirimleri (send_checkpoint_saved)
 - [x] Aylık limit doldu bildirimi (send_monthly_limit_reached)
 - [x] Tüm bildirim tipleri test edildi ve çalışıyor
+
+
+## Dashboard Bildirim UI ve Demo Kaldırma (Tamamlandı)
+
+### Bildirim UI'ı
+- [x] Bildirim dropdown komponenti oluştur (NotificationDropdown.tsx)
+- [x] Sidebar footer'a bildirim ikonu ekle (desktop)
+- [x] Mobile header'a bildirim ikonu ekle
+- [x] Okunmamış bildirim sayısı badge'i
+- [x] Bildirim listesi (son 50 bildirim)
+- [x] Okunmamış bildirimleri vurgula (mavi nokta)
+- [x] "Tümünü okundu işaretle" butonu
+- [x] Bildirim tıklandığında okundu işaretle
+- [x] Bildirim tiplerine göre icon ve renk (SUCCESS/WARNING/ERROR/INFO)
+- [x] Gerçek zamanlı bildirim güncelleme (5 saniyede bir)
+- [x] Server routers.ts'de bildirim endpoint'leri (list, unread, markAsRead, markAllAsRead)
+
+### Demo Yazılarını Kaldırma
+- [x] Home.tsx'teki demo içerikleri kaldır
+- [x] Gerçek bot durumu göster (overview API)
+- [x] Gerçek performans metrikleri (totalPnL, winRate, totalTrades)
+- [x] Gerçek açık pozisyonlar (openPositions API)
+- [x] Gerçek performans geçmişi (7 günlük)
+- [x] Boş state'ler için anlamlı mesajlar ("Henüz pozisyon yok", "Bot uygun pattern tespit ettiğinde açacak")
+- [x] DashboardLayout entegrasyonu (App.tsx)
