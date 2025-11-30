@@ -14,8 +14,8 @@ export async function getBotSettings() {
   // Eğer ayar yoksa, default ayarları oluştur
   if (!settings) {
     const defaultSettings: InsertBotSettings = {
-      usedCapital: "500.00",
-      useAllBalance: false,
+      capitalLimit: null,  // Default: Sınırsız (tüm bakiye kullanılır)
+      useAllBalance: true,  // Default: Tüm bakiyeyi kullan
       compoundEnabled: false,
       dailyLossLimitPercent: "4.00",
       riskPerTradePercent: "2.00",

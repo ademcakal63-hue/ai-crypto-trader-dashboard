@@ -8,6 +8,7 @@ import requests
 import time
 from datetime import datetime
 from typing import Dict, Any
+from balance_helper import BalanceHelper
 
 # Dashboard API URL (Kendi dashboard URL'inizi buraya yazın)
 DASHBOARD_API_URL = "https://YOUR_DASHBOARD_URL/api/bot"
@@ -208,17 +209,40 @@ class TradingBotDashboard:
 if __name__ == "__main__":
     # Dashboard client oluştur
     dashboard = TradingBotDashboard()
+    balance_helper = BalanceHelper(DASHBOARD_API_URL.replace('/api/bot', ''))
     
     print("🤖 AI Crypto Trader Bot - Dashboard Test")
     print("=" * 50)
     
-    # Örnek 0: Kaldıraç hesapla
-    print("\n0️⃣ Kaldıraç otomatik hesaplanıyor...")
-    leverage = dashboard.calculate_leverage(
-        risk_percent=2.0,  # %2 risk
-        stop_loss_percent=1.0  # %1 stop loss
+    # Örnek 0A: Güncel bakiye ve kullanılacak sermayeyi hesapla
+    print("\n0️A️⃣ Güncel bakiye kontrol ediliyor...")
+    usable_capital = balance_helper.calculate_usable_capital()
+    if usable_capital:
+        print(f"✅ Kullanılacak sermaye: ${usable_capital:.2f} USDT")
+    else:
+        print("❌ Bakiye bilgisi alınamadı!")
+        exit(1)
+    
+    # Örnek 0B: Pozisyon büyüklüğü ve kaldıraç hesapla (güncel bakiyeye göre)
+    print("\n0️B️⃣ Pozisyon büyüklüğü hesaplanıyor...")
+    position_calc = balance_helper.calculate_position_size(
+        entry_price=96500.0,
+        stop_loss=96000.0,  # %0.52 stop loss
+        direction="LONG"
     )
-    print(f"✅ Kullanılacak kaldıraç: {leverage}x")
+    
+    if position_calc:
+        print(f"✅ Pozisyon hesaplaması tamamlandı!")
+        print(f"   Pozisyon Büyüklüğü: ${position_calc['position_size']:.2f} USDT")
+        print(f"   Kaldıraç: {position_calc['leverage']}x")
+        print(f"   Risk: ${position_calc['risk_amount']:.2f} USDT")
+        
+        # Bu değerleri kullan
+        position_size = position_calc['position_size']
+        leverage = position_calc['leverage']
+    else:
+        print("❌ Pozisyon hesaplaması başarısız!")
+        exit(1)
     
     # Örnek 1: Yeni pozisyon aç
     print("\n1️⃣ Yeni pozisyon açılıyor...")
@@ -229,7 +253,7 @@ if __name__ == "__main__":
             entry_price=96500.0,
             stop_loss=96000.0,
             take_profit=97500.0,
-            position_size=100.0  # 100 USDT
+            position_size=position_size  # Hesaplanan pozisyon büyüklüğü
         )
         print(f"✅ Pozisyon açıldı: {result}")
         position_id = result.get("positionId")

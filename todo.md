@@ -298,3 +298,18 @@
 - [x] bot_example.py'de kaldıraç hesaplama örneği gösterildi
 - [x] README.md'de kaldıraç hesaplama mantığı detaylı açıklandı
 - [x] Güvenlik sınırı: Maksimum 50x
+
+
+## Otomatik Bakiye Senkronizasyonu (Tamamlandı)
+
+- [x] Ayarlar sayfasından "Kullanılacak Sermaye" input'unu kaldır
+- [x] Binance'den otomatik bakiye çekme (her işlem öncesi)
+- [x] "Sermaye Limiti" input'u ekle (opsiyonel, maksimum kullanılacak miktar)
+- [x] "Tüm Bakiyeyi Kullan" toggle → Tüm USDT bakiyesi kullanılır
+- [x] Sermaye limiti varsa → Min(Binance bakiyesi, Limit) kullanılır
+- [x] Dashboard'da gerçek bakiye gösterimi
+- [x] Risk hesaplamalarında gerçek bakiye kullanımı
+- [x] balance_helper.py oluşturuldu (otomatik bakiye kontrolü)
+- [x] bot_example.py güncellendi (balance_helper entegrasyonu)
+- [x] BALANCE_SYNC_GUIDE.md dokümantasyonu eklendi
+- [x] Unit testler yazıldı ve geçti (7/7 passed)

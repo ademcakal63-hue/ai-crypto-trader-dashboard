@@ -40,8 +40,8 @@ export default function Settings() {
   const [formData, setFormData] = useState({
     binanceApiKey: "",
     binanceApiSecret: "",
-    usedCapital: "500",
-    useAllBalance: false,
+    capitalLimit: "",  // Opsiyonel: Maksimum kullanılacak sermaye
+    useAllBalance: true,  // Default: Tüm bakiyeyi kullan
     compoundEnabled: false,
     dailyLossLimitPercent: "4.00",
     riskPerTradePercent: "2.00",
@@ -54,7 +54,7 @@ export default function Settings() {
       setFormData({
         binanceApiKey: settings.binanceApiKey || "",
         binanceApiSecret: settings.binanceApiSecret || "",
-        usedCapital: settings.usedCapital,
+        capitalLimit: settings.capitalLimit || "",
         useAllBalance: settings.useAllBalance || false,
         compoundEnabled: settings.compoundEnabled,
         dailyLossLimitPercent: settings.dailyLossLimitPercent,
@@ -68,11 +68,13 @@ export default function Settings() {
     e.preventDefault();
     
     // Validasyon
-    const usedCap = parseFloat(formData.usedCapital);
-    
-    if (usedCap < 100) {
-      toast.error("Minimum kullanılacak sermaye 100 USDT olmalıdır!");
-      return;
+    // Eğer useAllBalance aktif değilse ve capitalLimit girilmişse, minimum kontrol yap
+    if (!formData.useAllBalance && formData.capitalLimit) {
+      const usedCap = parseFloat(formData.capitalLimit);
+      if (usedCap < 100) {
+        toast.error("Minimum sermaye limiti 100 USDT olmalıdır!");
+        return;
+      }
     }
     
     if (!formData.binanceApiKey || !formData.binanceApiSecret) {
@@ -87,8 +89,13 @@ export default function Settings() {
     return <SettingsSkeleton />;
   }
 
-  const dailyLossLimit = (parseFloat(formData.usedCapital) * parseFloat(formData.dailyLossLimitPercent) / 100).toFixed(2);
-  const riskPerTrade = (parseFloat(formData.usedCapital) * parseFloat(formData.riskPerTradePercent) / 100).toFixed(2);
+  // Not: Gerçek hesaplamalar Binance bakiyesi ile yapılacak
+  const dailyLossLimit = formData.capitalLimit 
+    ? (parseFloat(formData.capitalLimit) * parseFloat(formData.dailyLossLimitPercent) / 100).toFixed(2)
+    : "Binance bağlantısı sonrası hesaplanacak";
+  const riskPerTrade = formData.capitalLimit
+    ? (parseFloat(formData.capitalLimit) * parseFloat(formData.riskPerTradePercent) / 100).toFixed(2)
+    : "Binance bağlantısı sonrası hesaplanacak";
   const isConnected = settings?.isConnected || false;
 
   return (
@@ -221,18 +228,18 @@ export default function Settings() {
             <CardContent className="space-y-6">
               {/* Kullanılacak Sermaye */}
               <div className="space-y-2">
-                <Label htmlFor="usedCapital" className="text-slate-300">
-                  Kullanılacak Sermaye (USDT)
+                <Label htmlFor="capitalLimit" className="text-slate-300">
+                  Sermaye Limiti (USDT) - Opsiyonel
                 </Label>
                 <Input
-                  id="usedCapital"
+                  id="capitalLimit"
                   type="number"
                   step="0.01"
-                  min="100"
-                  value={formData.usedCapital}
-                  onChange={(e) => setFormData({ ...formData, usedCapital: e.target.value })}
+                  min="0"
+                  value={formData.capitalLimit}
+                  onChange={(e) => setFormData({ ...formData, capitalLimit: e.target.value })}
                   className="bg-slate-800 border-slate-700 text-white"
-                  placeholder="500.00"
+                  placeholder="Boş bırakırsan tüm bakiye kullanılır"
                   disabled={formData.useAllBalance}
                 />
                 <p className="text-xs text-slate-500">
