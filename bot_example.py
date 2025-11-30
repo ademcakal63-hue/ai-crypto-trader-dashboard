@@ -19,6 +19,44 @@ class TradingBotDashboard:
         self.api_url = api_url
         self.session = requests.Session()
     
+    def calculate_leverage(self, risk_percent: float, stop_loss_percent: float) -> int:
+        """
+        Kaldıracı risk oranı ve stop loss mesafesine göre otomatik hesapla
+        
+        Örnek:
+        - Risk: %2 (sermayenin %2'si)
+        - Stop Loss: %1 (fiyattan %1 uzaklık)
+        - Kaldıraç: 2 / 1 = 2x
+        
+        Gerçek Senaryo:
+        - Sermaye: $500
+        - Risk/İşlem: %2 = $10
+        - BTC Fiyatı: $96,000
+        - Stop Loss: %1 = $960 uzaklık
+        - Pozisyon Büyüklüğü: $10 / 0.01 = $1,000
+        - Kaldıraç: $1,000 / $500 = 2x
+        
+        Args:
+            risk_percent: İşlem başına risk yüzdesı (örn: 2.0)
+            stop_loss_percent: Stop loss mesafesi yüzdesı (örn: 1.0)
+            
+        Returns:
+            int: Hesaplanan kaldıraç seviyesi (1x-125x arası)
+        """
+        # Kaldıraç = Risk / Stop Loss
+        calculated_leverage = risk_percent / stop_loss_percent
+        
+        # Binance'in izin verdiği kaldıraç seviyeleri: 1-125x
+        # Güvenlik için maksimum 50x ile sınırla
+        leverage = max(1, min(50, int(calculated_leverage)))
+        
+        print(f"\n⚙️ Otomatik Kaldıraç Hesaplama:")
+        print(f"   Risk: {risk_percent}%")
+        print(f"   Stop Loss: {stop_loss_percent}%")
+        print(f"   Hesaplanan Kaldıraç: {leverage}x")
+        
+        return leverage
+    
     def open_position(self, symbol: str, direction: str, entry_price: float, 
                      stop_loss: float, take_profit: float, position_size: float) -> Dict[str, Any]:
         """
@@ -173,6 +211,14 @@ if __name__ == "__main__":
     
     print("🤖 AI Crypto Trader Bot - Dashboard Test")
     print("=" * 50)
+    
+    # Örnek 0: Kaldıraç hesapla
+    print("\n0️⃣ Kaldıraç otomatik hesaplanıyor...")
+    leverage = dashboard.calculate_leverage(
+        risk_percent=2.0,  # %2 risk
+        stop_loss_percent=1.0  # %1 stop loss
+    )
+    print(f"✅ Kullanılacak kaldıraç: {leverage}x")
     
     # Örnek 1: Yeni pozisyon aç
     print("\n1️⃣ Yeni pozisyon açılıyor...")

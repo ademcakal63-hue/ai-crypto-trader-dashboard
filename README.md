@@ -110,6 +110,57 @@ dashboard.open_position(
 
 ---
 
+## ⚙️ Kaldıraç Otomatik Hesaplama
+
+Bot, her işlemde kaldıracı **otomatik olarak** hesaplar. Manuel ayar gerekmez!
+
+### Hesaplama Formülü
+
+```
+Kaldıraç = Risk Yüzdesı / Stop Loss Yüzdesı
+```
+
+### Örnek Senaryo
+
+**Ayarlar:**
+- Sermaye: $500
+- Risk/İşlem: %2 = $10
+- Stop Loss: %1 (fiyattan)
+
+**Hesaplama:**
+- Kaldıraç = 2% / 1% = **2x**
+- Pozisyon Büyüklüğü: $10 / 0.01 = $1,000
+- Kullanılan Sermaye: $1,000 / 2x = $500
+
+**Sonuç:**
+- ✅ Eğer fiyat %1 düşerse, kaybınız tam $10 olur (sermayenin %2'si)
+- ✅ Eğer fiyat %2 yükselirse, kazanç $20 olur (2R)
+- ✅ Risk tam kontrol altında!
+
+### Python Örneği
+
+```python
+from bot_example import TradingBotDashboard
+
+dashboard = TradingBotDashboard()
+
+# Kaldıracı otomatik hesapla
+leverage = dashboard.calculate_leverage(
+    risk_percent=2.0,  # %2 risk
+    stop_loss_percent=1.0  # %1 stop loss
+)
+
+print(f"Kullanılacak kaldıraç: {leverage}x")  # Output: 2x
+```
+
+### Güvenlik Sınırları
+
+- **Minimum:** 1x (kaldıraçsız)
+- **Maksimum:** 50x (güvenlik için sınırlandırılmış)
+- Binance maksimum 125x'e izin verir, ancak yüksek kaldıraç risklidir
+
+---
+
 ## 📝 API Endpoint'leri
 
 ### Bot API

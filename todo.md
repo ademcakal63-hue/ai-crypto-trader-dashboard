@@ -288,3 +288,13 @@
 - [x] "Enable Futures" yetkisi gerektiğini vurgula
 - [x] "Enable Withdrawals" yetkisinin verilmemesi gerektiğini vurgula
 - [x] IP Whitelist kullanımını vurgula
+
+
+## Kaldıraç Otomatik Hesaplama (Tamamlandı)
+
+- [x] Bot'a kaldıraç otomatik hesaplama fonksiyonu ekle
+- [x] Risk oranı ve stop loss mesafesine göre kaldıraç hesapla
+- [x] calculate_leverage() fonksiyonu oluşturuldu
+- [x] bot_example.py'de kaldıraç hesaplama örneği gösterildi
+- [x] README.md'de kaldıraç hesaplama mantığı detaylı açıklandı
+- [x] Güvenlik sınırı: Maksimum 50x
