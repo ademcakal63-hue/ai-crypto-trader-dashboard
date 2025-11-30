@@ -27,12 +27,25 @@ export default function Settings() {
   });
   
   const validateMutation = trpc.settings.validateApiKey.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.valid) {
         toast.success(`✅ ${data.message}`);
         if (data.balance) {
           toast.success(`💰 Bakiye: $${data.balance.total.toFixed(2)} USDT`);
+          setBinanceBalance(data.balance.total);
         }
+        
+        // API test başarılı - ayarları kaydet ve isConnected=true yap
+        await saveMutation.mutateAsync({
+          ...formData,
+          isConnected: true,
+        });
+        
+        // localStorage'daki draft'i temizle (artık database'de)
+        localStorage.removeItem('settingsFormDraft');
+        
+        // Settings'i yeniden yükle
+        refetch();
       } else {
         toast.error(`❌ ${data.message}`);
       }

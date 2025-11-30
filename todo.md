@@ -761,3 +761,33 @@ Dashboard'dan tek tıkla:
 7. Sermaye ve risk ayarlarını yap
 8. "Kaydet" butonuna tıkla
 9. Dashboard'a dön, "Tümünü Başlat" butonuna tıkla
+
+
+## Bildirim Butonu Düzeltme (Acil)
+
+### Sorun
+- [ ] Sol alttaki bildirim butonuna tıklanmıyor
+- [ ] 3 bildirim var ama dropdown açılmıyor
+- [ ] NotificationDropdown komponenti çalışmıyor
+
+### Düzeltme
+- [ ] DashboardLayout'taki bildirim butonunu kontrol et
+- [ ] NotificationDropdown'u düzgün entegre et
+- [ ] Tıklanabilir yap, dropdown açılsın
+
+
+## 🔴 Kritik Buglar (Acil Düzeltme Gerekiyor)
+
+### Settings Sayfası Sorunları
+- [x] API bağlantısı çalışmıyor - "Bağlantıyı Test Et" butonu bakiye çekmiyor
+- [x] Risk hesaplama "Hesap bağlantısı bekleniyor" gösteriyor (API bağlı olsa bile)
+- [x] Sermaye limiti 999.97 USDT gösteriyor (gerçek bakiye yerine)
+- [x] "Tüm Bakiye Kullan" toggle aktif olsa bile gerçek bakiye kullanılmıyor
+
+### Bildirim Sistemi Sorunları
+- [ ] Bildirim butonu tıklanamıyor (sol altta "3 notifications" gösteriyor ama dropdown açılmıyor)
+- [ ] NotificationDropdown component render ediliyor ama tıklama çalışmıyor
+
+### Teknik Sorunlar
+- [ ] Vite cache eski error'ları gösteriyor - cache temizlenmeli
+- [ ] Server restart gerekiyor
