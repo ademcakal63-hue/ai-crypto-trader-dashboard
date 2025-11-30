@@ -337,3 +337,8 @@
 - [x] Settings sayfasına Dashboard IP adresi gösterme ekle
 - [x] API Key kaydetme sonrası form temizlenmesin (useEffect ile otomatik doldurma)
 - [x] IP Whitelist uyarısı ve kopyalama butonu ekle
+
+
+## IP Gösterme Kaldırma (Tamamlandı)
+
+- [x] Settings sayfasından IP gösterme bölümünü kaldır (Binance hostname kabul etmiyor)
