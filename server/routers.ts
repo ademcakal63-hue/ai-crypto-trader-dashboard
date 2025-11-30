@@ -122,6 +122,36 @@ export const appRouter = router({
         const { createNotification } = await import('./notificationService');
         return await createNotification(input);
       }),
+    
+    // Bot process control
+    start: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'symbol' in val) {
+          return val as { symbol: string };
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { startBot } = await import('./botControl');
+        return await startBot(input.symbol);
+      }),
+    
+    stop: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'symbol' in val) {
+          return val as { symbol: string };
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { stopBot } = await import('./botControl');
+        return await stopBot(input.symbol);
+      }),
+    
+    status: publicProcedure.query(async () => {
+      const { getBotStatus } = await import('./botControl');
+      return await getBotStatus();
+    }),
   }),
   
   // Bildirim Routers

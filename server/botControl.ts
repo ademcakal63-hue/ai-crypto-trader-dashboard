@@ -1,0 +1,188 @@
+import { spawn, ChildProcess } from 'child_process';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+interface BotProcess {
+  symbol: string;
+  process: ChildProcess;
+  pid: number;
+  startedAt: string;
+  status: 'running' | 'stopped' | 'error';
+}
+
+// In-memory bot process storage
+const botProcesses = new Map<string, BotProcess>();
+
+// Bot status file path
+const BOT_STATUS_FILE = path.join(process.cwd(), 'ai_bot', 'bot_status.json');
+
+/**
+ * Start a trading bot for a specific symbol
+ */
+export async function startBot(symbol: string) {
+  try {
+    // Check if bot is already running
+    if (botProcesses.has(symbol)) {
+      const existing = botProcesses.get(symbol);
+      if (existing?.status === 'running') {
+        return {
+          success: false,
+          message: `Bot for ${symbol} is already running`,
+          pid: existing.pid,
+        };
+      }
+    }
+
+    // Start the bot process
+    const botProcess = spawn('python3', [
+      path.join(process.cwd(), 'ai_bot', 'main.py'),
+      '--symbol',
+      symbol,
+    ], {
+      cwd: process.cwd(),
+      detached: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    if (!botProcess.pid) {
+      throw new Error('Failed to start bot process');
+    }
+
+    // Store process info
+    const botInfo: BotProcess = {
+      symbol,
+      process: botProcess,
+      pid: botProcess.pid,
+      startedAt: new Date().toISOString(),
+      status: 'running',
+    };
+
+    botProcesses.set(symbol, botInfo);
+
+    // Handle process events
+    botProcess.on('error', (error) => {
+      console.error(`Bot ${symbol} error:`, error);
+      const bot = botProcesses.get(symbol);
+      if (bot) {
+        bot.status = 'error';
+      }
+    });
+
+    botProcess.on('exit', (code) => {
+      console.log(`Bot ${symbol} exited with code ${code}`);
+      botProcesses.delete(symbol);
+    });
+
+    // Log stdout/stderr
+    botProcess.stdout?.on('data', (data) => {
+      console.log(`[${symbol}] ${data.toString().trim()}`);
+    });
+
+    botProcess.stderr?.on('data', (data) => {
+      console.error(`[${symbol}] ERROR: ${data.toString().trim()}`);
+    });
+
+    // Save status to file
+    await saveBotStatus();
+
+    return {
+      success: true,
+      message: `Bot started for ${symbol}`,
+      pid: botProcess.pid,
+      startedAt: botInfo.startedAt,
+    };
+  } catch (error) {
+    console.error(`Failed to start bot for ${symbol}:`, error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Stop a trading bot for a specific symbol
+ */
+export async function stopBot(symbol: string) {
+  try {
+    const botInfo = botProcesses.get(symbol);
+
+    if (!botInfo) {
+      return {
+        success: false,
+        message: `No running bot found for ${symbol}`,
+      };
+    }
+
+    // Send SIGTERM for graceful shutdown
+    botInfo.process.kill('SIGTERM');
+
+    // Wait a bit, then force kill if still running
+    setTimeout(() => {
+      if (botProcesses.has(symbol)) {
+        botInfo.process.kill('SIGKILL');
+        botProcesses.delete(symbol);
+      }
+    }, 5000);
+
+    botProcesses.delete(symbol);
+
+    // Save status to file
+    await saveBotStatus();
+
+    return {
+      success: true,
+      message: `Bot stopped for ${symbol}`,
+    };
+  } catch (error) {
+    console.error(`Failed to stop bot for ${symbol}:`, error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Get status of all bots
+ */
+export async function getBotStatus() {
+  const bots = Array.from(botProcesses.values()).map(bot => ({
+    symbol: bot.symbol,
+    pid: bot.pid,
+    startedAt: bot.startedAt,
+    status: bot.status,
+  }));
+
+  return {
+    bots,
+    totalRunning: bots.filter(b => b.status === 'running').length,
+  };
+}
+
+/**
+ * Save bot status to file
+ */
+async function saveBotStatus() {
+  try {
+    const status = await getBotStatus();
+    await fs.writeFile(BOT_STATUS_FILE, JSON.stringify(status, null, 2));
+  } catch (error) {
+    console.error('Failed to save bot status:', error);
+  }
+}
+
+/**
+ * Load bot status from file (for recovery after restart)
+ */
+export async function loadBotStatus() {
+  try {
+    const data = await fs.readFile(BOT_STATUS_FILE, 'utf-8');
+    const status = JSON.parse(data);
+    console.log('Loaded bot status:', status);
+    // Note: We don't automatically restart bots after server restart
+    // This is intentional to prevent unexpected behavior
+  } catch (error) {
+    // File doesn't exist or invalid, ignore
+  }
+}

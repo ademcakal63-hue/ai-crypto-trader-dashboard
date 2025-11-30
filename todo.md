@@ -579,3 +579,38 @@ python ai_bot/main.py --symbol BTCUSDT &
 python ai_bot/main.py --symbol ETHUSDT &
 python ai_bot/main.py --symbol SOLUSDT &
 ```
+
+
+## Bot Kontrol Paneli (Tamamlandı)
+
+### UI Bileşenleri
+- [x] Bot kontrol kartı oluştur (BotControlPanel.tsx)
+- [x] Her coin için toggle switch (BTCUSDT, ETHUSDT, SOLUSDT)
+- [x] Durum göstergesi (Running/Stopped/Error)
+- [x] "Tümünü Başlat" / "Tümünü Durdur" butonları
+- [x] Bot process ID gösterimi
+- [x] Uptime gösterimi (kaç gün/saat/dakika çalışıyor)
+- [x] Aktif bot sayısı (0 / 3)
+- [x] Otomatik yenileme (5 saniyede bir)
+
+### Backend API
+- [x] Bot başlatma endpoint'i (bot.start)
+- [x] Bot durdurma endpoint'i (bot.stop)
+- [x] Bot durum sorgulama endpoint'i (bot.status)
+- [x] Multi-coin process yönetimi (botControl.ts)
+- [x] Process ID takibi (in-memory + file)
+- [x] Graceful shutdown (SIGTERM + SIGKILL)
+
+### Python Bot Entegrasyonu
+- [x] Bot'u subprocess olarak başlatma (spawn)
+- [x] Process ID kaydetme (bot_status.json)
+- [x] Graceful shutdown (SIGTERM)
+- [x] Stdout/stderr logging
+- [x] Process event handling (error, exit)
+
+### Kullanım
+Dashboard'dan tek tıkla:
+- Toggle switch ile tek coin başlat/durdur
+- "Tümünü Başlat" ile 3 coin'i birden başlat
+- "Tümünü Durdur" ile hepsini durdur
+- Durum otomatik güncellenir (5s)

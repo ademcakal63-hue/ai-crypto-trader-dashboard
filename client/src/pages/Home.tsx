@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { BotControlPanel } from "@/components/BotControlPanel";
 
 const SUPPORTED_COINS = [
   { value: "BTCUSDT", label: "Bitcoin (BTC)", icon: "₿" },
@@ -82,6 +83,9 @@ export default function Home() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Bot Control Panel */}
+      <BotControlPanel />
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
