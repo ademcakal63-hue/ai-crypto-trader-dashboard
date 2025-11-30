@@ -174,6 +174,15 @@ export const appRouter = router({
   
   // Binance API Routers
   binance: router({
+    balance: publicProcedure.query(async () => {
+      const { getBinanceBalance } = await import('./binanceBalance');
+      const result = await getBinanceBalance();
+      if (!result) {
+        return { balance: null };
+      }
+      return { balance: result.total };
+    }),
+    
     currentPrice: publicProcedure
       .input((val: unknown) => {
         if (typeof val === 'object' && val !== null && 'symbol' in val) {

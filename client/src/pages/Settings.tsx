@@ -11,6 +11,11 @@ import { Settings as SettingsIcon, DollarSign, TrendingUp, Shield, Save, AlertCi
 
 export default function Settings() {
   const { data: settings, isLoading, refetch } = trpc.settings.get.useQuery();
+  const [binanceBalance, setBinanceBalance] = useState<number | null>(null);
+  const { data: balanceData } = trpc.binance.balance.useQuery(undefined, {
+    enabled: settings?.isConnected || false,
+    refetchInterval: 30000, // Her 30 saniyede bir güncelle
+  });
   const saveMutation = trpc.settings.update.useMutation({
     onSuccess: () => {
       toast.success('✅ Ayarlar kaydedildi!');
@@ -114,13 +119,40 @@ export default function Settings() {
     return <SettingsSkeleton />;
   }
 
-  // Not: Gerçek hesaplamalar Binance bakiyesi ile yapılacak
-  const dailyLossLimit = formData.capitalLimit 
-    ? (parseFloat(formData.capitalLimit) * parseFloat(formData.dailyLossLimitPercent) / 100).toFixed(2)
-    : "Binance bağlantısı sonrası hesaplanacak";
-  const riskPerTrade = formData.capitalLimit
-    ? (parseFloat(formData.capitalLimit) * parseFloat(formData.riskPerTradePercent) / 100).toFixed(2)
-    : "Binance bağlantısı sonrası hesaplanacak";
+  // Bakiye güncelleme
+  useEffect(() => {
+    if (balanceData?.balance) {
+      setBinanceBalance(balanceData.balance);
+    }
+  }, [balanceData]);
+
+  // Gerçek sermaye hesaplama
+  const getActualCapital = (): number | null => {
+    if (!binanceBalance) return null;
+    
+    // Tüm bakiye kullanılıyorsa
+    if (formData.useAllBalance) {
+      return binanceBalance;
+    }
+    
+    // Sermaye limiti varsa
+    if (formData.capitalLimit) {
+      const limit = parseFloat(formData.capitalLimit);
+      return Math.min(binanceBalance, limit);
+    }
+    
+    return binanceBalance;
+  };
+
+  const actualCapital = getActualCapital();
+  
+  // Risk hesaplamaları gerçek sermayeye göre
+  const dailyLossLimit = actualCapital
+    ? (actualCapital * parseFloat(formData.dailyLossLimitPercent) / 100).toFixed(2)
+    : "Hesap bağlantısı bekleniyor";
+  const riskPerTrade = actualCapital
+    ? (actualCapital * parseFloat(formData.riskPerTradePercent) / 100).toFixed(2)
+    : "Hesap bağlantısı bekleniyor";
   const isConnected = settings?.isConnected || false;
 
   return (

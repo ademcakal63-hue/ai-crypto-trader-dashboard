@@ -360,3 +360,14 @@
 - [x] Öncelik sırası: localStorage > database (kullanıcı girişi öncelikli)
 - [x] Database sadece localStorage boşsa yüklenecek
 - [x] Test edildi: Sayfa yenilenince API Key korunuyor
+
+
+## Otomatik Bakiye Çekme ve Risk Hesaplama (Tamamlandı)
+
+- [x] Settings'te API Key kaydedilince otomatik bakiye çek
+- [x] Sermaye limiti varsa Min(Bakiye, Limit) hesapla
+- [x] Risk hesaplamalarını gerçek sermayeye göre güncelle (günlük kayıp, işlem başına risk)
+- [x] Dashboard'da gerçek bakiyeyi göster (statik $1000 yerine)
+- [x] Bakiye değişince risk gösterimini otomatik güncelle (30 saniye interval)
+- [x] binance.balance endpoint'i eklendi (routers.ts)
+- [x] Settings ve Dashboard'da otomatik bakiye çekme entegrasyonu

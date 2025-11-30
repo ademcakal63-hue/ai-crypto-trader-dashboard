@@ -15,11 +15,15 @@ import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = trpc.dashboard.overview.useQuery();
-  const { data: balance } = trpc.dashboard.balance.useQuery();
+  const { data: settings } = trpc.settings.get.useQuery(); // Risk parametreleri için
+  const { data: balanceData } = trpc.binance.balance.useQuery(undefined, {
+    enabled: settings?.isConnected || false,
+    refetchInterval: 30000, // Her 30 saniyede bir güncelle
+  });
+  const balance = balanceData?.balance ? { total: balanceData.balance } : null;
   const { data: tradeHistory, isLoading: historyLoading } = trpc.dashboard.tradeHistory.useQuery();
   const { data: performanceHistory } = trpc.dashboard.performanceMetrics.useQuery();
   const { data: unreadNotifications } = trpc.notifications.unread.useQuery();
-  const { data: settings } = trpc.settings.get.useQuery(); // Risk parametreleri için
   
   // Gerçek zamanlı fiyat güncellemesi
   const openSymbols = summary?.openPositions?.map((p: any) => p.symbol) || [];
@@ -141,12 +145,7 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {balance ? (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-slate-400">Kullanılabilir:</span>
-                  <span className="text-slate-300">${typeof balance.available === 'number' ? balance.available.toFixed(2) : balance.available}</span>
-                </div>
-              ) : (
+              {!balance && (
                 <Button
                   size="sm"
                   onClick={() => window.location.href = '/settings'}
