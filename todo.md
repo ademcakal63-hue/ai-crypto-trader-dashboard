@@ -342,3 +342,13 @@
 ## IP Gösterme Kaldırma (Tamamlandı)
 
 - [x] Settings sayfasından IP gösterme bölümünü kaldır (Binance hostname kabul etmiyor)
+
+
+## Form LocalStorage Kaydetme (Tamamlandı)
+
+- [x] Settings form'unu localStorage'a otomatik kaydet
+- [x] Sayfa yüklenince localStorage'dan form'u geri yükle
+- [x] API Key girerken sayfa yenilense bile kaybolmasın
+- [x] Form değiştiğinde otomatik localStorage'a kaydet (useEffect)
+- [x] Sayfa yüklenince localStorage'dan yükle (useState initializer)
+- [x] Database'e kaydedilince localStorage'dan temizle

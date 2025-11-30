@@ -37,21 +37,34 @@ export default function Settings() {
     },
   });
 
-  const [formData, setFormData] = useState({
-    binanceApiKey: "",
-    binanceApiSecret: "",
-    capitalLimit: "",  // Opsiyonel: Maksimum kullanılacak sermaye
-    useAllBalance: true,  // Default: Tüm bakiyeyi kullan
-    compoundEnabled: false,
-    dailyLossLimitPercent: "4.00",
-    riskPerTradePercent: "2.00",
-    maxDailyTrades: 10,
-  });
+  // localStorage'dan form verilerini yükle
+  const loadFormFromStorage = () => {
+    try {
+      const saved = localStorage.getItem('settingsFormDraft');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.error('localStorage yükleme hatası:', error);
+    }
+    return {
+      binanceApiKey: "",
+      binanceApiSecret: "",
+      capitalLimit: "",
+      useAllBalance: true,
+      compoundEnabled: false,
+      dailyLossLimitPercent: "4.00",
+      riskPerTradePercent: "2.00",
+      maxDailyTrades: 10,
+    };
+  };
 
-  // Settings yüklendiğinde form'u güncelle
+  const [formData, setFormData] = useState(loadFormFromStorage);
+
+  // Settings yüklenindiğinde form'u güncelle (database'den)
   useEffect(() => {
     if (settings) {
-      setFormData({
+      const newFormData = {
         binanceApiKey: settings.binanceApiKey || "",
         binanceApiSecret: settings.binanceApiSecret || "",
         capitalLimit: settings.capitalLimit || "",
@@ -60,11 +73,17 @@ export default function Settings() {
         dailyLossLimitPercent: settings.dailyLossLimitPercent,
         riskPerTradePercent: settings.riskPerTradePercent,
         maxDailyTrades: settings.maxDailyTrades,
-      });
+      };
+      setFormData(newFormData);
+      // Database'den gelen veriyi localStorage'a da kaydet
+      localStorage.setItem('settingsFormDraft', JSON.stringify(newFormData));
     }
   }, [settings]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Form değiştiğinde localStorage'a kaydet
+  useEffect(() => {
+    localStorage.setItem('settingsFormDraft', JSON.stringify(formData));
+  }, [formData]);  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validasyon
@@ -83,6 +102,8 @@ export default function Settings() {
     }
 
     saveMutation.mutate(formData);
+    // Kaydedildiğinde localStorage'daki draft'i temizle (artık database'de)
+    localStorage.removeItem('settingsFormDraft');
   };
 
   if (isLoading) {
