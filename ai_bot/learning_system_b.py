@@ -9,6 +9,7 @@ import requests
 from datetime import datetime, timedelta
 from typing import Dict, List
 from dashboard_client import DashboardClient
+from finetuning_safety import FineTuningSafety
 
 class FineTuningSystem:
     """Seçenek B: Gerçek OpenAI fine-tuning"""
@@ -17,8 +18,10 @@ class FineTuningSystem:
         self.openai_api_key = openai_api_key
         self.openai_base_url = "https://api.openai.com/v1"
         self.dashboard = DashboardClient()
+        self.safety = FineTuningSafety()
         self.current_model = "gpt-4o-2024-08-06"  # Base model
         self.fine_tuned_model = None
+        self.finetuning_date = None
     
     def weekly_finetuning(self) -> Dict:
         """Haftalık fine-tuning job başlat"""
@@ -32,7 +35,20 @@ class FineTuningSystem:
             print(f"⚠️ Yetersiz veri ({len(trades)} işlem). En az 50 işlem gerekli.")
             return {"success": False, "reason": "Yetersiz veri"}
         
-        training_file_path = self._prepare_training_data(trades)
+        # 2. Güvenlik kontrolü
+        is_safe, reason = self.safety.validate_before_finetuning(trades)
+        
+        if not is_safe:
+            print(f"❌ Fine-tuning iptal edildi: {reason}")
+            return {"success": False, "reason": reason}
+        
+        # 3. Outlier'ları temizle
+        trades = self.safety.remove_outliers(trades)
+        
+        # 4. Train/validation split
+        train_trades, validation_trades = self.safety.split_train_validation(trades)
+        
+        training_file_path = self._prepare_training_data(train_trades)
         
         # 2. Training dosyasını OpenAI'ya yükle
         file_id = self._upload_training_file(training_file_path)
@@ -52,16 +68,33 @@ class FineTuningSystem:
         if not fine_tuned_model:
             return {"success": False, "reason": "Fine-tuning başarısız"}
         
-        # 5. Yeni modeli kaydet
+        # 5. Model validation
+        is_valid, accuracy = self.safety.validate_finetuned_model(
+            fine_tuned_model,
+            validation_trades
+        )
+        
+        if not is_valid:
+            print(f"❌ Model validation başarısız! Accuracy: %{accuracy*100:.0f}")
+            return {
+                "success": False,
+                "reason": f"Validation accuracy too low: {accuracy:.2f}"
+            }
+        
+        # 6. Yeni modeli kaydet
         self.fine_tuned_model = fine_tuned_model
+        self.finetuning_date = datetime.now()
         self._save_model_info(fine_tuned_model)
         
         print(f"✅ Fine-tuning tamamlandı! Yeni model: {fine_tuned_model}")
+        print(f"📊 Validation Accuracy: %{accuracy*100:.0f}")
         
         return {
             "success": True,
             "model": fine_tuned_model,
-            "training_samples": len(trades),
+            "training_samples": len(train_trades),
+            "validation_samples": len(validation_trades),
+            "validation_accuracy": accuracy,
             "job_id": job_id
         }
     

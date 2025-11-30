@@ -11,16 +11,19 @@ from datetime import datetime, timedelta
 from learning_system_a import PromptLearningSystem
 from learning_system_b import FineTuningSystem
 from dashboard_client import DashboardClient
+from finetuning_safety import FineTuningSafety
 
 class HybridLearningManager:
     """Hybrid öğrenme sistemi yöneticisi"""
     
     def __init__(self):
         self.dashboard = DashboardClient()
+        self.safety = FineTuningSafety()
         self.system_a = PromptLearningSystem()
         self.system_b = None  # Hafta 3'te aktif olacak
         self.current_system = "A"  # Başlangıçta A
         self.start_date = None
+        self.finetuning_date = None
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
     
     def initialize(self):
@@ -158,12 +161,22 @@ class HybridLearningManager:
                 print(f"❌ Fine-tuning başarısız: {result['reason']}")
     
     def get_active_model(self) -> str:
-        """Aktif modeli döndür"""
+        """Aktif modeli döndür (gradual rollout ile)"""
         
         if self.current_system == "A":
             return self.system_a.get_model_version()
         else:
-            return self.system_b.get_active_model()
+            # Seçenek B: Gradual rollout
+            if not self.finetuning_date:
+                return self.system_b.get_active_model()
+            
+            days_since = (datetime.now() - self.finetuning_date).days
+            use_finetuned = self.safety.should_use_finetuned_model(days_since)
+            
+            if use_finetuned:
+                return self.system_b.get_active_model()
+            else:
+                return self.system_b.current_model  # Base model
     
     def get_learned_rules(self) -> str:
         """Öğrenilen kuralları döndür (Seçenek A için)"""
@@ -173,10 +186,38 @@ class HybridLearningManager:
         else:
             return ""  # Seçenek B'de kurallar model içinde
     
+    def check_performance(self):
+        """Performans izleme (her gün)"""
+        
+        if self.current_system != "B":
+            return  # Sadece Seçenek B'de kontrol et
+        
+        print("\n📊 Performans izleme başlıyor...")
+        
+        is_ok, result = self.safety.monitor_performance()
+        
+        if not is_ok:
+            print("🚨 Performans düşüşü tespit edildi!")
+            
+            # Base model'e geri dön
+            self.safety.rollback_to_base_model()
+            self.current_system = "A"
+            
+            # Dashboard'a bildirim
+            self.dashboard.send_notification({
+                "type": "MODEL_ROLLBACK",
+                "title": "Model Geri Alındı",
+                "message": f"Fine-tuned model performansı düştü. Seçenek A'ya dönüldü.",
+                "severity": "WARNING"
+            })
+    
     def run_scheduler(self):
         """Scheduler'ı çalıştır (sürekli loop)"""
         
         print("\n🔄 Scheduler başlatıldı. Haftalık öğrenme bekleniyor...")
+        
+        # Performans izleme: Her gün 12:00'da
+        schedule.every().day.at("12:00").do(self.check_performance)
         
         while True:
             schedule.run_pending()
