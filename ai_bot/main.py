@@ -25,6 +25,7 @@ from llm_client import LLMClient
 from binance_client import BinanceClient
 from sentiment_analyzer import SentimentAnalyzer
 from dashboard_client import DashboardClient
+from learning_manager import HybridLearningManager
 
 class AITradingBot:
     """Tam otonom AI Trading Bot"""
@@ -33,11 +34,15 @@ class AITradingBot:
         self.symbol = symbol
         self.testnet = testnet
         
-        # Clients
+        # API clients
         self.llm = LLMClient()
         self.binance = BinanceClient(testnet=testnet)
         self.sentiment = SentimentAnalyzer()
         self.dashboard = DashboardClient()
+        
+        # Learning manager
+        self.learning_manager = HybridLearningManager()
+        self.learning_manager.initialize()
         
         # Pattern knowledge
         self.pattern_knowledge = get_pattern_knowledge()

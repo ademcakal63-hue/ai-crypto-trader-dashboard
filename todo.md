@@ -427,3 +427,24 @@
 - [x] Haftalık fine-tuning sistemi (model v1.0 → v1.3)
 - [x] Ana trading loop (sürekli çalışma - 1 dakika interval)
 - [x] README ve dokümantasyon
+
+
+## Hybrid Otomatik Fine-Tuning Sistemi (Tamamlandı)
+
+- [x] Seçenek A: Prompt güncelleme sistemi
+  - [x] Haftalık analiz fonksiyonu (başarılı/başarısız pattern'ler)
+  - [x] Prompt güncelleme mekanizması
+  - [x] Model versiyon yönetimi (v1.0 → v1.1 → v1.2)
+- [x] Seçenek B: Gerçek fine-tuning sistemi
+  - [x] Training data hazırlama (JSONL formatı)
+  - [x] OpenAI Fine-Tuning API entegrasyonu
+  - [x] Fine-tuned model yönetimi
+- [x] Otomatik geçiş mantığı
+  - [x] Hafta 3'te A → B otomatik geçiş
+  - [x] Minimum 50 işlem kontrolü
+- [x] Haftalık scheduler
+  - [x] Her Pazar 23:00'da otomatik çalışma
+  - [x] Model versiyonu güncelleme
+  - [x] Dashboard'a bildirim gönderme
+- [x] Ana bot'a entegrasyon (learning_manager)
+- [x] Standalone scheduler script (run_learning_scheduler.py)
