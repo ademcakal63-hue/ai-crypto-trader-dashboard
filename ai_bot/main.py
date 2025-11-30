@@ -34,11 +34,24 @@ class AITradingBot:
         self.symbol = symbol
         self.testnet = testnet
         
+        # Dashboard client (önce bu başlatılmalı - settings için)
+        self.dashboard = DashboardClient()
+        
+        # Settings'ten API keys çek
+        settings = self.dashboard.get_settings()
+        api_key = settings.get("binanceApiKey")
+        api_secret = settings.get("binanceApiSecret")
+        
+        if not api_key or not api_secret:
+            raise ValueError(
+                "❌ Binance API Key bulunamadı!\n"
+                "Dashboard → Ayarlar sayfasından API Key ve Secret ekleyin."
+            )
+        
         # API clients
         self.llm = LLMClient()
-        self.binance = BinanceClient(testnet=testnet)
+        self.binance = BinanceClient(api_key=api_key, api_secret=api_secret, testnet=testnet)
         self.sentiment = SentimentAnalyzer()
-        self.dashboard = DashboardClient()
         
         # Learning manager
         self.learning_manager = HybridLearningManager()

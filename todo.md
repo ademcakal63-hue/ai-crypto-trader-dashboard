@@ -791,3 +791,29 @@ Dashboard'dan tek tıkla:
 ### Teknik Sorunlar
 - [ ] Vite cache eski error'ları gösteriyor - cache temizlenmeli
 - [ ] Server restart gerekiyor
+
+
+## 🤖 AI Bot Kurulum ve Çalıştırma (Şu An)
+
+### Python Dependencies
+- [x] requirements.txt oluştur (binance, requests, openai, python-dotenv)
+- [x] pip install ile paketleri kur
+- [x] Import testleri yap
+
+### Environment Variables
+- [x] Bot için .env dosyası oluştur (gerekli değil - settings'ten çekiyor)
+- [x] DASHBOARD_URL ayarla (hardcoded)
+- [x] BINANCE_API_KEY ve SECRET Settings'ten çekilecek
+- [x] OPENAI_API_KEY zaten mevcut
+
+### Bot Test
+- [ ] Bot başlatma testi (python main.py --symbol BTCUSDT)
+- [ ] Dashboard bağlantısı testi
+- [ ] Log sistemi testi
+- [ ] Bildirim sistemi testi
+
+### Final Kontrol
+- [ ] 3 coin için bot başlatma (BTC, ETH, SOL)
+- [ ] Log viewer'da logları görme
+- [ ] Bildirim sistemi çalışıyor mu
+- [ ] Acil durdur butonu test
