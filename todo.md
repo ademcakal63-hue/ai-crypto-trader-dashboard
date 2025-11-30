@@ -371,3 +371,42 @@
 - [x] Bakiye değişince risk gösterimini otomatik güncelle (30 saniye interval)
 - [x] binance.balance endpoint'i eklendi (routers.ts)
 - [x] Settings ve Dashboard'da otomatik bakiye çekme entegrasyonu
+
+
+## Son Eksikler - Sistem Tamamlama (Şu An - URGENT)
+
+### Model v1.0 → v1.2 Güncellemesi
+- [ ] Pattern tanıma iyileştirmeleri
+- [ ] Risk/reward oranı optimizasyonu
+- [ ] False positive azaltma
+- [ ] Model versiyonunu v1.2 olarak güncelle
+
+### Günlük Kayıp Limiti Kontrolü
+- [ ] Bot her işlem sonrası günlük toplam kaybı hesaplasın
+- [ ] Limit aşılınca otomatik dursun
+- [ ] Dashboard'da günlük kayıp gösterimi (kalan limit)
+- [ ] Limit yaklaşınca uyarı bildirimi
+
+### Bot Başlat/Durdur Kontrolü
+- [ ] Dashboard'a "Bot Aktif/Pasif" toggle butonu ekle
+- [ ] Bot durumu database'de sakla (isActive field)
+- [ ] Durdururken açık pozisyonları kapat seçeneği
+- [ ] Başlatırken risk + bakiye kontrolü
+
+### Bildirim Sistemi
+- [ ] Bot işlem açtığında bildirim
+- [ ] Günlük kayıp limiti yaklaşınca uyarı
+- [ ] AI pattern bulduğunda bildirim
+- [ ] Dashboard'da bildirim paneli kontrolü
+
+
+## Bot Başlat/Durdur ve Günlük Kayıp Limiti (Tamamlandı)
+
+- [x] Database'e isActive field eklendi
+- [x] Bot başlat/durdur endpoint'i eklendi (settings.toggleBot)
+- [x] Dashboard'a BotToggle component'i eklendi
+- [x] Pozisyonları kapat seçeneği eklendi
+- [x] Günlük kayıp limiti kontrolü eklendi (dailyLossControl.ts)
+- [x] Limit aşılınca bot otomatik duruyor
+- [x] %80'e ulaşınca uyarı bildirimi
+- [x] Bildirim sistemi zaten hazır (notificationService.ts)

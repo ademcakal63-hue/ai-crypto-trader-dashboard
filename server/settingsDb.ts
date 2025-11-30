@@ -55,3 +55,38 @@ export async function updateBotSettings(data: Partial<InsertBotSettings>) {
   
   return await getBotSettings();
 }
+
+
+/**
+ * Bot'u başlat/durdur
+ */
+export async function toggleBot(isActive: boolean, closePositions: boolean = false) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await getBotSettings();
+  
+  if (!existing) {
+    throw new Error("Bot settings not found");
+  }
+
+  // Bot durumunu güncelle
+  await db.update(botSettings)
+    .set({
+      isActive,
+      updatedAt: new Date(),
+    })
+    .where(eq(botSettings.id, existing.id));
+
+  // Eğer bot durduruluyor ve pozisyonlar kapatılacaksa
+  if (!isActive && closePositions) {
+    const { emergencyStopAll } = await import('./botApi');
+    await emergencyStopAll();
+  }
+
+  return {
+    success: true,
+    isActive,
+    message: isActive ? "Bot başlatıldı" : "Bot durduruldu",
+  };
+}

@@ -142,6 +142,14 @@ export const appRouter = router({
     }),
   }),
   
+  // Daily Loss Control
+  dailyLoss: router({
+    check: publicProcedure.query(async () => {
+      const { checkDailyLossLimit } = await import('./dailyLossControl');
+      return await checkDailyLossLimit();
+    }),
+  }),
+  
   // Settings Routers
   settings: router({
     validateApiKey: publicProcedure
@@ -169,6 +177,16 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const { updateBotSettings } = await import('./settingsDb');
         return await updateBotSettings(input);
+      }),
+    
+    toggleBot: publicProcedure
+      .input(z.object({
+        isActive: z.boolean(),
+        closePositions: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { toggleBot } = await import('./settingsDb');
+        return await toggleBot(input.isActive, input.closePositions || false);
       }),
   }),
   

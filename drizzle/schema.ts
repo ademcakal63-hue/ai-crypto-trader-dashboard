@@ -152,6 +152,7 @@ export const botSettings = mysqlTable("bot_settings", {
   binanceApiKey: text("binance_api_key"), // Binance API Key (encrypted)
   binanceApiSecret: text("binance_api_secret"), // Binance API Secret (encrypted)
   isConnected: boolean("is_connected").default(false).notNull(), // Hesap bağlı mı
+  isActive: boolean("is_active").default(false).notNull(), // Bot aktif mi (başlat/durdur)
   capitalLimit: varchar("capital_limit", { length: 20 }), // Opsiyonel: Maksimum kullanılacak sermaye (null = sınırsız)
   useAllBalance: boolean("use_all_balance").default(true).notNull(), // Tüm bakiyeyi kullan (default: true)
   compoundEnabled: boolean("compound_enabled").default(false).notNull(), // Bileşik getiri aktif mi

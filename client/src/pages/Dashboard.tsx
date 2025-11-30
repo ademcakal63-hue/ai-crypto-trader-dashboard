@@ -10,6 +10,7 @@ import RiskManagementPanel from "@/components/RiskManagementPanel";
 import AIPatternStats from "@/components/AIPatternStats";
 import PerformanceCharts from "@/components/PerformanceCharts";
 import NotificationPanel from "@/components/NotificationPanel";
+import BotToggle from "@/components/BotToggle";
 import { useLivePrices } from "@/hooks/useLivePrices";
 import { useEffect, useState } from "react";
 
@@ -91,6 +92,9 @@ export default function Dashboard() {
               <p className="text-sm text-slate-400 mt-1">Otonom Trading Dashboard</p>
             </div>
             <div className="flex items-center gap-4">
+              {/* Bot Başlat/Durdur Toggle */}
+              <BotToggle />
+              
               <div className="text-right">
                 <p className="text-xs text-slate-400">Model Version</p>
                 <p className="text-sm font-semibold text-blue-400">{aiLearning?.modelVersion || 'v1.0'}</p>
