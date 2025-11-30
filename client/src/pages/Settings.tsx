@@ -115,16 +115,16 @@ export default function Settings() {
     localStorage.removeItem('settingsFormDraft');
   };
 
-  if (isLoading) {
-    return <SettingsSkeleton />;
-  }
-
   // Bakiye güncelleme
   useEffect(() => {
     if (balanceData?.balance) {
       setBinanceBalance(balanceData.balance);
     }
   }, [balanceData]);
+
+  if (isLoading) {
+    return <SettingsSkeleton />;
+  }
 
   // Gerçek sermaye hesaplama
   const getActualCapital = (): number | null => {

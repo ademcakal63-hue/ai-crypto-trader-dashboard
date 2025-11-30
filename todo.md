@@ -723,3 +723,18 @@ Dashboard'dan tek tıkla:
 - [x] 3 coin aynı anda çalışıyor
 - [x] Dashboard basitleştirildi
 - [x] Gereksiz import'lar temizlendi (Select, useState, ChevronDown)
+
+
+## Settings Sayfası Düzeltme (Tamamlandı)
+
+### Hooks Hatası
+- [x] Settings.tsx'teki "Rendered more hooks" hatası düzeltildi
+- [x] useEffect hook'u conditional return'den önce taşındı
+- [x] Tüm hooks'lar component'in en üstünde
+- [x] Server yeniden başlatıldı
+
+### API Test Butonu
+- [x] "Bağlantıyı Test Et" butonu zaten mevcut (line 239-256)
+- [x] Binance API key validation endpoint'i kullanılıyor
+- [x] Başarılı/başarısız durumları toast ile gösteriliyor
+- [x] Bakiye bilgisi toast ile gösteriliyor
