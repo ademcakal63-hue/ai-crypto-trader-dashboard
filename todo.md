@@ -738,3 +738,26 @@ Dashboard'dan tek tıkla:
 - [x] Binance API key validation endpoint'i kullanılıyor
 - [x] Başarılı/başarısız durumları toast ile gösteriliyor
 - [x] Bakiye bilgisi toast ile gösteriliyor
+
+
+## Binance API Bağlantı Düzeltme (Tamamlandı)
+
+### Düzeltmeler
+- [x] Settings sayfasındaki uyarı metni düzeltildi
+- [x] "Enable Futures" yetkisi gerekli (bot kaldıraçlı işlem yapar)
+- [x] "Enable Withdrawals" yetkisi vermeyin (güvenlik)
+- [x] IP Whitelist opsiyonel ama önerilir
+- [x] Binance API endpoint'leri kontrol edildi
+- [x] validateApiKey fonksiyonu mevcut ve çalışıyor
+- [x] Balance endpoint'i mevcut ve çalışıyor
+
+### Kullanım Talimatları
+1. Binance hesabından API Key oluştur
+2. "Enable Futures" yetkisini aktif et
+3. "Enable Withdrawals" yetkisini KAPALI bırak
+4. API Key ve Secret'i Settings sayfasına gir
+5. "Bağlantıyı Test Et" butonuna tıkla
+6. Başarılı olursa bakiye görünecek
+7. Sermaye ve risk ayarlarını yap
+8. "Kaydet" butonuna tıkla
+9. Dashboard'a dön, "Tümünü Başlat" butonuna tıkla

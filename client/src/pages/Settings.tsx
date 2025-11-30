@@ -262,9 +262,9 @@ export default function Settings() {
                   <div className="text-sm text-yellow-300">
                     <p className="font-semibold mb-1">Güvenlik Uyarısı</p>
                     <p className="text-xs text-yellow-400">
-                      • API Key oluştururken "Enable Futures" yetkisi verin (kaldıraçlı işlem için)<br />
-                      • "Enable Withdrawals" (çekim) yetkisi vermeyin<br />
-                      • IP Whitelist kullanın (sadece dashboard IP'sinden erişim)
+                      • API Key oluştururken <strong>"Enable Futures"</strong> yetkisi verin (bot kaldıraçlı işlem yapar)<br />
+                      • <strong>"Enable Withdrawals"</strong> (çekim) yetkisi vermeyin (güvenlik)<br />
+                      • <strong>IP Whitelist</strong> kullanın (opsiyonel ama önerilir)
                     </p>
                   </div>
                 </div>
