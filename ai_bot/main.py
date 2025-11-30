@@ -174,27 +174,69 @@ class AITradingBot:
         
         print(f"\n✅ POZİSYON AÇILIYOR...")
         
-        # Risk hesaplama
-        capital = self.binance.get_account_balance()["available"]
-        risk_percent = float(settings.get("riskPerTradePercent", 2.0)) / 100
-        risk_amount = capital * risk_percent
+        # 1. Sermaye ve risk parametreleri
+        account_balance = self.binance.get_account_balance()
+        capital = account_balance["available"]
+        risk_percent = float(settings.get("riskPerTradePercent", 2.0)) / 100  # 0.02
+        daily_loss_limit_percent = float(settings.get("dailyLossLimitPercent", 4.0)) / 100  # 0.04
         
+        # 2. Maksimum pozisyon sayısı kontrolü
+        max_positions = int(daily_loss_limit_percent / risk_percent)  # 0.04 / 0.02 = 2
+        current_positions = len(self.open_positions)
+        
+        if current_positions >= max_positions:
+            print(f"   ❌ Maksimum pozisyon sayısına ulaşıldı ({current_positions}/{max_positions})")
+            print(f"   Günlük kayıp limiti: {daily_loss_limit_percent*100:.1f}%, İşlem başına risk: {risk_percent*100:.1f}%")
+            return
+        
+        # 3. Entry ve Stop Loss
         entry = analysis["entry"]
         stop_loss = analysis["stop_loss"]
-        sl_distance = abs(entry - stop_loss)
+        sl_distance_price = abs(entry - stop_loss)
+        sl_distance_percent = sl_distance_price / entry  # Stop loss mesafesi (%)
         
-        # Pozisyon boyutu
-        quantity = risk_amount / sl_distance
+        # 4. Dinamik kaldıraç hesaplama
+        # Kaldıraç = Risk% / SL_mesafe%
+        # Örnek: Risk 2%, SL mesafe 1% → 2x kaldıraç
+        #        Risk 2%, SL mesafe 4% → 0.5x (min 1x)
+        calculated_leverage = risk_percent / sl_distance_percent
+        
+        # Kaldıraç limitleri
+        max_leverage = 20  # Maksimum 20x
+        min_leverage = 1   # Minimum 1x (kaldıraçsız)
+        leverage = max(min_leverage, min(max_leverage, int(calculated_leverage)))
+        
+        # 5. Pozisyon büyüklüğü hesaplama
+        # Risk amount (maksimum kayıp)
+        risk_amount = capital * risk_percent
+        
+        # Quantity hesaplama (doğrudan coin miktarı)
+        # Risk = Quantity * SL_distance_price
+        # Quantity = Risk / SL_distance_price
+        quantity = risk_amount / sl_distance_price
         quantity = round(quantity, 3)  # 3 ondalık
         
-        leverage = int(settings.get("leverage", 10))
+        # Pozisyon büyüklüğü (USDT cinsinden)
+        position_size_usdt = quantity * entry
+        
+        # 6. Gerçek sermaye kullanımı (kaldıraçlı)
+        required_margin = position_size_usdt / leverage
+        
+        # Sermaye yeterli mi?
+        if required_margin > capital:
+            print(f"   ❌ Yetersiz sermaye! Gerekli: ${required_margin:.2f}, Mevcut: ${capital:.2f}")
+            return
         
         print(f"   Sermaye: ${capital:.2f}")
         print(f"   Risk: ${risk_amount:.2f} ({risk_percent*100:.1f}%)")
-        print(f"   Miktar: {quantity}")
-        print(f"   Kaldıraç: {leverage}x")
+        print(f"   SL Mesafesi: {sl_distance_percent*100:.2f}%")
+        print(f"   Kaldıraç: {leverage}x (hesaplanan: {calculated_leverage:.1f}x)")
+        print(f"   Pozisyon Büyüklüğü: ${position_size_usdt:.2f}")
+        print(f"   Miktar: {quantity} {self.symbol}")
+        print(f"   Gerekli Margin: ${required_margin:.2f}")
+        print(f"   Açık Pozisyon: {current_positions}/{max_positions}")
         
-        # Binance'de pozisyon aç
+        # 7. Binance'de pozisyon aç
         result = self.binance.open_position(
             symbol=self.symbol,
             direction=analysis["direction"],

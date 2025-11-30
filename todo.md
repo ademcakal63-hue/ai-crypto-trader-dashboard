@@ -827,3 +827,24 @@ Dashboard'dan tek tıkla:
 - [x] Pozisyon marker'ları ekle (entry, SL, TP çizgileri)
 - [x] Dashboard'a entegre et (log viewer'ın üstünde)
 - [x] Responsive tasarım (mobil uyumlu)
+
+
+## 🚨 KRİTİK: Kaldıraç ve Pozisyon Hesaplama Düzeltmesi (Şu An)
+
+### Sorunlar
+- [x] Kaldıraç sabit 10x (Settings'ten alıyor, dinamik değil)
+- [x] Pozisyon büyüklüğü kaldıraç kullanmıyor
+- [x] Maksimum pozisyon sayısı kontrolü yok (günlük limit aşılabilir)
+- [x] Gerçek sermaye kullanımı kontrol edilmiyor
+
+### Düzeltmeler
+- [x] Dinamik kaldıraç hesaplama (stop loss mesafesine göre)
+- [x] Maksimum pozisyon sayısı = (günlük kayıp limiti / işlem başına risk)
+- [x] Pozisyon büyüklüğü = quantity * entry_price
+- [x] Maksimum kaldıraç limiti: 20x
+- [x] Gerçek sermaye kullanımı kontrolü (required_margin < capital)
+
+### Test Senaryoları
+- [x] Senaryo 1: $1000 sermaye, %2 risk, %1 SL mesafesi → 2x kaldıraç, $2000 pozisyon, $1000 margin
+- [x] Senaryo 2: $1000 sermaye, %2 risk, %5 SL mesafesi → 1x kaldıraç (min), $400 pozisyon, $400 margin
+- [x] Senaryo 3: $1000 sermaye, %2 risk, %0.2 SL mesafesi → 10x kaldıraç, $10000 pozisyon, $1000 margin
