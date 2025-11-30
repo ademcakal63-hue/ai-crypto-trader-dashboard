@@ -60,26 +60,30 @@ export default function Settings() {
   };
 
   const [formData, setFormData] = useState(loadFormFromStorage);
-
-  // Settings yüklenindiğinde form'u güncelle (database'den)
+  // Settings yükleninindiğinde form'u güncelle (database'den)
+  // SADECE localStorage boşsa database'den yükle
   useEffect(() => {
     if (settings) {
-      const newFormData = {
-        binanceApiKey: settings.binanceApiKey || "",
-        binanceApiSecret: settings.binanceApiSecret || "",
-        capitalLimit: settings.capitalLimit || "",
-        useAllBalance: settings.useAllBalance || false,
-        compoundEnabled: settings.compoundEnabled,
-        dailyLossLimitPercent: settings.dailyLossLimitPercent,
-        riskPerTradePercent: settings.riskPerTradePercent,
-        maxDailyTrades: settings.maxDailyTrades,
-      };
-      setFormData(newFormData);
-      // Database'den gelen veriyi localStorage'a da kaydet
-      localStorage.setItem('settingsFormDraft', JSON.stringify(newFormData));
+      // localStorage'da draft var mı kontrol et
+      const savedDraft = localStorage.getItem('settingsFormDraft');
+      
+      // Eğer localStorage'da draft yoksa, database'den yükle
+      if (!savedDraft) {
+        const newFormData = {
+          binanceApiKey: settings.binanceApiKey || "",
+          binanceApiSecret: settings.binanceApiSecret || "",
+          capitalLimit: settings.capitalLimit || "",
+          useAllBalance: settings.useAllBalance || false,
+          compoundEnabled: settings.compoundEnabled,
+          dailyLossLimitPercent: settings.dailyLossLimitPercent,
+          riskPerTradePercent: settings.riskPerTradePercent,
+          maxDailyTrades: settings.maxDailyTrades,
+        };
+        setFormData(newFormData);
+      }
+      // localStorage varsa, onu kullan (kullanıcı girişi öncelikli)
     }
   }, [settings]);
-
   // Form değiştiğinde localStorage'a kaydet
   useEffect(() => {
     localStorage.setItem('settingsFormDraft', JSON.stringify(formData));
