@@ -1,0 +1,23 @@
+{
+  "bots": [
+    {
+      "symbol": "BTCUSDT",
+      "pid": 90325,
+      "startedAt": "2025-11-30T16:57:17.424Z",
+      "status": "running"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "pid": 90326,
+      "startedAt": "2025-11-30T16:57:17.429Z",
+      "status": "running"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "pid": 90327,
+      "startedAt": "2025-11-30T16:57:17.434Z",
+      "status": "running"
+    }
+  ],
+  "totalRunning": 3
+}

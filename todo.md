@@ -671,3 +671,40 @@ Dashboard'dan tek tıkla:
 - **TRADE:** POSITION_OPENED, POSITION_CLOSED, TRADE_EXECUTED, ORDER_FILLED → Bildirim: TRADE_EXECUTED
 - **SUCCESS:** SUCCESS, COMPLETED, PROFIT → Bildirim: TRADE_SUCCESS
 - **WARNING:** WARNING, WARN, RISK → Bildirim: BOT_WARNING
+
+
+## UI İyileştirmeleri (Tamamlandı)
+
+### Bildirim Dropdown
+- [x] NotificationDropdown komponenti mevcut
+- [x] Sol altta bildirim ikonu (3 bildirim görünüyor)
+- [x] Bildirim listesi API'si hazır
+- [x] "Tümünü okundu işaretle" API'si hazır
+- [x] Log keyword monitoring çalışıyor (ERROR/TRADE/SUCCESS/WARNING)
+
+### Settings Sayfası
+- [x] Settings.tsx sayfası mevcut (kapsamlı)
+- [x] Sidebar'a "Ayarlar" menüsü eklendi
+- [x] Binance API Key yönetimi (mevcut)
+- [x] Binance API Secret yönetimi (mevcut)
+- [x] API key kaydetme/güncelleme (mevcut)
+- [x] API key test butonu (mevcut)
+- [x] Sermaye ayarları (mevcut)
+- [x] Risk yönetimi (mevcut)
+
+### Coin Seçici
+- [x] Sağ üstte coin seçici dropdown (BTC/ETH/SOL)
+- [x] Bot kontrol paneli 3 coin'i gösteriyor
+- [x] Log viewer'lar 3 coin için ayrı paneller
+- [x] Her coin için ayrı başlat/durdur toggle
+
+### Kullanıcı Rehberi
+1. Sol sidebar'dan "Ayarlar"a git
+2. Binance API Key ve Secret gir
+3. "Bağlantıyı Test Et" butonuna tıkla
+4. Sermaye ve risk ayarlarını yap
+5. "Kaydet" butonuna tıkla
+6. Dashboard'a dön
+7. "Tümünü Başlat" butonuna tıkla
+8. Log viewer'larda bot çıktılarını izle
+9. Sol alttaki bildirim ikonuna tıklayarak bildirimleri gör
