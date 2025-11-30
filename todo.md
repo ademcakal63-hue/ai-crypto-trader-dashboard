@@ -553,3 +553,29 @@
 - [x] Gerçek performans geçmişi (7 günlük)
 - [x] Boş state'ler için anlamlı mesajlar ("Henüz pozisyon yok", "Bot uygun pattern tespit ettiğinde açacak")
 - [x] DashboardLayout entegrasyonu (App.tsx)
+
+
+## UI İyileştirmeleri ve Multi-Coin Desteği (Tamamlandı)
+
+### UI Temizleme
+- [x] Test bildirimlerini database'den sil
+- [x] Page 2'yi sidebar'dan kaldır
+- [x] Sidebar menüsünü sadece "Dashboard" yap
+
+### Multi-Coin Desteği
+- [x] Coin seçici dropdown ekle (BTCUSDT, ETHUSDT, SOLUSDT)
+- [x] Dashboard header'a coin seçici ekle
+- [x] Bitcoin, Ethereum, Solana desteği
+- [ ] Bot'u multi-coin için yapılandır (python tarafı)
+- [ ] Her coin için ayrı pozisyon takibi (database)
+
+### Bot Multi-Coin Kullanımı
+```bash
+# Tek coin
+python ai_bot/main.py --symbol BTCUSDT
+
+# Üç coin paralel (3 terminal)
+python ai_bot/main.py --symbol BTCUSDT &
+python ai_bot/main.py --symbol ETHUSDT &
+python ai_bot/main.py --symbol SOLUSDT &
+```

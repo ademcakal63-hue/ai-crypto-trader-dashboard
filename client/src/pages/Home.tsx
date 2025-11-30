@@ -2,19 +2,36 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Activity, 
-  DollarSign, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  DollarSign,
   Target,
   Brain,
   Zap,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
+const SUPPORTED_COINS = [
+  { value: "BTCUSDT", label: "Bitcoin (BTC)", icon: "₿" },
+  { value: "ETHUSDT", label: "Ethereum (ETH)", icon: "Ξ" },
+  { value: "SOLUSDT", label: "Solana (SOL)", icon: "◎" },
+];
+
 export default function Home() {
+  const [selectedCoin, setSelectedCoin] = useState("BTCUSDT");
+  
   // Fetch real dashboard data
   const { data: overview, isLoading: overviewLoading } = trpc.dashboard.overview.useQuery();
   const { data: openPositions, isLoading: positionsLoading } = trpc.dashboard.openPositions.useQuery();
@@ -42,11 +59,28 @@ export default function Home() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Trading Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Otonom AI kripto trading bot'unuzun gerçek zamanlı performansı
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Trading Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Otonom AI kripto trading bot'unuzun gerçek zamanlı performansı
+          </p>
+        </div>
+        <Select value={selectedCoin} onValueChange={setSelectedCoin}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SUPPORTED_COINS.map((coin) => (
+              <SelectItem key={coin.value} value={coin.value}>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{coin.icon}</span>
+                  <span>{coin.label}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Stats Grid */}
