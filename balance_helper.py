@@ -198,6 +198,29 @@ class BalanceHelper:
         return result
 
 
+    def should_use_compound_returns(self) -> bool:
+        """
+        Bileşik getiri (compound) aktif mi kontrol et
+        
+        Returns:
+            bool: True ise kazançlar sermayeye eklenir
+        """
+        settings = self.get_settings()
+        if settings:
+            compound_enabled = settings.get('compoundEnabled', False)
+            
+            if compound_enabled:
+                print("\n📈 Bileşik Getiri Aktif:")
+                print("   Kazançlar otomatik olarak sermayeye eklenecek")
+            else:
+                print("\n📋 Bileşik Getiri Pasif:")
+                print("   Sabit sermaye kullanılacak")
+            
+            return compound_enabled
+        
+        return False
+
+
 # Kullanım Örneği
 if __name__ == "__main__":
     # Dashboard URL'inizi buraya yazın
@@ -222,3 +245,17 @@ if __name__ == "__main__":
         print(f"Kaldıraç: {result['leverage']}x")
     else:
         print("\n❌ Hesaplama başarısız!")
+
+    # Bileşik getiri kontrolü
+    print("\n" + "=" * 60)
+    print("Bileşik Getiri Kontrolü")
+    print("=" * 60)
+    
+    compound_enabled = helper.should_use_compound_returns()
+    
+    if compound_enabled:
+        print("\n💡 Not: Her kazançlı işlem sonrası bakiye otomatik güncellenecek")
+        print("   Örnek: 500 USDT → +50 USDT kazanç → Sonraki işlem 550 USDT ile")
+    else:
+        print("\n💡 Not: Sabit sermaye kullanılacak, kazançlar birikmeyecek")
+        print("   Örnek: 500 USDT → +50 USDT kazanç → Sonraki işlem yine 500 USDT ile")

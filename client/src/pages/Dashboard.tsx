@@ -19,6 +19,7 @@ export default function Dashboard() {
   const { data: tradeHistory, isLoading: historyLoading } = trpc.dashboard.tradeHistory.useQuery();
   const { data: performanceHistory } = trpc.dashboard.performanceMetrics.useQuery();
   const { data: unreadNotifications } = trpc.notifications.unread.useQuery();
+  const { data: settings } = trpc.settings.get.useQuery(); // Risk parametreleri için
   
   // Gerçek zamanlı fiyat güncellemesi
   const openSymbols = summary?.openPositions?.map((p: any) => p.symbol) || [];
@@ -249,8 +250,8 @@ export default function Dashboard() {
               <RiskManagementPanel
                 currentBalance={currentBalance}
                 dailyPnl={dailyPnl}
-                dailyLossLimit={4} // %4
-                riskPerTrade={2} // %2
+                dailyLossLimit={parseFloat(settings?.dailyLossLimitPercent || '4.00')} // Settings'den
+                riskPerTrade={parseFloat(settings?.riskPerTradePercent || '2.00')} // Settings'den
                 openPositionsCount={summary?.openPositionsCount || 0}
               />
 

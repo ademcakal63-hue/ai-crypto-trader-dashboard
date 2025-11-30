@@ -200,15 +200,36 @@ export async function updatePerformanceMetrics(data: {
 
 /**
  * Tüm açık pozisyonları kapat (Acil Durdur)
+ * Hem Binance'deki gerçek pozisyonları hem de database'deki kayıtları kapatır
  */
 export async function emergencyStopAll() {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
 
-  // Tüm açık pozisyonları getir
+  // 1. Binance'deki gerçek pozisyonları kapat
+  let binanceClosedCount = 0;
+  try {
+    const { getBotSettings } = await import('./settingsDb');
+    const { getBinanceClient, closeAllPositions } = await import('./binance');
+    
+    const settings = await getBotSettings();
+    
+    if (settings?.binanceApiKey && settings?.binanceApiSecret && settings?.isConnected) {
+      const client = getBinanceClient(settings.binanceApiKey, settings.binanceApiSecret);
+      const closedPositions = await closeAllPositions(client);
+      binanceClosedCount = closedPositions.length;
+      
+      console.log(`[Emergency Stop] Binance'de ${binanceClosedCount} pozisyon kapatıldı`);
+    }
+  } catch (error) {
+    console.error('[Emergency Stop] Binance pozisyon kapatma hatası:', error);
+    // Binance hatası olsa bile database'deki pozisyonları kapat
+  }
+
+  // 2. Database'deki pozisyonları kapat
   const openPositions = await db.select().from(positions).where(eq(positions.status, 'OPEN'));
 
-  let closedCount = 0;
+  let dbClosedCount = 0;
 
   for (const position of openPositions) {
     // Her pozisyonu kapat (mevcut fiyattan)
@@ -227,7 +248,7 @@ export async function emergencyStopAll() {
     await closePosition({
       positionId: position.id,
       exitPrice: currentPrice,
-      exitReason: 'MANUAL',
+      exitReason: 'MANUAL', // Emergency stop
       finalPnl: pnlAmount.toFixed(2),
       finalPnlPercentage: pnlPercentage.toFixed(2),
       rRatio: rRatio.toFixed(2),
@@ -235,12 +256,23 @@ export async function emergencyStopAll() {
       duration: Math.floor((new Date().getTime() - new Date(position.openedAt).getTime()) / 60000),
     });
 
-    closedCount++;
+    dbClosedCount++;
   }
+
+  // 3. Bildirim gönder
+  const { createNotification } = await import('./notificationService');
+  await createNotification({
+    type: 'EMERGENCY_STOP',
+    title: 'Acil Durdur Aktif',
+    message: `Tüm pozisyonlar kapatıldı. Binance: ${binanceClosedCount}, Database: ${dbClosedCount}`,
+    severity: 'ERROR',
+  });
 
   return {
     success: true,
-    closedCount,
-    message: `Emergency stop: ${closedCount} positions closed`,
+    binanceClosedCount,
+    dbClosedCount,
+    totalClosed: binanceClosedCount + dbClosedCount,
+    message: `Emergency stop: ${binanceClosedCount + dbClosedCount} positions closed (Binance: ${binanceClosedCount}, DB: ${dbClosedCount})`,
   };
 }

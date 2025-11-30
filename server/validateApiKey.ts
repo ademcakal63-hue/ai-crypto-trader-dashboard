@@ -1,7 +1,7 @@
-import { getBinanceClient } from "./binance";
+import { getBinanceClient, getFuturesBalance } from "./binance";
 
 /**
- * Binance API Key'i doğrula
+ * Binance Futures API Key'i doğrula
  */
 export async function validateBinanceApiKey(apiKey: string, apiSecret: string): Promise<{
   valid: boolean;
@@ -11,17 +11,11 @@ export async function validateBinanceApiKey(apiKey: string, apiSecret: string): 
   try {
     const client = getBinanceClient(apiKey, apiSecret);
     
-    // API key'i test et - hesap bilgilerini çek
-    // @ts-ignore - binance-api-node tip tanımları eksik
-    const accountInfo = await client.accountInformation();
+    // Futures API key'i test et - Futures hesap bilgilerini çek
+    const balance = await getFuturesBalance(client);
     
-    // USDT bakiyesini bul
-    const usdtBalance = accountInfo.balances.find((b: any) => b.asset === 'USDT');
-    
-    const total = usdtBalance 
-      ? parseFloat(usdtBalance.free) + parseFloat(usdtBalance.locked)
-      : 0;
-    const available = usdtBalance ? parseFloat(usdtBalance.free) : 0;
+    const total = balance.total;
+    const available = balance.available;
     
     return {
       valid: true,
@@ -41,7 +35,9 @@ export async function validateBinanceApiKey(apiKey: string, apiSecret: string): 
     } else if (error.message?.includes('IP')) {
       message = 'IP kısıtlaması var. Binance\'de IP ayarlarını kontrol edin.';
     } else if (error.message?.includes('permission')) {
-      message = 'API Key yetkisi yetersiz. Spot Trading yetkisi verin.';
+      message = 'API Key yetkisi yetersiz. "Enable Futures" yetkisi verin.';
+    } else if (error.message?.includes('Futures')) {
+      message = 'Futures API erişimi yok. "Enable Futures" yetkisini aktif edin.';
     }
     
     return {

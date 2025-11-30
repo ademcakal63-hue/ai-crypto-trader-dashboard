@@ -1,8 +1,8 @@
-import { getBinanceClient } from "./binance";
+import { getBinanceClient, getFuturesBalance } from "./binance";
 import { getBotSettings } from "./settingsDb";
 
 /**
- * Binance hesap bakiyesini getir
+ * Binance Futures hesap bakiyesini getir
  */
 export async function getBinanceBalance() {
   const settings = await getBotSettings();
@@ -13,22 +13,16 @@ export async function getBinanceBalance() {
 
   try {
     const client = getBinanceClient(settings.binanceApiKey, settings.binanceApiSecret);
-    // @ts-ignore - binance-api-node tip tanımları eksik
-    const accountInfo = await client.accountInformation();
     
-    // USDT bakiyesini bul
-    const usdtBalance = accountInfo.balances.find((b: any) => b.asset === 'USDT');
-    
-    if (!usdtBalance) {
-      return { total: '0.00', available: '0.00' };
-    }
+    // Futures bakiyesini çek
+    const balance = await getFuturesBalance(client);
     
     return {
-      total: parseFloat(usdtBalance.free) + parseFloat(usdtBalance.locked),
-      available: parseFloat(usdtBalance.free),
+      total: balance.total,
+      available: balance.available,
     };
   } catch (error) {
-    console.error('Binance balance error:', error);
+    console.error('Binance Futures balance error:', error);
     return null;
   }
 }

@@ -313,3 +313,20 @@
 - [x] bot_example.py güncellendi (balance_helper entegrasyonu)
 - [x] BALANCE_SYNC_GUIDE.md dokümantasyonu eklendi
 - [x] Unit testler yazıldı ve geçti (7/7 passed)
+
+
+## Sistem Taraması - Tespit Edilen Sorunlar (Şu An)
+
+### 🔴 Kritik Sorunlar (Hemen düzeltilmeli)
+- [x] Binance Testnet → Mainnet geçişi (binance.ts) - Environment variable ile kontrol
+- [x] Futures API endpoint'leri ekle (pozisyon açma/kapatma, kaldıraç ayarlama)
+- [x] Balance API'yi Futures'a çevir (futuresAccountInfo kullan)
+
+### 🟡 Orta Öncelikli Sorunlar
+- [x] Risk hesaplamalarını Settings'e bağla (RiskManagementPanel)
+- [x] Compound returns mantığını bot'a ekle (balance_helper.py)
+- [x] Emergency stop'u test et ve Binance entegrasyonu yap
+
+### 🟢 İyileştirmeler
+- [ ] IP Whitelist bilgisi göster (Settings sayfası)
+- [ ] Balance sync gerçek API ile test et
