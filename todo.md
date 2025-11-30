@@ -817,3 +817,13 @@ Dashboard'dan tek tıkla:
 - [ ] Log viewer'da logları görme
 - [ ] Bildirim sistemi çalışıyor mu
 - [ ] Acil durdur butonu test
+
+
+## 📊 TradingView Widget Ekleme (Şu An)
+
+### TradingView Entegrasyonu
+- [x] TradingView Advanced Chart widget oluştur
+- [x] Gerçek zamanlı fiyat gösterimi (BTC, ETH, SOL)
+- [x] Pozisyon marker'ları ekle (entry, SL, TP çizgileri)
+- [x] Dashboard'a entegre et (log viewer'ın üstünde)
+- [x] Responsive tasarım (mobil uyumlu)

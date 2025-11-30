@@ -13,6 +13,8 @@ import NotificationPanel from "@/components/NotificationPanel";
 import BotToggle from "@/components/BotToggle";
 import { useLivePrices } from "@/hooks/useLivePrices";
 import { useEffect, useState } from "react";
+import { TradingViewChart } from "@/components/TradingViewChart";
+import { PositionOverlay } from "@/components/PositionOverlay";
 
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = trpc.dashboard.overview.useQuery();
@@ -248,6 +250,54 @@ export default function Dashboard() {
 
           {/* Genel Bakış Tab */}
           <TabsContent value="overview" className="space-y-6">
+            {/* TradingView Grafik */}
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-blue-500" />
+                  Canlı Fiyat Grafiği
+                  {isConnected && (
+                    <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-400 border-green-500/30 text-xs">
+                      LIVE
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  TradingView ile canlı fiyat takibi ve pozisyon görüntüleme
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="relative h-[500px] w-full">
+                  {/* TradingView Chart - Varsayılan olarak BTC göster */}
+                  <TradingViewChart 
+                    symbol="BTCUSDT" 
+                    positions={livePositions.filter((p: any) => p.symbol === 'BTCUSDT').map((p: any) => ({
+                      entry_price: parseFloat(p.entryPrice),
+                      stop_loss: parseFloat(p.stopLoss),
+                      take_profit: parseFloat(p.takeProfit),
+                      direction: p.direction,
+                    }))}
+                  />
+                  
+                  {/* Pozisyon Overlay - SL/TP bilgileri */}
+                  <PositionOverlay 
+                    positions={livePositions.filter((p: any) => p.symbol === 'BTCUSDT').map((p: any) => ({
+                      symbol: p.symbol,
+                      direction: p.direction,
+                      entry_price: parseFloat(p.entryPrice),
+                      stop_loss: parseFloat(p.stopLoss),
+                      take_profit: parseFloat(p.takeProfit),
+                      quantity: parseFloat(p.quantity),
+                      current_price: parseFloat(p.currentPrice || p.entryPrice),
+                      pnl: parseFloat(p.pnl || '0'),
+                      pnl_percent: parseFloat(p.pnlPercentage || '0'),
+                    }))}
+                    currentPrice={parseFloat(String(prices['BTCUSDT']?.price || livePositions.find((p: any) => p.symbol === 'BTCUSDT')?.entryPrice || '0'))}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Risk Yönetimi ve AI Pattern Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <RiskManagementPanel
