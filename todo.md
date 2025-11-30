@@ -708,3 +708,18 @@ Dashboard'dan tek tıkla:
 7. "Tümünü Başlat" butonuna tıkla
 8. Log viewer'larda bot çıktılarını izle
 9. Sol alttaki bildirim ikonuna tıklayarak bildirimleri gör
+
+
+## Acil Düzeltmeler (Tamamlandı)
+
+### Settings Sayfası Hatası
+- [x] React imports kontrol edildi (useState, useEffect)
+- [x] Server yeniden başlatıldı (vite cache temizlendi)
+- [x] Settings sayfası çalışıyor
+
+### Coin Seçici Kaldırma
+- [x] Sağ üstteki coin seçici dropdown'u kaldırıldı
+- [x] Header'a "(BTC, ETH, SOL)" eklendi
+- [x] 3 coin aynı anda çalışıyor
+- [x] Dashboard basitleştirildi
+- [x] Gereksiz import'lar temizlendi (Select, useState, ChevronDown)
