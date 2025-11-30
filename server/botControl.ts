@@ -74,12 +74,20 @@ export async function startBot(symbol: string) {
     });
 
     // Log stdout/stderr
+    const logDir = path.join(process.cwd(), 'ai_bot', 'logs');
+    await fs.mkdir(logDir, { recursive: true });
+    const logFile = path.join(logDir, `${symbol}.log`);
+    
     botProcess.stdout?.on('data', (data) => {
+      const logLine = `[${new Date().toISOString()}] [INFO] ${data.toString().trim()}\n`;
       console.log(`[${symbol}] ${data.toString().trim()}`);
+      fs.appendFile(logFile, logLine).catch(console.error);
     });
 
     botProcess.stderr?.on('data', (data) => {
+      const logLine = `[${new Date().toISOString()}] [ERROR] ${data.toString().trim()}\n`;
       console.error(`[${symbol}] ERROR: ${data.toString().trim()}`);
+      fs.appendFile(logFile, logLine).catch(console.error);
     });
 
     // Save status to file
@@ -184,5 +192,31 @@ export async function loadBotStatus() {
     // This is intentional to prevent unexpected behavior
   } catch (error) {
     // File doesn't exist or invalid, ignore
+  }
+}
+
+/**
+ * Get logs for a specific bot
+ */
+export async function getBotLogs(symbol: string) {
+  const logFile = path.join(process.cwd(), 'ai_bot', 'logs', `${symbol}.log`);
+  
+  try {
+    const data = await fs.readFile(logFile, 'utf-8');
+    const lines = data.split('\n').filter(line => line.trim());
+    
+    // Return last 100 lines
+    const recentLines = lines.slice(-100);
+    
+    return {
+      logs: recentLines,
+      totalLines: lines.length,
+    };
+  } catch (error) {
+    // Log file doesn't exist yet or can't be read
+    return {
+      logs: [],
+      totalLines: 0,
+    };
   }
 }

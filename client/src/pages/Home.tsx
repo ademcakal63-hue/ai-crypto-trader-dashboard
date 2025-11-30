@@ -23,6 +23,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { BotControlPanel } from "@/components/BotControlPanel";
+import { BotLogViewer } from "@/components/BotLogViewer";
 
 const SUPPORTED_COINS = [
   { value: "BTCUSDT", label: "Bitcoin (BTC)", icon: "₿" },
@@ -38,6 +39,9 @@ export default function Home() {
   const { data: openPositions, isLoading: positionsLoading } = trpc.dashboard.openPositions.useQuery();
   const { data: aiLearning, isLoading: aiLoading } = trpc.dashboard.aiLearning.useQuery();
   const { data: performance, isLoading: perfLoading } = trpc.dashboard.performance.useQuery();
+  const { data: botStatus } = trpc.bot.status.useQuery(undefined, {
+    refetchInterval: 5000,
+  });
 
   const isLoading = overviewLoading || positionsLoading || aiLoading || perfLoading;
 
@@ -86,6 +90,22 @@ export default function Home() {
 
       {/* Bot Control Panel */}
       <BotControlPanel />
+
+      {/* Bot Log Viewers */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <BotLogViewer 
+          symbol="BTCUSDT" 
+          isRunning={botStatus?.bots?.find((b: any) => b.symbol === 'BTCUSDT')?.status === 'running'} 
+        />
+        <BotLogViewer 
+          symbol="ETHUSDT" 
+          isRunning={botStatus?.bots?.find((b: any) => b.symbol === 'ETHUSDT')?.status === 'running'} 
+        />
+        <BotLogViewer 
+          symbol="SOLUSDT" 
+          isRunning={botStatus?.bots?.find((b: any) => b.symbol === 'SOLUSDT')?.status === 'running'} 
+        />
+      </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

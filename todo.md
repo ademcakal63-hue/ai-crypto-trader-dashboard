@@ -614,3 +614,31 @@ Dashboard'dan tek tıkla:
 - "Tümünü Başlat" ile 3 coin'i birden başlat
 - "Tümünü Durdur" ile hepsini durdur
 - Durum otomatik güncellenir (5s)
+
+
+## Bot Log Görüntüleyici (Tamamlandı)
+
+### UI Bileşenleri
+- [x] BotLogViewer komponenti oluştur
+- [x] Her bot için ayrı log paneli (3 panel: BTC, ETH, SOL)
+- [x] Son 100 satır gösterme
+- [x] Otomatik scroll (en yeni log'a)
+- [x] Log seviyesi renklendirme (INFO/WARNING/ERROR/SUCCESS)
+- [x] Temizle butonu
+- [x] Tam ekran modu
+- [x] Auto-scroll checkbox
+- [x] Live/Stopped badge
+- [x] Satır sayısı gösterimi
+
+### Backend API
+- [x] Log okuma endpoint'i (bot.logs)
+- [x] Log dosyası yönetimi (ai_bot/logs/*.log)
+- [x] Real-time log streaming (2 saniyede bir polling)
+- [x] Stdout/stderr log dosyasına yazma
+- [x] Timestamp ekleme
+
+### Özellikler
+- Terminal görünümü (siyah arka plan, monospace font)
+- Bot durumuna göre dinamik güncelleme
+- Bot çalışmıyorsa: "Bot is not running. Start the bot to see logs."
+- Bot çalışıyorsa: Real-time log akışı (2s refresh)

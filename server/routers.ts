@@ -152,6 +152,18 @@ export const appRouter = router({
       const { getBotStatus } = await import('./botControl');
       return await getBotStatus();
     }),
+    
+    logs: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null && 'symbol' in val) {
+          return val as { symbol: string };
+        }
+        throw new Error('Invalid input');
+      })
+      .query(async ({ input }) => {
+        const { getBotLogs } = await import('./botControl');
+        return await getBotLogs(input.symbol);
+      }),
   }),
   
   // Bildirim Routers
