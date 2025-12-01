@@ -267,7 +267,7 @@ function DashboardLayoutContent({
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <div className="group-data-[collapsible=icon]:hidden">
+              <div>
                 <NotificationDropdown />
               </div>
             </div>

@@ -21,6 +21,12 @@ interface Notification {
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   
+  const handleToggle = () => {
+    console.log('[NotificationDropdown] Toggle clicked! Current:', isOpen);
+    setIsOpen(!isOpen);
+    console.log('[NotificationDropdown] New state:', !isOpen);
+  };
+  
   // Fetch notifications
   const { data: notifications = [], refetch } = trpc.notifications.list.useQuery(undefined, {
     refetchInterval: 5000, // Refresh every 5 seconds
@@ -94,7 +100,7 @@ export function NotificationDropdown() {
         variant="ghost"
         size="icon"
         className="relative"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -117,7 +123,7 @@ export function NotificationDropdown() {
           />
           
           {/* Notification Panel */}
-          <div className="absolute right-0 top-12 z-[100] w-96 rounded-lg border bg-background shadow-lg">
+          <div className="absolute left-0 bottom-12 z-[100] w-96 max-h-[500px] rounded-lg border border-border bg-card text-card-foreground shadow-xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b p-4">
               <div className="flex items-center gap-2">
