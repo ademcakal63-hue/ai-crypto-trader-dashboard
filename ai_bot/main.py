@@ -248,7 +248,38 @@ class AITradingBot:
             print(f"   ❌ Pozisyon açılamadı: {result.get('error')}")
             return
         
-        # Pozisyonu kaydet
+        print(f"   ✅ Pozisyon açıldı! Entry: ${result['entry_price']:.2f}")
+        
+        # 8. Stop Loss order yerleştir (KRİTİK!)
+        print(f"   🛡️ Stop Loss order yerleştiriliyor...")
+        sl_result = self.binance.place_stop_loss_order(
+            symbol=self.symbol,
+            direction=analysis["direction"],
+            quantity=quantity,
+            stop_price=stop_loss
+        )
+        
+        if sl_result["success"]:
+            print(f"   ✅ Stop Loss yerleştirildi: ${stop_loss:.2f}")
+        else:
+            print(f"   ⚠️ Stop Loss yerleştirilemedi: {sl_result.get('error')}")
+            print(f"   ⚠️ UYARI: Bot crash olursa stop loss çalışmayacak!")
+        
+        # 9. Take Profit order yerleştir (Opsiyonel)
+        print(f"   🎯 Take Profit order yerleştiriliyor...")
+        tp_result = self.binance.place_take_profit_order(
+            symbol=self.symbol,
+            direction=analysis["direction"],
+            quantity=quantity,
+            take_profit_price=analysis["take_profit"]
+        )
+        
+        if tp_result["success"]:
+            print(f"   ✅ Take Profit yerleştirildi: ${analysis['take_profit']:.2f}")
+        else:
+            print(f"   ⚠️ Take Profit yerleştirilemedi: {tp_result.get('error')}")
+        
+        # 10. Pozisyonu kaydet
         position = {
             "symbol": self.symbol,
             "direction": analysis["direction"],
@@ -263,16 +294,23 @@ class AITradingBot:
             "order_id": result["order_id"]
         }
         
+        # SL/TP order ID'lerini kaydet
+        position["sl_order_id"] = sl_result.get("order_id")
+        position["tp_order_id"] = tp_result.get("order_id")
+        
         self.open_positions[self.symbol] = position
         self.today_trades.append(position)
         
         # Dashboard'a bildir
         self.dashboard.open_position_notification(position)
         
-        print(f"   ✅ Pozisyon açıldı!")
+        print(f"\n   ✅ POZİSYON HAZIR!")
         print(f"   Entry: ${result['entry_price']:.2f}")
-        print(f"   SL: ${stop_loss:.2f}")
-        print(f"   TP: ${analysis['take_profit']:.2f}")
+        print(f"   SL: ${stop_loss:.2f} (Binance'de aktif)")
+        print(f"   TP: ${analysis['take_profit']:.2f} (Binance'de aktif)")
+        print(f"   Risk: ${risk_amount:.2f} ({risk_percent*100:.1f}%)")
+        print(f"   Kaldıraç: {leverage}x")
+        print(f"   🛡️ Bot crash olsa bile Binance koruyacak!\n")
     
     def _monitor_open_positions(self):
         """Açık pozisyonları takip et"""

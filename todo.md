@@ -848,3 +848,22 @@ Dashboard'dan tek tıkla:
 - [x] Senaryo 1: $1000 sermaye, %2 risk, %1 SL mesafesi → 2x kaldıraç, $2000 pozisyon, $1000 margin
 - [x] Senaryo 2: $1000 sermaye, %2 risk, %5 SL mesafesi → 1x kaldıraç (min), $400 pozisyon, $400 margin
 - [x] Senaryo 3: $1000 sermaye, %2 risk, %0.2 SL mesafesi → 10x kaldıraç, $10000 pozisyon, $1000 margin
+
+
+## 🚨 KRİTİK: Otomatik Stop Loss Order (Şu An)
+
+### Sorun
+- [x] Stop loss sadece bot hafızasında tutuluyor
+- [x] Binance'e SL order gönderilmiyor
+- [x] Bot crash olursa stop loss çalışmaz
+- [x] Risk: Sınırsız kayıp!
+
+### Çözüm
+- [x] place_stop_loss_order() fonksiyonu ekle
+- [x] Pozisyon açarken otomatik SL order gönder
+- [x] Take profit order da ekle (opsiyonel)
+- [x] Bot crash olsa bile Binance korusun
+
+### Test
+- [ ] SL order Binance'de görünüyor mu?
+- [ ] Fiyat SL'e gelince otomatik kapanıyor mu?

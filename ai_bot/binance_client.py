@@ -261,6 +261,142 @@ class BinanceClient:
                 "error": str(e)
             }
     
+    def place_stop_loss_order(self, symbol: str, direction: str, quantity: float, stop_price: float) -> Dict:
+        """
+        Stop loss order yerleştir (STOP_MARKET)
+        
+        Args:
+            symbol: İşlem çifti
+            direction: Pozisyon yönü ("LONG" veya "SHORT")
+            quantity: Miktar
+            stop_price: Stop loss fiyatı
+        
+        Returns:
+            {
+                "success": True,
+                "order_id": "123456",
+                "stop_price": 49500.0
+            }
+        """
+        endpoint = "/fapi/v1/order"
+        url = f"{self.base_url}{endpoint}"
+        
+        # Ters yönde stop order (LONG için SELL, SHORT için BUY)
+        side = "SELL" if direction == "LONG" else "BUY"
+        
+        timestamp = int(time.time() * 1000)
+        params = {
+            "symbol": symbol,
+            "side": side,
+            "type": "STOP_MARKET",  # Stop loss order tipi
+            "quantity": quantity,
+            "stopPrice": str(stop_price),  # Tetiklenme fiyatı
+            "timestamp": timestamp
+        }
+        
+        # Signature
+        query_string = urlencode(params)
+        signature = hmac.new(
+            self.api_secret.encode("utf-8"),
+            query_string.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+        
+        params["signature"] = signature
+        
+        headers = {"X-MBX-APIKEY": self.api_key}
+        
+        try:
+            response = requests.post(url, params=params, headers=headers, timeout=10)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            return {
+                "success": True,
+                "order_id": str(data["orderId"]),
+                "stop_price": float(data["stopPrice"])
+            }
+            
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Stop loss order hatası: {e}")
+            if hasattr(e.response, 'text'):
+                print(f"   Detay: {e.response.text}")
+            return {
+                "success": False,
+                "order_id": None,
+                "stop_price": 0.0,
+                "error": str(e)
+            }
+    
+    def place_take_profit_order(self, symbol: str, direction: str, quantity: float, take_profit_price: float) -> Dict:
+        """
+        Take profit order yerleştir (TAKE_PROFIT_MARKET)
+        
+        Args:
+            symbol: İşlem çifti
+            direction: Pozisyon yönü ("LONG" veya "SHORT")
+            quantity: Miktar
+            take_profit_price: Take profit fiyatı
+        
+        Returns:
+            {
+                "success": True,
+                "order_id": "123456",
+                "take_profit_price": 51500.0
+            }
+        """
+        endpoint = "/fapi/v1/order"
+        url = f"{self.base_url}{endpoint}"
+        
+        # Ters yönde TP order (LONG için SELL, SHORT için BUY)
+        side = "SELL" if direction == "LONG" else "BUY"
+        
+        timestamp = int(time.time() * 1000)
+        params = {
+            "symbol": symbol,
+            "side": side,
+            "type": "TAKE_PROFIT_MARKET",  # Take profit order tipi
+            "quantity": quantity,
+            "stopPrice": str(take_profit_price),  # Tetiklenme fiyatı
+            "timestamp": timestamp
+        }
+        
+        # Signature
+        query_string = urlencode(params)
+        signature = hmac.new(
+            self.api_secret.encode("utf-8"),
+            query_string.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+        
+        params["signature"] = signature
+        
+        headers = {"X-MBX-APIKEY": self.api_key}
+        
+        try:
+            response = requests.post(url, params=params, headers=headers, timeout=10)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            return {
+                "success": True,
+                "order_id": str(data["orderId"]),
+                "take_profit_price": float(data["stopPrice"])
+            }
+            
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Take profit order hatası: {e}")
+            if hasattr(e.response, 'text'):
+                print(f"   Detay: {e.response.text}")
+            return {
+                "success": False,
+                "order_id": None,
+                "take_profit_price": 0.0,
+                "error": str(e)
+            }
+    
     def close_position(self, symbol: str, direction: str, quantity: float) -> Dict:
         """
         Pozisyon kapat
