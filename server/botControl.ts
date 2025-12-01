@@ -34,8 +34,8 @@ export async function startBot(symbol: string) {
       }
     }
 
-    // Start the bot process
-    const botProcess = spawn('python3', [
+    // Start the bot process (use venv Python to avoid SRE module mismatch)
+    const botProcess = spawn(path.join(process.cwd(), 'ai_bot', 'venv', 'bin', 'python'), [
       path.join(process.cwd(), 'ai_bot', 'main.py'),
       '--symbol',
       symbol,

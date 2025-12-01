@@ -867,3 +867,17 @@ Dashboard'dan tek tıkla:
 ### Test
 - [ ] SL order Binance'de görünüyor mu?
 - [ ] Fiyat SL'e gelince otomatik kapanıyor mu?
+
+
+## 🔴 KRİTİK UI BUGLARI (Şu An)
+
+### Bildirim Dropdown
+- [x] Bildirim butonuna tıklayınca dropdown açılmıyor (z-index düzeltildi)
+- [x] +9 bildirim var ama görüntülenemiyor
+- [x] useState duplicate error (cache sorunu)
+
+### Bot Başlatma
+- [x] "Tümünü Başlat" butonu çalışmıyor (Python venv kullanılıyor)
+- [x] Butona basınca hiçbir şey olmuyor (dashboard_client.py düzeltildi)
+- [x] Bot'lar "Durduruldu" durumunda kalıyor (SRE module mismatch çözüldü)
+- [x] Console'da "Could not establish connection" hatası (tRPC JSON wrapper düzeltildi)

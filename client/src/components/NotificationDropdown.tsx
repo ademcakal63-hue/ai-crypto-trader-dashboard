@@ -88,7 +88,7 @@ export function NotificationDropdown() {
   };
   
   return (
-    <div className="relative">
+    <div className="relative z-[100]">
       {/* Bell Icon Button */}
       <Button
         variant="ghost"
@@ -112,12 +112,12 @@ export function NotificationDropdown() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[99]"
             onClick={() => setIsOpen(false)}
           />
           
           {/* Notification Panel */}
-          <div className="absolute right-0 top-12 z-50 w-96 rounded-lg border bg-background shadow-lg">
+          <div className="absolute right-0 top-12 z-[100] w-96 rounded-lg border bg-background shadow-lg">
             {/* Header */}
             <div className="flex items-center justify-between border-b p-4">
               <div className="flex items-center gap-2">

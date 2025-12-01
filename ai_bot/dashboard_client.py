@@ -21,7 +21,11 @@ class DashboardClient:
         try:
             response = requests.get(f"{self.api_base}/settings.get", timeout=10)
             response.raise_for_status()
-            return response.json()["result"]["data"]
+            data = response.json()["result"]["data"]
+            # tRPC superjson wrapper - "json" key içinde gerçek data var
+            if "json" in data:
+                return data["json"]
+            return data
         except Exception as e:
             print(f"⚠️ Settings çekme hatası: {e}")
             return {}
