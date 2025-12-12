@@ -82,9 +82,11 @@ You are an expert crypto trader analyzing {symbol} on {timeframe} timeframe.
   "risk_reward_ratio": float
 }}
 
-**Rules:**
+**RISK MANAGEMENT RULES (MANDATORY):**
 - Only trade if confidence > 0.7
-- Risk/Reward ratio must be >= 2.0
+- Risk/Reward ratio must be >= 1.5 (minimum)
+- Stop loss is MANDATORY - must be 0.5% - 5% from entry
+- Stop loss placement should consider volatility and SMC levels
 - Consider order book imbalance (>30% = strong signal)
 - Prioritize Smart Money Concepts over traditional indicators
 """
@@ -225,19 +227,31 @@ You are the final decision maker for a crypto trading bot.
 **Your Task:**
 Combine all signals and make the FINAL trading decision.
 
+**HARD LIMITS (CANNOT BE EXCEEDED):**
+- Maximum position size: 2% of capital
+- Maximum daily loss: 4% of capital
+- Stop loss: MANDATORY for every trade
+- Minimum risk/reward ratio: 1.5
+
 **Decision Rules:**
 1. Chart confidence must be > 0.7
-2. Risk/Reward ratio must be >= 2.0
+2. Risk/Reward ratio must be >= 1.5 (from chart analysis)
 3. News sentiment should align with chart signal (or be neutral)
 4. Order book imbalance should support the direction (>20%)
-5. Don't open new positions if already have 3+ open positions
+5. Don't open new positions if already have 2+ open positions
+6. Position size should be based on confidence:
+   - High confidence (>0.85): 1.5% - 2%
+   - Medium confidence (0.75-0.85): 1% - 1.5%
+   - Low confidence (0.7-0.75): 0.5% - 1%
+7. Consider volatility when deciding position size
+8. If daily loss is approaching 4%, be MORE conservative
 
 **Response Format (JSON):**
 {{
   "action": "OPEN_LONG" | "OPEN_SHORT" | "CLOSE" | "HOLD",
   "confidence": 0.0-1.0,
-  "reasoning": "Detailed explanation combining all signals",
-  "position_size_percent": 1-5 (% of capital to use)
+  "reasoning": "Detailed explanation combining all signals and risk management",
+  "position_size_percent": 0.5-2.0 (% of capital, based on confidence and risk)
 }}
 """
         

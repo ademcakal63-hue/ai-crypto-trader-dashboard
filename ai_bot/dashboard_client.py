@@ -213,3 +213,26 @@ class DashboardClient:
         """ISO format timestamp"""
         from datetime import datetime
         return datetime.now().isoformat()
+
+    def update_settings(self, updates: Dict) -> bool:
+        """
+        Update bot settings in database
+        
+        Args:
+            updates: Dict of settings to update
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            response = requests.post(
+                f"{self.api_base}/settings.update",
+                json=updates,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            response.raise_for_status()
+            return True
+        except Exception as e:
+            print(f"⚠️ Settings güncelleme hatası: {e}")
+            return False

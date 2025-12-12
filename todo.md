@@ -928,3 +928,41 @@ Dashboard'dan tek tıkla:
 - [x] Test trade execution with all signals
 - [x] Fix any errors that occur
 - [ ] Save checkpoint and deliver
+
+
+## Paper Trading + Risk Management (TAMAMLANDI ✅)
+
+### Paper Trading Mode
+- [x] Add paper trading mode (simulated trades, no real money)
+- [x] Track first 100 trades in paper mode
+- [x] Save all trade decisions and outcomes to database
+- [x] Calculate success rate, win/loss ratio, profit/loss
+- [ ] Auto-switch to real trading after 100 successful paper trades (manual approval required)
+
+### Risk Management (Hard Limits)
+- [x] Implement 2% max position size per trade (HARD LIMIT)
+- [x] Implement 4% max daily loss limit (HARD LIMIT)
+- [x] Add mandatory stop loss for every trade
+- [x] Track daily P&L and block new trades if limit reached
+- [x] Add position size calculator based on account balance
+
+### OpenAI Risk Management Integration
+- [x] Update OpenAI prompts to include risk management rules
+- [x] OpenAI decides position size (0.5% - 2% based on confidence)
+- [x] OpenAI places stop loss based on volatility + SMC
+- [x] OpenAI checks daily loss limit before opening trades
+- [x] OpenAI calculates risk/reward ratio (min 1:1.5)
+
+### 100-Trade Cycle & Fine-Tuning
+- [x] Add trade counter (resets every 100 trades)
+- [x] Trigger automatic fine-tuning after 100 trades
+- [x] Generate training dataset from completed trades
+- [x] Update OpenAI model with learned patterns
+- [x] Generate performance report after each cycle
+
+### Testing
+- [x] Test paper trading mode
+- [x] Test risk management limits
+- [x] Test 100-trade cycle
+- [ ] Test fine-tuning trigger (requires 100 real trades)
+- [ ] Save checkpoint
