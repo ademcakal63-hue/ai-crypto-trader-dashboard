@@ -68,6 +68,7 @@ export default function Settings() {
     return {
       binanceApiKey: "",
       binanceApiSecret: "",
+      openaiApiKey: "",
       capitalLimit: "",
       useAllBalance: true,
       compoundEnabled: false,
@@ -90,6 +91,7 @@ export default function Settings() {
         const newFormData = {
           binanceApiKey: settings.binanceApiKey || "",
           binanceApiSecret: settings.binanceApiSecret || "",
+          openaiApiKey: settings.openaiApiKey || "",
           capitalLimit: settings.capitalLimit || "",
           useAllBalance: settings.useAllBalance || false,
           compoundEnabled: settings.compoundEnabled,
@@ -278,6 +280,51 @@ export default function Settings() {
                       • API Key oluştururken <strong>"Enable Futures"</strong> yetkisi verin (bot kaldıraçlı işlem yapar)<br />
                       • <strong>"Enable Withdrawals"</strong> (çekim) yetkisi vermeyin (güvenlik)<br />
                       • <strong>IP Whitelist</strong> kullanın (opsiyonel ama önerilir)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* OpenAI API Key */}
+          <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Key className="w-5 h-5 text-purple-500" />
+                OpenAI API Key
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                AI karar verme sistemi için OpenAI API key'inizi girin
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="openaiApiKey" className="text-slate-300">
+                  OpenAI API Key
+                </Label>
+                <Input
+                  id="openaiApiKey"
+                  type="password"
+                  value={formData.openaiApiKey || ""}
+                  onChange={(e) => setFormData({ ...formData, openaiApiKey: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white font-mono"
+                  placeholder="sk-..."
+                />
+                <p className="text-xs text-slate-500">
+                  OpenAI Platform'dan API key oluşturun: <a href="https://platform.openai.com/api-keys" target="_blank" className="text-blue-400 hover:underline">platform.openai.com/api-keys</a>
+                </p>
+              </div>
+
+              <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-300">
+                    <p className="font-semibold mb-1">Maliyet Bilgisi</p>
+                    <p className="text-xs text-blue-400">
+                      • GPT-4 Turbo kullanılıyor<br />
+                      • 100 trade ≈ $10-15 maliyet<br />
+                      • Aylık tahmini: $50-100
                     </p>
                   </div>
                 </div>

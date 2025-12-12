@@ -991,3 +991,12 @@ Dashboard'dan tek tıkla:
   - [x] Paper trading state'i database'den çek
 - [x] Gerçek zamanlı güncelleme (bot çalışırken - 5 saniye interval)
 - [ ] Checkpoint kaydet
+
+
+## OpenAI API Key + News API Düzeltmeleri (TAMAMLANDI ✅)
+
+- [x] Settings'e OpenAI API Key alanı ekle
+- [x] Database schema'ya openaiApiKey alanı ekle
+- [x] news_analyzer.py'de CoinGecko API kullan (free, API key gerektirmez)
+- [x] Bot startup'ta OpenAI key'i settings'ten oku
+- [ ] Checkpoint kaydet

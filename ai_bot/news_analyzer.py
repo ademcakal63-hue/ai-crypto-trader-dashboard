@@ -34,29 +34,26 @@ class NewsAnalyzer:
             if (datetime.now() - cached_time).seconds < self.cache_duration:
                 return cached_news
         
-        # Fetch news from CryptoPanic API (free tier)
+        # Fetch news from CoinGecko API (free, no API key needed)
         try:
-            url = f"https://cryptopanic.com/api/v1/posts/"
-            params = {
-                "auth_token": "free",  # Free tier
-                "currencies": coin,
-                "kind": "news",
-                "filter": "important"
-            }
+            # CoinGecko trending coins endpoint
+            url = "https://api.coingecko.com/api/v3/search/trending"
             
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
                 news_list = []
                 
-                for item in data.get('results', [])[:limit]:
+                # CoinGecko trending coins (market sentiment)
+                for item in data.get('coins', [])[:limit]:
+                    coin_data = item.get('item', {})
                     news_list.append({
-                        "title": item.get('title', ''),
-                        "description": item.get('title', ''),  # CryptoPanic doesn't have description
-                        "url": item.get('url', ''),
-                        "published_at": item.get('published_at', ''),
-                        "source": item.get('source', {}).get('title', 'Unknown')
+                        "title": f"{coin_data.get('name', 'Unknown')} trending (Rank #{coin_data.get('market_cap_rank', 'N/A')})",
+                        "description": f"Price: ${coin_data.get('data', {}).get('price', 'N/A')} | 24h: {coin_data.get('data', {}).get('price_change_percentage_24h', {}).get('usd', 0):.2f}%",
+                        "url": f"https://www.coingecko.com/en/coins/{coin_data.get('id', '')}",
+                        "published_at": datetime.now().isoformat(),
+                        "source": "CoinGecko Trending"
                     })
                 
                 # Cache result

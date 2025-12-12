@@ -54,7 +54,13 @@ class TradingBot:
         self.cycle_manager = TradeCycleManager()
         
         # Initialize trading modules
-        self.openai_trader = OpenAITrader()
+        # Get OpenAI API key from settings or environment
+        openai_key = self.settings.get('openaiApiKey', '') or os.getenv('OPENAI_API_KEY', '')
+        if not openai_key:
+            print("\n⚠️ WARNING: No OpenAI API key found!")
+            print("   Add OpenAI API key in Settings to enable AI trading.\n")
+        
+        self.openai_trader = OpenAITrader(api_key=openai_key) if openai_key else None
         
         # Get Binance API keys from settings
         api_key = self.settings.get('binanceApiKey', '')
@@ -172,6 +178,12 @@ class TradingBot:
         else:
             orderbook_data = {'imbalance': 0, 'large_orders': []}
             print(f"   Skipped (no API keys)")
+        
+        # Check if OpenAI trader is available
+        if not self.openai_trader:
+            print(f"\n⚠️ Skipped: No OpenAI API key")
+            print(f"   Please add OpenAI API key in Settings to start trading.")
+            return
         
         # 3. Detect SMC patterns
         print(f"\n🧠 Detecting SMC patterns...")

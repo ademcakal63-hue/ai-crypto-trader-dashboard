@@ -9,10 +9,10 @@ from typing import Dict, List, Optional
 from openai import OpenAI
 
 class OpenAITrader:
-    def __init__(self):
-        self.api_key = os.getenv("OPENAI_API_KEY")
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
-            raise ValueError("❌ OPENAI_API_KEY environment variable not found!")
+            raise ValueError("❌ OpenAI API key not provided! Add it in Settings or set OPENAI_API_KEY env variable.")
         
         self.client = OpenAI(api_key=self.api_key)
         self.model = "gpt-4-turbo-preview"  # Supports JSON mode
