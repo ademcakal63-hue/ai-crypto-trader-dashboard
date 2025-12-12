@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Play, Square, RefreshCw, Activity } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 const SUPPORTED_COINS = [
   { symbol: "BTCUSDT", name: "Bitcoin", icon: "₿" },
@@ -33,14 +33,23 @@ export function BotControlPanel() {
     }
   };
 
-  const handleStartAll = () => {
+  const handleStartAll = useCallback(() => {
+    console.log('[BotControlPanel] handleStartAll clicked');
+    console.log('[BotControlPanel] botStatus:', botStatus);
+    console.log('[BotControlPanel] SUPPORTED_COINS:', SUPPORTED_COINS);
+    
     SUPPORTED_COINS.forEach(coin => {
       const isRunning = botStatus?.bots?.find((b: any) => b.symbol === coin.symbol)?.status === 'running';
+      console.log(`[BotControlPanel] ${coin.symbol} - isRunning:`, isRunning);
+      
       if (!isRunning) {
+        console.log(`[BotControlPanel] Starting ${coin.symbol}...`);
         startBot.mutate({ symbol: coin.symbol });
+      } else {
+        console.log(`[BotControlPanel] ${coin.symbol} already running, skipping`);
       }
     });
-  };
+  }, [botStatus, startBot]);
 
   const handleStopAll = () => {
     SUPPORTED_COINS.forEach(coin => {

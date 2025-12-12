@@ -35,8 +35,15 @@ export async function startBot(symbol: string) {
     }
 
     // Start the bot process (use venv Python to avoid SRE module mismatch)
-    const botProcess = spawn(path.join(process.cwd(), 'ai_bot', 'venv', 'bin', 'python'), [
-      path.join(process.cwd(), 'ai_bot', 'main.py'),
+    const pythonPath = '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/venv/bin/python';
+    const mainPath = '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/main.py';
+    
+    console.log(`[BotControl] Starting bot ${symbol}`);
+    console.log(`[BotControl] Python path: ${pythonPath}`);
+    console.log(`[BotControl] Main script: ${mainPath}`);
+    
+    const botProcess = spawn(pythonPath, [
+      mainPath,
       '--symbol',
       symbol,
     ], {

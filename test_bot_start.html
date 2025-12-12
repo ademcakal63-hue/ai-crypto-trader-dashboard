@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bot Start</title>
+</head>
+<body>
+    <h1>Test Bot Start API</h1>
+    <button onclick="startBot('BTCUSDT')">Start BTCUSDT</button>
+    <button onclick="startBot('ETHUSDT')">Start ETHUSDT</button>
+    <button onclick="startBot('SOLUSDT')">Start SOLUSDT</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function startBot(symbol) {
+            const result = document.getElementById('result');
+            result.textContent = `Starting ${symbol}...`;
+            
+            try {
+                const response = await fetch('/api/trpc/bot.start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "0": {
+                            symbol: symbol
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                result.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
