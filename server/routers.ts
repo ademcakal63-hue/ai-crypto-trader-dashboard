@@ -207,6 +207,35 @@ export const appRouter = router({
         return await validateBinanceApiKey(input.apiKey, input.apiSecret);
       }),
     
+    validateOpenAIKey: publicProcedure
+      .input(z.object({
+        apiKey: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Test OpenAI API key with a simple request
+        try {
+          const { OpenAI } = await import('openai');
+          const client = new OpenAI({ apiKey: input.apiKey });
+          
+          const response = await client.chat.completions.create({
+            model: 'gpt-4-turbo-preview',
+            messages: [{ role: 'user', content: 'Say OK' }],
+            max_tokens: 5,
+          });
+          
+          return {
+            valid: true,
+            message: '✅ OpenAI API key geçerli!',
+            model: response.model,
+          };
+        } catch (error: any) {
+          return {
+            valid: false,
+            message: `❌ OpenAI API key geçersiz: ${error.message}`,
+          };
+        }
+      }),
+    
     get: publicProcedure.query(async () => {
       const { getBotSettings } = await import('./settingsDb');
       return await getBotSettings();

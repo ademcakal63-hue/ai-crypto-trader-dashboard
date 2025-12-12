@@ -55,6 +55,22 @@ export default function Settings() {
     },
   });
 
+  const validateOpenAIMutation = trpc.settings.validateOpenAIKey.useMutation({
+    onSuccess: (data) => {
+      if (data.valid) {
+        toast.success(`✅ ${data.message}`);
+        if (data.model) {
+          toast.success(`🤖 Model: ${data.model}`);
+        }
+      } else {
+        toast.error(`❌ ${data.message}`);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(`❌ Test hatası: ${error.message}`);
+    },
+  });
+
   // localStorage'dan form verilerini yükle
   const loadFormFromStorage = () => {
     try {
@@ -315,6 +331,25 @@ export default function Settings() {
                   OpenAI Platform'dan API key oluşturun: <a href="https://platform.openai.com/api-keys" target="_blank" className="text-blue-400 hover:underline">platform.openai.com/api-keys</a>
                 </p>
               </div>
+
+              {/* Test OpenAI Key Button */}
+              <Button
+                type="button"
+                onClick={() => {
+                  if (!formData.openaiApiKey) {
+                    toast.error('❌ OpenAI API Key giriniz!');
+                    return;
+                  }
+                  validateOpenAIMutation.mutate({
+                    apiKey: formData.openaiApiKey,
+                  });
+                }}
+                disabled={validateOpenAIMutation.isPending}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                <Key className="w-4 h-4 mr-2" />
+                {validateOpenAIMutation.isPending ? 'Test Ediliyor...' : 'OpenAI API Key Test Et'}
+              </Button>
 
               <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-start gap-2">

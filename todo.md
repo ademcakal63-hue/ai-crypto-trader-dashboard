@@ -1000,3 +1000,12 @@ Dashboard'dan tek tıkla:
 - [x] news_analyzer.py'de CoinGecko API kullan (free, API key gerektirmez)
 - [x] Bot startup'ta OpenAI key'i settings'ten oku
 - [ ] Checkpoint kaydet
+
+
+## OpenAI API Key Test Butonu + Final Check (TAMAMLANDI ✅)
+
+- [x] Settings'e "OpenAI API Key Test Et" butonu ekle
+- [x] Backend'de OpenAI key test endpoint'i ekle
+- [x] Final sistem kontrolü (tüm API'ler çalışıyor mu)
+- [ ] Checkpoint kaydet
+- [ ] Launch hazır onayı
