@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { BotControlPanel } from "@/components/BotControlPanel";
 import { BotLogViewer } from "@/components/BotLogViewer";
 import { PerformanceChart } from "@/components/PerformanceChart";
+import { PaperTradingStatus } from "@/components/PaperTradingStatus";
 
 export default function Home() {
   
@@ -59,6 +60,9 @@ export default function Home() {
 
       {/* Bot Control Panel */}
       <BotControlPanel />
+
+      {/* Paper Trading Status */}
+      <PaperTradingStatus />
 
       {/* Bot Log Viewers */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

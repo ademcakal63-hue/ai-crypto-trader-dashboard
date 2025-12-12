@@ -171,6 +171,7 @@ export const botSettings = mysqlTable("bot_settings", {
   dailyLossLimitPercent: varchar("daily_loss_limit_percent", { length: 10 }).default('4.00').notNull(), // Günlük kayıp limiti %
   riskPerTradePercent: varchar("risk_per_trade_percent", { length: 10 }).default('2.00').notNull(), // İşlem başına risk %
   maxDailyTrades: int("max_daily_trades").default(10).notNull(), // Maksimum günlük işlem sayısı
+  paperTradingState: text("paper_trading_state"), // Paper trading durumu (JSON)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

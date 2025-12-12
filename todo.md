@@ -975,3 +975,19 @@ Dashboard'dan tek tıkla:
 - [x] Bot startup testi yap
 - [x] Paper trading mode aktif olduğunu doğrula
 - [ ] Checkpoint kaydet
+
+
+## Paper Trading Takip Paneli (TAMAMLANDI ✅)
+
+- [x] Settings'te API Key localStorage düzeltmesi (zaten çalışıyor)
+- [x] Dashboard'a Paper Trading Status kartı ekle
+  - [x] Balance gösterimi ($10,000 başlangıç)
+  - [x] Cycle ve trade sayısı (örn: Cycle 1: 45/100)
+  - [x] Win rate
+  - [x] Total P&L
+  - [x] Progress bar
+- [x] Backend endpoint'leri ekle
+  - [x] GET /api/trpc/paperTrading.getStatus
+  - [x] Paper trading state'i database'den çek
+- [x] Gerçek zamanlı güncelleme (bot çalışırken - 5 saniye interval)
+- [ ] Checkpoint kaydet

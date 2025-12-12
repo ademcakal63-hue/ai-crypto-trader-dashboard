@@ -274,6 +274,35 @@ export const appRouter = router({
       return filtered;
     }),
   }),
+
+  // Paper Trading Router
+  paperTrading: router({
+    getStatus: publicProcedure.query(async () => {
+      const { getBotSettings } = await import('./settingsDb');
+      const settings = await getBotSettings();
+      
+      // Get paper trading state from settings (stored as JSON)
+      const paperState = settings?.paperTradingState ? JSON.parse(settings.paperTradingState) : null;
+      
+      if (!paperState) {
+        // Return default state
+        return {
+          currentBalance: 10000,
+          initialBalance: 10000,
+          totalPnl: 0,
+          totalPnlPercent: 0,
+          currentCycle: 1,
+          tradesInCycle: 0,
+          tradesPerCycle: 100,
+          totalTrades: 0,
+          winRate: 0,
+          mode: 'PAPER',
+        };
+      }
+      
+      return paperState;
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
