@@ -966,3 +966,12 @@ Dashboard'dan tek tıkla:
 - [x] Test 100-trade cycle
 - [ ] Test fine-tuning trigger (requires 100 real trades)
 - [ ] Save checkpoint
+
+
+## Paper Trading Dashboard Entegrasyonu (TAMAMLANDI ✅)
+
+- [x] main.py'yi paper trading versiyonu ile değiştir
+- [x] Dashboard "Tümünü Başlat" butonu paper trading'i başlatacak
+- [x] Bot startup testi yap
+- [x] Paper trading mode aktif olduğunu doğrula
+- [ ] Checkpoint kaydet

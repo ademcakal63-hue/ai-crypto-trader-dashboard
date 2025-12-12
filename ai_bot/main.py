@@ -1,15 +1,6 @@
 """
-AI Crypto Trading Bot - Ana Program
-
-Kullanım:
-    python main.py --symbol BTCUSDT --testnet
-
-Env Variables:
-    BINANCE_API_KEY: Binance API Key
-    BINANCE_API_SECRET: Binance API Secret
-    BINANCE_USE_TESTNET: true/false
-    BUILT_IN_FORGE_API_KEY: Manus LLM API Key
-    DASHBOARD_URL: Dashboard URL
+AI Crypto Trading Bot - Main Entry Point
+With Paper Trading, Risk Management, and 100-Trade Cycles
 """
 
 import os
@@ -17,404 +8,345 @@ import sys
 import time
 import argparse
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List
 
-# Import modüller
-from pattern_knowledge import get_pattern_knowledge
-from llm_client import LLMClient
-from binance_client import BinanceClient
-from sentiment_analyzer import SentimentAnalyzer
+# Import all modules
+from paper_trading import PaperTradingManager
+from risk_manager import RiskManager
+from trade_cycle_manager import TradeCycleManager
+from openai_trading import OpenAITrader
+from orderbook_analyzer import OrderBookAnalyzer
+from smc_detector import SMCDetector
+from news_analyzer import NewsAnalyzer
 from dashboard_client import DashboardClient
-from learning_manager import HybridLearningManager
+from binance_client import BinanceClient
 
-class AITradingBot:
-    """Tam otonom AI Trading Bot"""
+class TradingBot:
+    """
+    Main Trading Bot with Paper Trading and Risk Management
     
-    def __init__(self, symbol: str = "BTCUSDT", testnet: bool = False):
+    Flow:
+    1. Paper Trading Mode (First 100 trades)
+    2. Risk Management (2% per trade, 4% daily loss)
+    3. 100-Trade Cycles with Auto Fine-Tuning
+    4. OpenAI as Decision Brain
+    """
+    
+    def __init__(self, symbol: str = "BTCUSDT"):
         self.symbol = symbol
-        self.testnet = testnet
         
-        # Dashboard client (önce bu başlatılmalı - settings için)
+        print(f"\n{'='*60}")
+        print(f"🤖 AI CRYPTO TRADING BOT - {symbol}")
+        print(f"{'='*60}\n")
+        
+        # Initialize components
+        print("📦 Initializing components...")
+        
         self.dashboard = DashboardClient()
+        self.settings = self.dashboard.get_settings()
         
-        # Settings'ten API keys çek
-        settings = self.dashboard.get_settings()
-        api_key = settings.get("binanceApiKey")
-        api_secret = settings.get("binanceApiSecret")
+        # Get capital from settings
+        self.capital = self._get_capital()
+        
+        # Initialize managers
+        self.paper_trading = PaperTradingManager(initial_balance=self.capital)
+        self.risk_manager = RiskManager()
+        self.cycle_manager = TradeCycleManager()
+        
+        # Initialize trading modules
+        self.openai_trader = OpenAITrader()
+        
+        # Get Binance API keys from settings
+        api_key = self.settings.get('binanceApiKey', '')
+        api_secret = self.settings.get('binanceApiSecret', '')
         
         if not api_key or not api_secret:
-            raise ValueError(
-                "❌ Binance API Key bulunamadı!\n"
-                "Dashboard → Ayarlar sayfasından API Key ve Secret ekleyin."
-            )
+            print("\n⚠️ WARNING: No Binance API keys found!")
+            print("   Bot will use demo mode for testing.")
+            print("   Add API keys in Settings to use real data.\n")
         
-        # API clients
-        self.llm = LLMClient()
-        self.binance = BinanceClient(api_key=api_key, api_secret=api_secret, testnet=testnet)
-        self.sentiment = SentimentAnalyzer()
+        self.orderbook_analyzer = OrderBookAnalyzer(api_key, api_secret) if api_key else None
+        self.smc_detector = SMCDetector()
+        self.news_analyzer = NewsAnalyzer()
+        self.binance = BinanceClient(api_key, api_secret) if api_key else None
         
-        # Learning manager
-        self.learning_manager = HybridLearningManager()
-        self.learning_manager.initialize()
+        print(f"✅ All components initialized!\n")
         
-        # Pattern knowledge
-        self.pattern_knowledge = get_pattern_knowledge()
+        # Print current status
+        self._print_status()
+    
+    def _get_capital(self) -> float:
+        """Get capital from settings or Binance balance"""
+        # For paper trading, always start with $10,000
+        return 10000
+    
+    def _print_status(self):
+        """Print current bot status"""
+        cycle_info = self.cycle_manager.get_cycle_info()
+        risk_summary = self.risk_manager.get_risk_summary(self.capital)
+        stats = self.paper_trading.get_statistics()
         
-        # State
-        self.open_positions = {}  # {symbol: position_data}
-        self.today_trades = []
-        
-        print(f"🤖 AI Trading Bot başlatıldı")
-        print(f"Symbol: {symbol}")
-        print(f"Testnet: {testnet}")
-        print(f"Dashboard: {self.dashboard.dashboard_url}")
+        print(f"\n📊 CURRENT STATUS")
+        print(f"{'='*60}")
+        print(f"Mode: {cycle_info['mode']}")
+        print(f"Cycle: {cycle_info['current_cycle']}")
+        print(f"Trades in cycle: {cycle_info['trades_in_cycle']}/{cycle_info['trades_per_cycle']}")
+        print(f"Total trades: {cycle_info['total_trades']}")
+        print(f"\n💰 CAPITAL & RISK")
+        print(f"Capital: ${self.capital:,.2f}")
+        print(f"Max position size: ${risk_summary['max_position_size_usd']:,.2f} ({risk_summary['max_position_size_percent']}%)")
+        print(f"Max daily loss: ${risk_summary['max_daily_loss_usd']:,.2f} ({risk_summary['max_daily_loss_percent']}%)")
+        print(f"Today's P&L: ${risk_summary['daily_pnl_usd']:,.2f} ({risk_summary['daily_pnl_percent']:.2f}%)")
+        print(f"\n📈 PERFORMANCE")
+        print(f"Win rate: {stats['win_rate']:.1f}%")
+        print(f"Total P&L: ${stats['total_pnl_usd']:,.2f} ({stats['total_pnl_percent']:+.2f}%)")
+        print(f"Current balance: ${stats['current_balance']:,.2f}")
+        print(f"{'='*60}\n")
     
     def run(self):
-        """Ana loop - sürekli çalış"""
+        """Main trading loop"""
         
-        print("\n🚀 Bot çalışmaya başladı...")
-        print("Ctrl+C ile durdurun\n")
+        print(f"🚀 Starting trading loop for {self.symbol}...")
+        print(f"⏰ Checking every 60 seconds\n")
         
         while True:
             try:
-                # 1. Bot aktif mi kontrol et
-                if not self.dashboard.is_bot_active():
-                    print("⏸️  Bot Dashboard'dan durduruldu. Bekleniyor...")
-                    time.sleep(30)
+                # Check if bot should run
+                if not self._should_run():
+                    print(f"⏸️ Bot paused (daily loss limit or manual stop)")
+                    time.sleep(60)
                     continue
                 
-                # 2. Günlük limit kontrolü
-                loss_status = self.dashboard.check_daily_loss_limit()
-                if loss_status["exceeded"]:
-                    print(f"🚨 Günlük kayıp limiti aşıldı! ({loss_status['currentLoss']} / {loss_status['limit']})")
-                    print("Bot otomatik durduruldu. Yarın tekrar başlayacak.")
-                    time.sleep(3600)  # 1 saat bekle
-                    continue
+                # Run trading cycle
+                self._trading_cycle()
                 
-                # 3. Açık pozisyonları takip et
-                self._monitor_open_positions()
-                
-                # 4. Yeni işlem fırsatı ara
-                self._scan_for_opportunities()
-                
-                # 5. Bekle (1 dakika)
+                # Sleep
                 time.sleep(60)
                 
             except KeyboardInterrupt:
-                print("\n\n⏹️  Bot durduruluyor...")
-                self._cleanup()
+                print(f"\n⏹️ Bot stopped by user")
                 break
             except Exception as e:
-                print(f"❌ Beklenmeyen hata: {e}")
+                print(f"❌ Error in main loop: {e}")
                 time.sleep(60)
     
-    def _scan_for_opportunities(self):
-        """Yeni işlem fırsatı ara"""
+    def _should_run(self) -> bool:
+        """Check if bot should continue running"""
         
-        print(f"\n🔍 [{datetime.now().strftime('%H:%M:%S')}] İşlem fırsatı taranıyor...")
+        # Check daily loss limit
+        can_trade, reason = self.risk_manager.can_open_trade(self.capital)
+        if not can_trade:
+            print(f"⛔ {reason}")
+            return False
         
-        # Settings'i al
+        # Check if manually stopped
         settings = self.dashboard.get_settings()
-        if not settings:
-            print("⚠️ Settings alınamadı, atlıyorum")
-            return
+        if not settings.get('isActive', False):
+            return False
         
-        # Günlük işlem limiti kontrolü
-        max_daily_trades = int(settings.get("maxDailyTrades", 10))
-        if len(self.today_trades) >= max_daily_trades:
-            print(f"⏭️  Günlük işlem limiti doldu ({len(self.today_trades)}/{max_daily_trades})")
-            return
-        
-        # Açık pozisyon varsa yeni işlem açma
-        if self.symbol in self.open_positions:
-            print(f"⏭️  {self.symbol} için açık pozisyon var, yeni işlem açılmıyor")
-            return
-        
-        # 1. Sentiment analizi
-        print("📰 Sentiment analizi yapılıyor...")
-        sentiment_result = self.sentiment.analyze_sentiment(self.symbol[:3])  # BTC, ETH
-        sentiment_score = sentiment_result["sentiment_score"]
-        
-        print(f"   Sentiment: {sentiment_score:+.2f} - {sentiment_result['summary']}")
-        
-        # Sentiment çok negatifse işlem açma
-        sentiment_threshold = float(settings.get("sentimentThreshold", -0.3))
-        if sentiment_score < sentiment_threshold:
-            print(f"   ❌ Sentiment çok negatif ({sentiment_score} < {sentiment_threshold}), işlem açılmıyor")
-            return
-        
-        # 2. Multi-timeframe grafik analizi
-        print("📊 Grafik analizi yapılıyor...")
-        
-        # 1h timeframe'i analiz et (ana timeframe)
-        klines_1h = self.binance.get_klines(self.symbol, "1h", limit=100)
-        if not klines_1h:
-            print("   ⚠️ Mum verileri alınamadı")
-            return
-        
-        analysis = self.llm.analyze_chart(klines_1h, "1h", self.pattern_knowledge)
-        
-        print(f"   Pattern: {analysis['pattern']}")
-        print(f"   Güven: {analysis['confidence']:.0%}")
-        print(f"   Yön: {analysis['direction']}")
-        print(f"   Sebep: {analysis['reason']}")
-        
-        # 3. İşlem açma kararı
-        min_confidence = float(settings.get("minConfidence", 0.75))
-        
-        if analysis["direction"] == "NONE" or analysis["confidence"] < min_confidence:
-            print(f"   ⏭️  İşlem açılmıyor (güven: {analysis['confidence']:.0%} < {min_confidence:.0%})")
-            return
-        
-        # 4. Pozisyon aç
-        self._open_position(analysis, settings, sentiment_score)
+        return True
     
-    def _open_position(self, analysis: Dict, settings: Dict, sentiment: float):
-        """Pozisyon aç"""
+    def _trading_cycle(self):
+        """Single trading cycle"""
         
-        print(f"\n✅ POZİSYON AÇILIYOR...")
+        print(f"\n{'='*60}")
+        print(f"🔄 Trading Cycle - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"{'='*60}")
         
-        # 1. Sermaye ve risk parametreleri
-        account_balance = self.binance.get_account_balance()
-        capital = account_balance["available"]
-        risk_percent = float(settings.get("riskPerTradePercent", 2.0)) / 100  # 0.02
-        daily_loss_limit_percent = float(settings.get("dailyLossLimitPercent", 4.0)) / 100  # 0.04
-        
-        # 2. Maksimum pozisyon sayısı kontrolü
-        max_positions = int(daily_loss_limit_percent / risk_percent)  # 0.04 / 0.02 = 2
-        current_positions = len(self.open_positions)
-        
-        if current_positions >= max_positions:
-            print(f"   ❌ Maksimum pozisyon sayısına ulaşıldı ({current_positions}/{max_positions})")
-            print(f"   Günlük kayıp limiti: {daily_loss_limit_percent*100:.1f}%, İşlem başına risk: {risk_percent*100:.1f}%")
+        # 1. Get market data
+        print(f"\n📊 Fetching market data...")
+        if not self.binance:
+            print(f"   ⚠️ Skipped: No Binance API keys")
+            print(f"   Please add API keys in Settings to start trading.")
             return
         
-        # 3. Entry ve Stop Loss
-        entry = analysis["entry"]
-        stop_loss = analysis["stop_loss"]
-        sl_distance_price = abs(entry - stop_loss)
-        sl_distance_percent = sl_distance_price / entry  # Stop loss mesafesi (%)
+        candles = self.binance.get_klines(self.symbol, "15m", limit=100)
+        current_price = candles[-1]['close']
+        print(f"   Current price: ${current_price:,.2f}")
         
-        # 4. Dinamik kaldıraç hesaplama
-        # Kaldıraç = Risk% / SL_mesafe%
-        # Örnek: Risk 2%, SL mesafe 1% → 2x kaldıraç
-        #        Risk 2%, SL mesafe 4% → 0.5x (min 1x)
-        calculated_leverage = risk_percent / sl_distance_percent
-        
-        # Kaldıraç limitleri
-        max_leverage = 20  # Maksimum 20x
-        min_leverage = 1   # Minimum 1x (kaldıraçsız)
-        leverage = max(min_leverage, min(max_leverage, int(calculated_leverage)))
-        
-        # 5. Pozisyon büyüklüğü hesaplama
-        # Risk amount (maksimum kayıp)
-        risk_amount = capital * risk_percent
-        
-        # Quantity hesaplama (doğrudan coin miktarı)
-        # Risk = Quantity * SL_distance_price
-        # Quantity = Risk / SL_distance_price
-        quantity = risk_amount / sl_distance_price
-        quantity = round(quantity, 3)  # 3 ondalık
-        
-        # Pozisyon büyüklüğü (USDT cinsinden)
-        position_size_usdt = quantity * entry
-        
-        # 6. Gerçek sermaye kullanımı (kaldıraçlı)
-        required_margin = position_size_usdt / leverage
-        
-        # Sermaye yeterli mi?
-        if required_margin > capital:
-            print(f"   ❌ Yetersiz sermaye! Gerekli: ${required_margin:.2f}, Mevcut: ${capital:.2f}")
-            return
-        
-        print(f"   Sermaye: ${capital:.2f}")
-        print(f"   Risk: ${risk_amount:.2f} ({risk_percent*100:.1f}%)")
-        print(f"   SL Mesafesi: {sl_distance_percent*100:.2f}%")
-        print(f"   Kaldıraç: {leverage}x (hesaplanan: {calculated_leverage:.1f}x)")
-        print(f"   Pozisyon Büyüklüğü: ${position_size_usdt:.2f}")
-        print(f"   Miktar: {quantity} {self.symbol}")
-        print(f"   Gerekli Margin: ${required_margin:.2f}")
-        print(f"   Açık Pozisyon: {current_positions}/{max_positions}")
-        
-        # 7. Binance'de pozisyon aç
-        result = self.binance.open_position(
-            symbol=self.symbol,
-            direction=analysis["direction"],
-            quantity=quantity,
-            leverage=leverage
-        )
-        
-        if not result["success"]:
-            print(f"   ❌ Pozisyon açılamadı: {result.get('error')}")
-            return
-        
-        print(f"   ✅ Pozisyon açıldı! Entry: ${result['entry_price']:.2f}")
-        
-        # 8. Stop Loss order yerleştir (KRİTİK!)
-        print(f"   🛡️ Stop Loss order yerleştiriliyor...")
-        sl_result = self.binance.place_stop_loss_order(
-            symbol=self.symbol,
-            direction=analysis["direction"],
-            quantity=quantity,
-            stop_price=stop_loss
-        )
-        
-        if sl_result["success"]:
-            print(f"   ✅ Stop Loss yerleştirildi: ${stop_loss:.2f}")
+        # 2. Analyze order book
+        print(f"\n📖 Analyzing order book...")
+        if self.orderbook_analyzer:
+            orderbook_data = self.orderbook_analyzer.analyze_orderbook(self.symbol, current_price)
+            print(f"   Imbalance: {orderbook_data.get('imbalance', 0):.2f}%")
         else:
-            print(f"   ⚠️ Stop Loss yerleştirilemedi: {sl_result.get('error')}")
-            print(f"   ⚠️ UYARI: Bot crash olursa stop loss çalışmayacak!")
+            orderbook_data = {'imbalance': 0, 'large_orders': []}
+            print(f"   Skipped (no API keys)")
         
-        # 9. Take Profit order yerleştir (Opsiyonel)
-        print(f"   🎯 Take Profit order yerleştiriliyor...")
-        tp_result = self.binance.place_take_profit_order(
+        # 3. Detect SMC patterns
+        print(f"\n🧠 Detecting SMC patterns...")
+        smc_data = self.smc_detector.analyze(candles)
+        print(f"   Patterns found: {len(smc_data.get('patterns', []))}")
+        
+        # 4. Get news sentiment
+        print(f"\n📰 Analyzing news sentiment...")
+        try:
+            news_data = self.news_analyzer.get_latest_news(self.symbol)
+            news_sentiment = self.openai_trader.analyze_news_sentiment(self.symbol, news_data)
+            print(f"   Sentiment: {news_sentiment.get('sentiment_score', 0):.2f}")
+        except:
+            news_sentiment = {'sentiment_score': 0, 'summary': 'No news', 'key_events': []}
+            print(f"   Skipped (error fetching news)")
+        
+        # 5. OpenAI chart analysis
+        print(f"\n🤖 OpenAI chart analysis...")
+        chart_analysis = self.openai_trader.analyze_chart(
             symbol=self.symbol,
-            direction=analysis["direction"],
-            quantity=quantity,
-            take_profit_price=analysis["take_profit"]
+            timeframe="15m",
+            candles=candles,
+            order_book=orderbook_data,
+            smc_data=smc_data
+        )
+        print(f"   Signal: {chart_analysis.get('signal')}")
+        print(f"   Confidence: {chart_analysis.get('confidence', 0):.2f}")
+        
+        # 6. OpenAI final decision
+        print(f"\n🧠 OpenAI final decision...")
+        current_positions = list(self.paper_trading.open_positions.values())
+        final_decision = self.openai_trader.make_final_decision(
+            chart_analysis=chart_analysis,
+            news_sentiment=news_sentiment,
+            order_book=orderbook_data,
+            current_positions=current_positions
         )
         
-        if tp_result["success"]:
-            print(f"   ✅ Take Profit yerleştirildi: ${analysis['take_profit']:.2f}")
-        else:
-            print(f"   ⚠️ Take Profit yerleştirilemedi: {tp_result.get('error')}")
+        print(f"   Action: {final_decision.get('action')}")
+        print(f"   Confidence: {final_decision.get('confidence', 0):.2f}")
+        print(f"   Position size: {final_decision.get('position_size_percent', 0):.2f}%")
+        print(f"   Reasoning: {final_decision.get('reasoning', '')[:100]}...")
         
-        # 10. Pozisyonu kaydet
-        position = {
-            "symbol": self.symbol,
-            "direction": analysis["direction"],
-            "entry_price": result["entry_price"],
-            "quantity": quantity,
-            "stop_loss": stop_loss,
-            "take_profit": analysis["take_profit"],
-            "pattern": analysis["pattern"],
-            "confidence": analysis["confidence"],
-            "sentiment": sentiment,
-            "open_time": datetime.now().isoformat(),
-            "order_id": result["order_id"]
-        }
+        # 7. Execute decision
+        self._execute_decision(final_decision, chart_analysis, current_price)
         
-        # SL/TP order ID'lerini kaydet
-        position["sl_order_id"] = sl_result.get("order_id")
-        position["tp_order_id"] = tp_result.get("order_id")
+        # 8. Check open positions
+        self._check_positions(current_price)
         
-        self.open_positions[self.symbol] = position
-        self.today_trades.append(position)
-        
-        # Dashboard'a bildir
-        self.dashboard.open_position_notification(position)
-        
-        print(f"\n   ✅ POZİSYON HAZIR!")
-        print(f"   Entry: ${result['entry_price']:.2f}")
-        print(f"   SL: ${stop_loss:.2f} (Binance'de aktif)")
-        print(f"   TP: ${analysis['take_profit']:.2f} (Binance'de aktif)")
-        print(f"   Risk: ${risk_amount:.2f} ({risk_percent*100:.1f}%)")
-        print(f"   Kaldıraç: {leverage}x")
-        print(f"   🛡️ Bot crash olsa bile Binance koruyacak!\n")
+        print(f"\n{'='*60}\n")
     
-    def _monitor_open_positions(self):
-        """Açık pozisyonları takip et"""
+    def _execute_decision(self, decision: Dict, chart_analysis: Dict, current_price: float):
+        """Execute trading decision"""
         
-        if not self.open_positions:
+        action = decision.get('action')
+        
+        if action == "HOLD":
+            print(f"\n⏸️ Decision: HOLD")
             return
         
-        for symbol, position in list(self.open_positions.items()):
-            current_price = self.binance.get_current_price(symbol)
-            
-            # P&L hesapla
-            if position["direction"] == "LONG":
-                pnl = (current_price - position["entry_price"]) * position["quantity"]
-            else:
-                pnl = (position["entry_price"] - current_price) * position["quantity"]
-            
-            pnl_percent = (pnl / (position["entry_price"] * position["quantity"])) * 100
-            
-            # Çıkış kararı al (LLM ile)
-            klines = self.binance.get_klines(symbol, "1h", limit=50)
-            
-            position_data = {
-                **position,
-                "current_price": current_price,
-                "pnl": pnl,
-                "pnl_percent": pnl_percent,
-                "duration": int((datetime.now() - datetime.fromisoformat(position["open_time"])).total_seconds() / 60)
-            }
-            
-            decision = self.llm.analyze_exit_signal(position_data, klines, "1h")
-            
-            if decision["action"] == "CLOSE":
-                self._close_position(symbol, decision["reason"])
-            elif decision["action"] == "MOVE_STOP_LOSS":
-                position["stop_loss"] = decision["new_stop_loss"]
-                print(f"   📈 Trailing Stop: SL güncellendi → ${decision['new_stop_loss']:.2f}")
+        if action in ["OPEN_LONG", "OPEN_SHORT"]:
+            self._open_position(decision, chart_analysis, current_price)
+        
+        elif action == "CLOSE":
+            self._close_all_positions(current_price)
     
-    def _close_position(self, symbol: str, reason: str):
-        """Pozisyon kapat"""
+    def _open_position(self, decision: Dict, chart_analysis: Dict, current_price: float):
+        """Open a new position"""
         
-        position = self.open_positions.get(symbol)
-        if not position:
-            return
+        print(f"\n🔓 Opening position...")
         
-        print(f"\n🔴 POZİSYON KAPATILIYOR: {reason}")
+        # Get parameters
+        side = "BUY" if decision['action'] == "OPEN_LONG" else "SELL"
+        position_size_percent = decision.get('position_size_percent', 1.0)
+        entry_price = chart_analysis.get('entry_price', current_price)
+        stop_loss = chart_analysis.get('stop_loss', 0)
+        take_profit = chart_analysis.get('take_profit', 0)
+        confidence = decision.get('confidence', 0)
+        reasoning = decision.get('reasoning', '')
         
-        # Binance'de kapat
-        result = self.binance.close_position(
-            symbol=symbol,
-            direction=position["direction"],
-            quantity=position["quantity"]
+        # Validate with risk manager
+        is_valid, reason, details = self.risk_manager.validate_trade(
+            capital=self.capital,
+            position_size_percent=position_size_percent,
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            take_profit=take_profit,
+            side=side
         )
         
-        if not result["success"]:
-            print(f"   ❌ Pozisyon kapatılamadı: {result.get('error')}")
+        if not is_valid:
+            print(f"   ❌ Trade rejected: {reason}")
             return
         
-        # P&L hesapla
-        exit_price = result["exit_price"]
-        if position["direction"] == "LONG":
-            pnl = (exit_price - position["entry_price"]) * position["quantity"]
-        else:
-            pnl = (position["entry_price"] - exit_price) * position["quantity"]
+        print(f"   ✅ Trade validated: {reason}")
+        print(f"   Position size: ${details['position_size_usd']:,.2f} ({details['position_size_percent']:.2f}%)")
+        print(f"   Risk amount: ${details['risk_amount_usd']:,.2f} ({details['risk_amount_percent']:.2f}%)")
+        print(f"   Risk/Reward: {details['risk_reward_ratio']:.2f}")
         
-        # Pozisyonu güncelle
-        position["exit_price"] = exit_price
-        position["pnl"] = pnl
-        position["exit_reason"] = reason
-        position["close_time"] = datetime.now().isoformat()
+        # Check if paper trading can open trade
+        can_open, reason = self.paper_trading.can_open_trade(details['position_size_percent'])
+        if not can_open:
+            print(f"   ❌ Paper trading rejected: {reason}")
+            return
         
-        # Dashboard'a bildir
-        self.dashboard.close_position_notification(position)
+        # Open paper trading position
+        position = self.paper_trading.open_position(
+            symbol=self.symbol,
+            side=side,
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            take_profit=take_profit,
+            position_size_percent=details['position_size_percent'],
+            confidence=confidence,
+            reasoning=reasoning
+        )
         
-        # Pozisyonu kaldır
-        del self.open_positions[symbol]
+        print(f"   ✅ Position opened!")
         
-        print(f"   ✅ Pozisyon kapandı!")
-        print(f"   Exit: ${exit_price:.2f}")
-        print(f"   P&L: ${pnl:+.2f}")
+        # Send notification
+        try:
+            self.dashboard.send_notification(
+                title=f"Position Opened: {self.symbol}",
+                message=f"{side} {self.symbol} at ${entry_price:,.2f} (Size: {details['position_size_percent']:.2f}%)",
+                type="TRADE_EXECUTED"
+            )
+        except:
+            pass
     
-    def _cleanup(self):
-        """Bot kapatılırken temizlik"""
-        print("🧹 Temizlik yapılıyor...")
+    def _close_all_positions(self, current_price: float):
+        """Close all open positions"""
         
-        # Açık pozisyonları kapat (opsiyonel)
-        if self.open_positions:
-            print(f"⚠️  {len(self.open_positions)} açık pozisyon var!")
-            response = input("Pozisyonları kapatmak ister misiniz? (y/n): ")
-            if response.lower() == 'y':
-                for symbol in list(self.open_positions.keys()):
-                    self._close_position(symbol, "Bot kapatıldı")
+        if not self.paper_trading.open_positions:
+            print(f"\n⏸️ No positions to close")
+            return
         
-        print("✅ Bot temiz bir şekilde kapatıldı")
+        print(f"\n🔒 Closing all positions...")
+        
+        for position_id in list(self.paper_trading.open_positions.keys()):
+            trade = self.paper_trading.close_position(position_id, current_price, "MANUAL")
+            
+            # Record trade in cycle
+            self.cycle_manager.record_trade(trade)
+            
+            # Record P&L in risk manager
+            self.risk_manager.record_trade_pnl(trade['pnl_usd'])
+        
+        print(f"   ✅ All positions closed!")
+    
+    def _check_positions(self, current_price: float):
+        """Check open positions for stop loss or take profit"""
+        
+        if not self.paper_trading.open_positions:
+            return
+        
+        print(f"\n🔍 Checking {len(self.paper_trading.open_positions)} open positions...")
+        
+        # Check positions
+        self.paper_trading.check_positions({self.symbol: current_price})
+        
+        # If any positions were closed, record them
+        # (This is handled inside paper_trading.check_positions)
 
 
 def main():
+    """Main entry point"""
+    
     parser = argparse.ArgumentParser(description="AI Crypto Trading Bot")
     parser.add_argument("--symbol", default="BTCUSDT", help="Trading pair (default: BTCUSDT)")
-    parser.add_argument("--testnet", action="store_true", help="Use Binance testnet")
-    
     args = parser.parse_args()
     
-    # Bot'u başlat
-    bot = AITradingBot(symbol=args.symbol, testnet=args.testnet)
+    # Create bot
+    bot = TradingBot(symbol=args.symbol)
+    
+    # Run bot
     bot.run()
 
 
