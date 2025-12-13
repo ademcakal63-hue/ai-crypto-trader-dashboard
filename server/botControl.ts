@@ -34,23 +34,25 @@ export async function startBot(symbol: string) {
       }
     }
 
-    // Start the bot process (use venv Python to avoid SRE module mismatch)
-    const pythonPath = '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/venv/bin/python';
-    const mainPath = '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/main.py';
+    // Use clean wrapper script to completely isolate from Python 3.13
+    const wrapperScript = '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/run_bot.sh';
     
     console.log(`[BotControl] Starting bot ${symbol}`);
-    console.log(`[BotControl] Python path: ${pythonPath}`);
-    console.log(`[BotControl] Main script: ${mainPath}`);
+    console.log(`[BotControl] Wrapper script: ${wrapperScript}`);
     
-    // Use wrapper script to start bot with venv
-    const startScript = '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/start_bot.sh';
-    const botProcess = spawn(startScript, [
+    // Use wrapper script with minimal environment (script handles venv activation)
+    const botProcess = spawn(wrapperScript, [
       '--symbol',
       symbol,
     ], {
       cwd: '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot',
       detached: true,
       stdio: ['ignore', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        // Wrapper script will unset these, but start clean
+        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+      },
     });
 
     if (!botProcess.pid) {

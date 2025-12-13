@@ -2,20 +2,20 @@
   "bots": [
     {
       "symbol": "BTCUSDT",
-      "pid": 262852,
-      "startedAt": "2025-12-13T07:06:45.081Z",
+      "pid": 276640,
+      "startedAt": "2025-12-13T09:02:16.703Z",
       "status": "running"
     },
     {
       "symbol": "ETHUSDT",
-      "pid": 262853,
-      "startedAt": "2025-12-13T07:06:45.085Z",
+      "pid": 276642,
+      "startedAt": "2025-12-13T09:02:16.709Z",
       "status": "running"
     },
     {
       "symbol": "SOLUSDT",
-      "pid": 262854,
-      "startedAt": "2025-12-13T07:06:45.088Z",
+      "pid": 276643,
+      "startedAt": "2025-12-13T09:02:16.714Z",
       "status": "running"
     }
   ],

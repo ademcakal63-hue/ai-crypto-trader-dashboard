@@ -106,7 +106,7 @@ class TradingBot:
         print(f"Total trades: {cycle_info['total_trades']}")
         print(f"\n💰 CAPITAL & RISK")
         print(f"Capital: ${self.capital:,.2f}")
-        print(f"Max position size: ${risk_summary['max_position_size_usd']:,.2f} ({risk_summary['max_position_size_percent']}%)")
+        print(f"Max risk per trade: ${risk_summary['max_risk_per_trade_usd']:,.2f} ({risk_summary['max_risk_per_trade_percent']}%)")
         print(f"Max daily loss: ${risk_summary['max_daily_loss_usd']:,.2f} ({risk_summary['max_daily_loss_percent']}%)")
         print(f"Today's P&L: ${risk_summary['daily_pnl_usd']:,.2f} ({risk_summary['daily_pnl_percent']:.2f}%)")
         print(f"\n📈 PERFORMANCE")
@@ -199,7 +199,7 @@ class TradingBot:
         # 4. Get news sentiment
         print(f"\n📰 Analyzing news sentiment...")
         try:
-            news_data = self.news_analyzer.get_latest_news(self.symbol)
+            news_data = self.news_analyzer.get_crypto_news(self.symbol, limit=5)
             news_sentiment = self.openai_trader.analyze_news_sentiment(self.symbol, news_data)
             print(f"   Sentiment: {news_sentiment.get('sentiment_score', 0):.2f}")
         except:
@@ -263,12 +263,32 @@ class TradingBot:
         
         # Get parameters
         side = "BUY" if decision['action'] == "OPEN_LONG" else "SELL"
-        position_size_percent = decision.get('position_size_percent', 1.0)
         entry_price = chart_analysis.get('entry_price', current_price)
         stop_loss = chart_analysis.get('stop_loss', 0)
         take_profit = chart_analysis.get('take_profit', 0)
         confidence = decision.get('confidence', 0)
         reasoning = decision.get('reasoning', '')
+        
+        # Calculate position size based on risk (2% risk per trade)
+        try:
+            position_calc = self.risk_manager.calculate_position_from_risk(
+                capital=self.capital,
+                entry_price=entry_price,
+                stop_loss=stop_loss,
+                side=side
+            )
+            
+            print(f"   📊 Risk-based calculation:")
+            print(f"      SL distance: {position_calc['sl_distance_percent']:.2f}%")
+            print(f"      Risk amount: ${position_calc['risk_amount_usd']:,.2f} ({position_calc['risk_amount_percent']:.2f}%)")
+            print(f"      Position size: ${position_calc['position_size_usd']:,.2f} ({position_calc['position_size_percent']:.2f}%)")
+            print(f"      Leverage: {position_calc['leverage']}x")
+            
+            position_size_percent = position_calc['position_size_percent']
+            
+        except Exception as e:
+            print(f"   ❌ Failed to calculate position size: {e}")
+            return
         
         # Validate with risk manager
         is_valid, reason, details = self.risk_manager.validate_trade(

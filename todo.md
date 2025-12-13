@@ -1018,3 +1018,30 @@ Dashboard'dan tek tıkla:
 - [ ] Paper trading başlangıç sermayesini güncelle
 - [ ] Bot'ları başlat ve test et
 - [ ] Checkpoint kaydet
+
+
+## Bot İyileştirmeleri (Tamamlandı)
+
+### News API Düzeltmesi
+- [x] News API hatasını düzelt (error fetching news)
+- [x] Sentiment analizi çalışır hale getir
+- [x] main.py'de metod adı düzeltildi (get_latest_news → get_crypto_news)
+
+### Risk Yönetimi Ayarları
+- [x] İşlem başına risk: %2 (1R = %2)
+- [x] Günlük kayıp limiti: %4 (2R = günlük stop)
+- [x] 2 kayıp trade sonrası günlük durdur
+- [x] Risk kurallarını risk_manager.py'de güncellendi
+- [x] MAX_DAILY_LOSS_TRADES = 2 eklendi
+- [x] daily_loss_trades tracking eklendi
+
+
+## Risk Bazlı Pozisyon Hesaplama (Tamamlandı)
+
+- [x] risk_manager.py'ye calculate_position_from_risk metodu eklendi
+- [x] OpenAI'dan sadece SL/TP mesafesi alınıyor, pozisyon boyutu hesaplanıyor
+- [x] main.py'de risk bazlı pozisyon hesaplama aktif
+- [x] Leverage otomatik hesaplanıyor
+- [x] Test: %2 risk, %1 SL → %200 pozisyon, 2x leverage ✅
+- [x] Test: %2 risk, %0.5 SL → %400 pozisyon, 4x leverage ✅
+- [x] Test: %2 risk, %2 SL → %100 pozisyon, 1x leverage ✅
