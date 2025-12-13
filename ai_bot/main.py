@@ -83,14 +83,8 @@ class TradingBot:
     
     def _get_capital(self) -> float:
         """Get capital from settings or Binance balance"""
-        # For paper trading, divide $10,000 among 3 bots
-        # BTC: $3,333, ETH: $3,333, SOL: $3,334
-        capital_map = {
-            'BTCUSDT': 3333,
-            'ETHUSDT': 3333,
-            'SOLUSDT': 3334,
-        }
-        return capital_map.get(self.symbol, 10000)
+        # For paper trading, use full $10,000 for BTC (only bot)
+        return 10000
     
     def _print_status(self):
         """Print current bot status"""

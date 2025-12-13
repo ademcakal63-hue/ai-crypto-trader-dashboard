@@ -219,7 +219,7 @@ class UnifiedTradingSystem:
             return False
     
     def run_trading_loop(self, 
-                        symbols: List[str] = ["BTCUSDT", "ETHUSDT", "SOLUSDT"],
+                        symbols: List[str] = ["BTCUSDT"],
                         timeframe: str = "15m",
                         interval_seconds: int = 60):
         """
@@ -307,7 +307,7 @@ if __name__ == "__main__":
     
     # Or run continuous trading loop
     # system.run_trading_loop(
-    #     symbols=["BTCUSDT", "ETHUSDT", "SOLUSDT"],
+    #     symbols=["BTCUSDT"],
     #     timeframe="15m",
     #     interval_seconds=60
     # )
