@@ -253,15 +253,14 @@ class PaperTradingManager:
         Check if a new trade can be opened based on risk limits
         
         Args:
-            position_size_percent: Proposed position size
+            position_size_percent: Proposed position size (can be >100% with leverage)
             
         Returns:
             (can_open, reason)
         """
         
-        # Check position size limit (2%)
-        if position_size_percent > 2:
-            return False, f"Position size {position_size_percent}% exceeds 2% limit"
+        # Note: No position size limit for leverage trading
+        # Risk is controlled by risk_manager (2% risk per trade)
         
         # Check daily loss limit (4%)
         daily_loss_percent = self.get_daily_loss_percent()

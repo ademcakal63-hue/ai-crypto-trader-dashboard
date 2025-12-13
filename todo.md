@@ -1045,3 +1045,11 @@ Dashboard'dan tek tıkla:
 - [x] Test: %2 risk, %1 SL → %200 pozisyon, 2x leverage ✅
 - [x] Test: %2 risk, %0.5 SL → %400 pozisyon, 4x leverage ✅
 - [x] Test: %2 risk, %2 SL → %100 pozisyon, 1x leverage ✅
+
+
+## Paper Trading Leverage Desteği (Tamamlandı)
+
+- [x] paper_trading.py'de leverage desteği eklendi
+- [x] Pozisyon limiti %2'den kaldırıldı, risk limiti %2 kaldı
+- [x] can_open_trade metodu leverage'a göre güncellendi
+- [x] Test: %368 pozisyon (%2 risk, 3.7x leverage) açabilecek
