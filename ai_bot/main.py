@@ -83,8 +83,14 @@ class TradingBot:
     
     def _get_capital(self) -> float:
         """Get capital from settings or Binance balance"""
-        # For paper trading, always start with $10,000
-        return 10000
+        # For paper trading, divide $10,000 among 3 bots
+        # BTC: $3,333, ETH: $3,333, SOL: $3,334
+        capital_map = {
+            'BTCUSDT': 3333,
+            'ETHUSDT': 3333,
+            'SOLUSDT': 3334,
+        }
+        return capital_map.get(self.symbol, 10000)
     
     def _print_status(self):
         """Print current bot status"""
@@ -187,7 +193,7 @@ class TradingBot:
         
         # 3. Detect SMC patterns
         print(f"\n🧠 Detecting SMC patterns...")
-        smc_data = self.smc_detector.analyze(candles)
+        smc_data = self.smc_detector.detect_all_patterns(candles, "15m")
         print(f"   Patterns found: {len(smc_data.get('patterns', []))}")
         
         # 4. Get news sentiment

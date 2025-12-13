@@ -1009,3 +1009,12 @@ Dashboard'dan tek tıkla:
 - [x] Final sistem kontrolü (tüm API'ler çalışıyor mu)
 - [ ] Checkpoint kaydet
 - [ ] Launch hazır onayı
+
+
+## Bot Startup Python Environment Fix (ŞU AN)
+
+- [x] Python venv activation hatasını düzelt (bash ile activate)
+- [ ] 3 bot toplam $10,000 paylaşsın (BTC: $3,333, ETH: $3,333, SOL: $3,334)
+- [ ] Paper trading başlangıç sermayesini güncelle
+- [ ] Bot'ları başlat ve test et
+- [ ] Checkpoint kaydet

@@ -14,7 +14,11 @@ class OpenAITrader:
         if not self.api_key:
             raise ValueError("❌ OpenAI API key not provided! Add it in Settings or set OPENAI_API_KEY env variable.")
         
-        self.client = OpenAI(api_key=self.api_key)
+        # Use direct OpenAI API (bypass Manus proxy to preserve fine-tuning)
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url="https://api.openai.com/v1"  # Direct OpenAI, not Manus proxy
+        )
         self.model = "gpt-4-turbo-preview"  # Supports JSON mode
         
     def analyze_chart(self, 

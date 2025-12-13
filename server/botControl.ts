@@ -42,12 +42,13 @@ export async function startBot(symbol: string) {
     console.log(`[BotControl] Python path: ${pythonPath}`);
     console.log(`[BotControl] Main script: ${mainPath}`);
     
-    const botProcess = spawn(pythonPath, [
-      mainPath,
+    // Use wrapper script to start bot with venv
+    const startScript = '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/start_bot.sh';
+    const botProcess = spawn(startScript, [
       '--symbol',
       symbol,
     ], {
-      cwd: process.cwd(),
+      cwd: '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot',
       detached: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     });

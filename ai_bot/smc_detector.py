@@ -13,7 +13,11 @@ class SMCDetector:
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
         if self.api_key:
-            self.client = OpenAI(api_key=self.api_key)
+            # Use direct OpenAI API (bypass Manus proxy to preserve fine-tuning)
+            self.client = OpenAI(
+                api_key=self.api_key,
+                base_url="https://api.openai.com/v1"  # Direct OpenAI, not Manus proxy
+            )
             self.use_ai = True
         else:
             print("⚠️ OPENAI_API_KEY not found. Using rule-based SMC detection.")
