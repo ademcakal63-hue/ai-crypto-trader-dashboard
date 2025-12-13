@@ -65,19 +65,12 @@ export default function Home() {
       <PaperTradingStatus />
 
       {/* Bot Log Viewers */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-1">
         <BotLogViewer 
           symbol="BTCUSDT" 
           isRunning={botStatus?.bots?.find((b: any) => b.symbol === 'BTCUSDT')?.status === 'running'} 
         />
-        <BotLogViewer 
-          symbol="ETHUSDT" 
-          isRunning={botStatus?.bots?.find((b: any) => b.symbol === 'ETHUSDT')?.status === 'running'} 
-        />
-        <BotLogViewer 
-          symbol="SOLUSDT" 
-          isRunning={botStatus?.bots?.find((b: any) => b.symbol === 'SOLUSDT')?.status === 'running'} 
-        />
+        {/* ETH and SOL disabled for cost optimization */}
       </div>
 
       {/* Stats Grid */}

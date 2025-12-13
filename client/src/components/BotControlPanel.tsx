@@ -8,8 +8,8 @@ import { useState, useCallback } from "react";
 
 const SUPPORTED_COINS = [
   { symbol: "BTCUSDT", name: "Bitcoin", icon: "₿" },
-  { symbol: "ETHUSDT", name: "Ethereum", icon: "Ξ" },
-  { symbol: "SOLUSDT", name: "Solana", icon: "◎" },
+  // { symbol: "ETHUSDT", name: "Ethereum", icon: "Ξ" },  // Disabled for cost optimization
+  // { symbol: "SOLUSDT", name: "Solana", icon: "◎" },  // Disabled for cost optimization
 ];
 
 export function BotControlPanel() {
