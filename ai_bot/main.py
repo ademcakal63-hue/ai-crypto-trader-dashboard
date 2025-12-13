@@ -119,28 +119,29 @@ class TradingBot:
         """Main trading loop"""
         
         print(f"🚀 Starting trading loop for {self.symbol}...")
-        print(f"⏰ Checking every 60 seconds\n")
+        print(f"⏰ Checking every 5 minutes (300 seconds)\n")
         
         while True:
             try:
                 # Check if bot should run
                 if not self._should_run():
                     print(f"⏸️ Bot paused (daily loss limit or manual stop)")
-                    time.sleep(60)
+                    time.sleep(300)  # 5 minutes
                     continue
                 
                 # Run trading cycle
                 self._trading_cycle()
                 
-                # Sleep
-                time.sleep(60)
+                # Sleep (5 minutes between cycles)
+                print(f"⏱️ Waiting 5 minutes until next cycle...")
+                time.sleep(300)
                 
             except KeyboardInterrupt:
                 print(f"\n⏹️ Bot stopped by user")
                 break
             except Exception as e:
                 print(f"❌ Error in main loop: {e}")
-                time.sleep(60)
+                time.sleep(300)  # 5 minutes
     
     def _should_run(self) -> bool:
         """Check if bot should continue running"""
@@ -196,15 +197,8 @@ class TradingBot:
         smc_data = self.smc_detector.detect_all_patterns(candles, "15m")
         print(f"   Patterns found: {len(smc_data.get('patterns', []))}")
         
-        # 4. Get news sentiment
-        print(f"\n📰 Analyzing news sentiment...")
-        try:
-            news_data = self.news_analyzer.get_crypto_news(self.symbol, limit=5)
-            news_sentiment = self.openai_trader.analyze_news_sentiment(self.symbol, news_data)
-            print(f"   Sentiment: {news_sentiment.get('sentiment_score', 0):.2f}")
-        except:
-            news_sentiment = {'sentiment_score': 0, 'summary': 'No news', 'key_events': []}
-            print(f"   Skipped (error fetching news)")
+        # 4. Skip news sentiment (cost optimization)
+        news_sentiment = {'sentiment_score': 0, 'summary': 'News analysis disabled', 'key_events': []}
         
         # 5. OpenAI chart analysis
         print(f"\n🤖 OpenAI chart analysis...")

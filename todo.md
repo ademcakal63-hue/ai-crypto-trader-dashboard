@@ -1053,3 +1053,12 @@ Dashboard'dan tek tıkla:
 - [x] Pozisyon limiti %2'den kaldırıldı, risk limiti %2 kaldı
 - [x] can_open_trade metodu leverage'a göre güncellendi
 - [x] Test: %368 pozisyon (%2 risk, 3.7x leverage) açabilecek
+
+
+## Maliyet Optimizasyonu (Tamamlandı)
+
+- [x] News analizi kaldırıldı (gereksiz, pahalı)
+- [x] Cycle süresi 60s'den 300s'ye çıkarıldı (5 dakika)
+- [x] ETH ve SOL bot'ları SUPPORTED_PAIRS'den kaldırıldı
+- [x] Sadece BTC bot'u kaldı
+- [x] Günlük maliyet: ~$50 → ~$10 (GPT-4 Turbo)

@@ -138,8 +138,8 @@ export function subscribeToPriceUpdates(
  */
 export const SUPPORTED_PAIRS = [
   'BTCUSDT',
-  'ETHUSDT',
-  'SOLUSDT',
+  // 'ETHUSDT',  // Disabled for cost optimization
+  // 'SOLUSDT',  // Disabled for cost optimization
 ] as const;
 
 export type SupportedPair = typeof SUPPORTED_PAIRS[number];
