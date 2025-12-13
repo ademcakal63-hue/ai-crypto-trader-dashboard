@@ -10,8 +10,8 @@ from openai import OpenAI
 import os
 
 class SMCDetector:
-    def __init__(self):
-        self.api_key = os.getenv("OPENAI_API_KEY")
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if self.api_key:
             # Use direct OpenAI API (bypass Manus proxy to preserve fine-tuning)
             self.client = OpenAI(

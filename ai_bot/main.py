@@ -72,7 +72,7 @@ class TradingBot:
             print("   Add API keys in Settings to use real data.\n")
         
         self.orderbook_analyzer = OrderBookAnalyzer(api_key, api_secret) if api_key else None
-        self.smc_detector = SMCDetector()
+        self.smc_detector = SMCDetector(api_key=openai_key)
         self.news_analyzer = NewsAnalyzer()
         self.binance = BinanceClient(api_key, api_secret) if api_key else None
         

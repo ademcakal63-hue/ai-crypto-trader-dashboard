@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE bot_settings SET openai_api_key = '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' WHERE id = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute UPDATE bot_settings SET openai_api_key = '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' WHERE id = 1;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1609
+}

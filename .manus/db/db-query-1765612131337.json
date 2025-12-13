@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, openai_api_key, binance_api_key FROM bot_settings LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute SELECT id, openai_api_key, binance_api_key FROM bot_settings LIMIT 1;",
+  "rows": [
+    {
+      "id": "30009",
+      "openai_api_key": "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",
+      "binance_api_key": "XBPj5VYb46wZddSGYUtg92bP0U4M9s5z9KJzW77svgZaRWJJ54bfqoELAgTxr9EA"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenai_api_key\tbinance_api_key\n30009\t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\tXBPj5VYb46wZddSGYUtg92bP0U4M9s5z9KJzW77svgZaRWJJ54bfqoELAgTxr9EA\n",
+  "stderr": "",
+  "execution_time_ms": 1531
+}
