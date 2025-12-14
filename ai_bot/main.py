@@ -174,6 +174,9 @@ class TradingBot:
         # 2. Analyze order book
         print(f"\n📖 Analyzing order book...")
         if self.orderbook_analyzer:
+            # First, fetch order book snapshot
+            self.orderbook_analyzer.get_orderbook_snapshot(self.symbol, limit=20)
+            # Then analyze it
             orderbook_data = self.orderbook_analyzer.analyze_orderbook(self.symbol, current_price)
             print(f"   Imbalance: {orderbook_data.get('imbalance', 0):.2f}%")
         else:
