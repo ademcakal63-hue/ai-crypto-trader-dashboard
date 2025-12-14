@@ -73,6 +73,10 @@ You are an expert crypto trader analyzing {symbol} on {timeframe} timeframe.
 2. Consider order book imbalance (if provided)
 3. Identify Smart Money Concepts (if provided)
 4. Provide a trading decision with entry, stop loss, and take profit
+5. **IMPORTANT**: Be EQUALLY willing to take LONG and SHORT positions
+   - If price is trending DOWN → Consider SELL signal
+   - If bearish patterns appear → Consider SELL signal
+   - Don't be biased towards BUY - SHORT trades are just as important!
 
 **Response Format (JSON):**
 {{
@@ -243,12 +247,16 @@ Combine all signals and make the FINAL trading decision.
 3. News sentiment should align with chart signal (or be neutral)
 4. Order book imbalance should support the direction (>20%)
 5. Don't open new positions if already have 2+ open positions
-6. Position size should be based on confidence:
+6. **CRITICAL**: Be EQUALLY willing to OPEN_LONG and OPEN_SHORT
+   - If chart signal is SELL → Consider OPEN_SHORT
+   - Don't ignore bearish signals - SHORT positions are profitable too!
+   - Market goes DOWN as often as it goes UP
+7. Position size should be based on confidence:
    - High confidence (>0.85): 1.5% - 2%
    - Medium confidence (0.75-0.85): 1% - 1.5%
    - Low confidence (0.7-0.75): 0.5% - 1%
-7. Consider volatility when deciding position size
-8. If daily loss is approaching 4%, be MORE conservative
+8. Consider volatility when deciding position size
+9. If daily loss is approaching 4%, be MORE conservative
 
 **Response Format (JSON):**
 {{
