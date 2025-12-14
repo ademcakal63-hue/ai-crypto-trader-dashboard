@@ -121,10 +121,10 @@ export default function NotificationPanel() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 rounded-lg border transition-all ${
+                  className={`p-5 rounded-lg border transition-all ${
                     notification.read
-                      ? 'bg-slate-800/30 border-slate-700/50'
-                      : 'bg-slate-800/70 border-slate-700'
+                      ? 'bg-slate-800/60 border-slate-700/60'
+                      : 'bg-slate-800/90 border-slate-600'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -132,7 +132,7 @@ export default function NotificationPanel() {
                       {getSeverityIcon(notification.severity)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center justify-between gap-4 mb-2">
                         <h4 className="text-sm font-semibold text-white">
                           {notification.title}
                         </h4>
@@ -146,7 +146,7 @@ export default function NotificationPanel() {
                       <p className="text-sm text-slate-300 mb-2">
                         {notification.message}
                       </p>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mt-3">
                         <span className="text-xs text-slate-500">
                           {new Date(notification.createdAt).toLocaleString('tr-TR')}
                         </span>
@@ -156,7 +156,7 @@ export default function NotificationPanel() {
                             size="sm"
                             onClick={() => markAsReadMutation.mutate({ id: notification.id })}
                             disabled={markAsReadMutation.isPending}
-                            className="text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                            className="text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 ml-4"
                           >
                             <Check className="w-3 h-3 mr-1" />
                             Okundu İşaretle

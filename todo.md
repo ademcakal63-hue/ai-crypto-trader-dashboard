@@ -1062,3 +1062,8 @@ Dashboard'dan tek tıkla:
 - [x] ETH ve SOL bot'ları SUPPORTED_PAIRS'den kaldırıldı
 - [x] Sadece BTC bot'u kaldı
 - [x] Günlük maliyet: ~$50 → ~$10 (GPT-4 Turbo)
+
+## UI İyileştirmeleri (Şu An)
+
+- [x] Bildirimler UI: Daha net arka plan + daha geniş layout
+- [x] Tüm bakiye kullan: Otomatik olarak bileşik getiri aktif olsun

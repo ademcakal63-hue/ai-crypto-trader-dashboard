@@ -416,7 +416,11 @@ export default function Settings() {
                 <Switch
                   id="useAllBalance"
                   checked={formData.useAllBalance}
-                  onCheckedChange={(checked) => setFormData({ ...formData, useAllBalance: checked })}
+                  onCheckedChange={(checked) => setFormData({ 
+                    ...formData, 
+                    useAllBalance: checked,
+                    compoundEnabled: checked ? true : formData.compoundEnabled // Tüm bakiye kullanılıyorsa compound otomatik aktif
+                  })}
                 />
               </div>
 
