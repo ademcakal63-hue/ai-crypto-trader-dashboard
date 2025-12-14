@@ -1,4 +1,11 @@
 {
-  "bots": [],
-  "totalRunning": 0
+  "bots": [
+    {
+      "symbol": "BTCUSDT",
+      "pid": 312794,
+      "startedAt": "2025-12-14T10:52:15.801Z",
+      "status": "running"
+    }
+  ],
+  "totalRunning": 1
 }
