@@ -1067,3 +1067,9 @@ Dashboard'dan tek tıkla:
 
 - [x] Bildirimler UI: Daha net arka plan + daha geniş layout
 - [x] Tüm bakiye kullan: Otomatik olarak bileşik getiri aktif olsun
+
+## Risk Yönetimi Düzeltmeleri (Şu An - URGENT)
+
+- [x] Pozisyon büyüklüğü hesaplama bug'ını düzelt
+- [x] Maksimum pozisyon limiti ekle (2 pozisyon)
+- [x] Margin kontrolü ekle (kullanılabilir margin hesapla)

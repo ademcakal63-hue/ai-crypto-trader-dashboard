@@ -88,10 +88,15 @@ class PaperTradingManager:
         """
         
         # Calculate position size in USD
-        position_size_usd = self.current_balance * (position_size_percent / 100)
+        # position_size_percent is already calculated correctly by risk_manager
+        # Example: 400% means $40,000 position with $10,000 capital (4x leverage)
+        position_size_usd = self.initial_balance * (position_size_percent / 100)
         
         # Calculate quantity
         quantity = position_size_usd / entry_price
+        
+        # Calculate leverage
+        leverage = position_size_percent / 100
         
         # Create position
         position = {
@@ -104,6 +109,7 @@ class PaperTradingManager:
             "quantity": quantity,
             "position_size_usd": position_size_usd,
             "position_size_percent": position_size_percent,
+            "leverage": round(leverage, 1),
             "confidence": confidence,
             "reasoning": reasoning,
             "opened_at": time.time(),
@@ -120,10 +126,12 @@ class PaperTradingManager:
         print(f"   Symbol: {symbol}")
         print(f"   Side: {side}")
         print(f"   Entry: ${entry_price:,.2f}")
-        print(f"   Size: ${position_size_usd:,.2f} ({position_size_percent}%)")
+        print(f"   Size: ${position_size_usd:,.2f} ({position_size_percent:.1f}%)")
+        print(f"   Leverage: {leverage:.1f}x")
         print(f"   Stop Loss: ${stop_loss:,.2f}")
         print(f"   Take Profit: ${take_profit:,.2f}")
         print(f"   Confidence: {confidence:.2f}")
+        print(f"   Open positions: {len(self.open_positions)}/2")
         
         return position
     
@@ -259,8 +267,26 @@ class PaperTradingManager:
             (can_open, reason)
         """
         
-        # Note: No position size limit for leverage trading
-        # Risk is controlled by risk_manager (2% risk per trade)
+        # Check maximum position limit
+        # Maximum 2 positions at a time (4% daily limit / 2% risk per trade = 2)
+        MAX_OPEN_POSITIONS = 2
+        if len(self.open_positions) >= MAX_OPEN_POSITIONS:
+            return False, f"Maximum {MAX_OPEN_POSITIONS} positions already open"
+        
+        # Check margin usage
+        # Calculate total margin used by open positions
+        total_margin_used = sum(
+            pos['position_size_usd'] / (pos.get('leverage', 1) or 1)
+            for pos in self.open_positions.values()
+        )
+        
+        # Calculate leverage for new position
+        new_leverage = position_size_percent / 100
+        new_margin = self.initial_balance * (position_size_percent / 100) / new_leverage
+        
+        # Check if total margin would exceed balance
+        if total_margin_used + new_margin > self.initial_balance:
+            return False, f"Insufficient margin (Used: ${total_margin_used:.2f}, Available: ${self.initial_balance - total_margin_used:.2f})"
         
         # Check daily loss limit (4%)
         daily_loss_percent = self.get_daily_loss_percent()
