@@ -1,4 +1,4 @@
-#!/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/venv/bin/python3.11
+#!/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

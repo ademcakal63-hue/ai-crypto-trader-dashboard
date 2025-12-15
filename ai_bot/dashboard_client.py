@@ -10,9 +10,10 @@ class DashboardClient:
     """Dashboard API ile iletişim"""
     
     def __init__(self, dashboard_url: str = None):
+        # Get dashboard URL from environment or use localhost
         self.dashboard_url = dashboard_url or os.getenv(
             "DASHBOARD_URL",
-            "https://3000-ikaiwbprvfhkce8zuz9o8-2c56880c.manus-asia.computer"
+            "http://localhost:3000"
         )
         self.api_base = f"{self.dashboard_url}/api/trpc"
     
@@ -225,9 +226,11 @@ class DashboardClient:
             True if successful, False otherwise
         """
         try:
+            # tRPC expects input wrapped in {"json": {...}}
+            payload = {"json": updates}
             response = requests.post(
                 f"{self.api_base}/settings.update",
-                json=updates,
+                json=payload,
                 headers={"Content-Type": "application/json"},
                 timeout=10
             )

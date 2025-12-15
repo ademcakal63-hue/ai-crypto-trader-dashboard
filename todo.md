@@ -1073,3 +1073,11 @@ Dashboard'dan tek tıkla:
 - [x] Pozisyon büyüklüğü hesaplama bug'ını düzelt
 - [x] Maksimum pozisyon limiti ekle (2 pozisyon)
 - [x] Margin kontrolü ekle (kullanılabilir margin hesapla)
+
+## Production Deployment (Şu An)
+
+- [ ] Bot'u Node.js backend'e entegre et
+- [ ] Bot process manager oluştur (start/stop/status)
+- [ ] Dashboard'dan bot kontrolü ekle
+- [ ] 7/24 çalışma için background process
+- [ ] Test ve doğrulama

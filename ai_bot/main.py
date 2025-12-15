@@ -189,10 +189,16 @@ class TradingBot:
             print(f"   Please add OpenAI API key in Settings to start trading.")
             return
         
-        # 3. Detect SMC patterns
+        # 3. Detect SMC patterns (using rule-based for speed)
         print(f"\n🧠 Detecting SMC patterns...")
-        smc_data = self.smc_detector.detect_all_patterns(candles, "15m")
-        print(f"   Patterns found: {len(smc_data.get('patterns', []))}")
+        try:
+            # Use rule-based detection for speed (AI mode can timeout)
+            smc_data = self.smc_detector._detect_rule_based(candles, "15m")
+            pattern_count = sum(len(v) for v in smc_data.values() if isinstance(v, list))
+            print(f"   Patterns found: {pattern_count}")
+        except Exception as e:
+            print(f"   ⚠️ SMC detection error: {e}")
+            smc_data = {'order_blocks': [], 'fair_value_gaps': [], 'liquidity_sweeps': [], 'break_of_structure': [], 'support_resistance': []}
         
         # 4. Skip news sentiment (cost optimization)
         news_sentiment = {'sentiment_score': 0, 'summary': 'News analysis disabled', 'key_events': []}

@@ -332,6 +332,29 @@ export const appRouter = router({
       return paperState;
     }),
   }),
+
+  // Bot Control
+  botControl: router({
+    start: publicProcedure.mutation(async () => {
+      const { botManager } = await import('./bot-manager');
+      return await botManager.start();
+    }),
+
+    stop: publicProcedure.mutation(async () => {
+      const { botManager } = await import('./bot-manager');
+      return await botManager.stop();
+    }),
+
+    restart: publicProcedure.mutation(async () => {
+      const { botManager } = await import('./bot-manager');
+      return await botManager.restart();
+    }),
+
+    status: publicProcedure.query(async () => {
+      const { botManager } = await import('./bot-manager');
+      return botManager.getStatus();
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

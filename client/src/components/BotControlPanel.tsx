@@ -13,56 +13,41 @@ const SUPPORTED_COINS = [
 ];
 
 export function BotControlPanel() {
-  const { data: botStatus, refetch } = trpc.bot.status.useQuery(undefined, {
+  const { data: botStatus, refetch } = trpc.botControl.status.useQuery(undefined, {
     refetchInterval: 5000, // Refresh every 5 seconds
   });
 
-  const startBot = trpc.bot.start.useMutation({
+  const startBot = trpc.botControl.start.useMutation({
     onSuccess: () => refetch(),
   });
 
-  const stopBot = trpc.bot.stop.useMutation({
+  const stopBot = trpc.botControl.stop.useMutation({
     onSuccess: () => refetch(),
   });
 
-  const handleToggle = (symbol: string, currentlyRunning: boolean) => {
-    if (currentlyRunning) {
-      stopBot.mutate({ symbol });
+  const handleToggle = () => {
+    if (botStatus?.isRunning) {
+      stopBot.mutate();
     } else {
-      startBot.mutate({ symbol });
+      startBot.mutate();
     }
   };
 
   const handleStartAll = useCallback(() => {
-    console.log('[BotControlPanel] handleStartAll clicked');
-    console.log('[BotControlPanel] botStatus:', botStatus);
-    console.log('[BotControlPanel] SUPPORTED_COINS:', SUPPORTED_COINS);
-    
-    SUPPORTED_COINS.forEach(coin => {
-      const isRunning = botStatus?.bots?.find((b: any) => b.symbol === coin.symbol)?.status === 'running';
-      console.log(`[BotControlPanel] ${coin.symbol} - isRunning:`, isRunning);
-      
-      if (!isRunning) {
-        console.log(`[BotControlPanel] Starting ${coin.symbol}...`);
-        startBot.mutate({ symbol: coin.symbol });
-      } else {
-        console.log(`[BotControlPanel] ${coin.symbol} already running, skipping`);
-      }
-    });
+    if (!botStatus?.isRunning) {
+      startBot.mutate();
+    }
   }, [botStatus, startBot]);
 
   const handleStopAll = () => {
-    SUPPORTED_COINS.forEach(coin => {
-      const isRunning = botStatus?.bots?.find((b: any) => b.symbol === coin.symbol)?.status === 'running';
-      if (isRunning) {
-        stopBot.mutate({ symbol: coin.symbol });
-      }
-    });
+    if (botStatus?.isRunning) {
+      stopBot.mutate();
+    }
   };
 
-  const runningCount = botStatus?.bots?.filter((b: any) => b.status === 'running').length || 0;
-  const allRunning = runningCount === SUPPORTED_COINS.length;
-  const noneRunning = runningCount === 0;
+  const isRunning = botStatus?.isRunning || false;
+  const allRunning = isRunning;
+  const noneRunning = !isRunning;
 
   return (
     <Card>
@@ -109,10 +94,7 @@ export function BotControlPanel() {
       <CardContent>
         <div className="space-y-4">
           {SUPPORTED_COINS.map((coin) => {
-            const bot = botStatus?.bots?.find((b: any) => b.symbol === coin.symbol);
-            const isRunning = bot?.status === 'running';
-            const isError = bot?.status === 'error';
-            const isStopped = bot?.status === 'stopped' || !bot;
+            const coinIsRunning = isRunning && botStatus?.symbol === coin.symbol;
 
             return (
               <div
@@ -129,41 +111,29 @@ export function BotControlPanel() {
 
                 <div className="flex items-center gap-4">
                   {/* Status Badge */}
-                  {isRunning && (
+                  {coinIsRunning && (
                     <Badge variant="default" className="bg-green-500">
                       <Activity className="h-3 w-3 mr-1 animate-pulse" />
                       Çalışıyor
                     </Badge>
                   )}
-                  {isStopped && (
+                  {!coinIsRunning && (
                     <Badge variant="secondary">
                       Durduruldu
                     </Badge>
                   )}
-                  {isError && (
-                    <Badge variant="destructive">
-                      Hata
-                    </Badge>
-                  )}
 
                   {/* Process Info */}
-                  {bot?.pid && (
+                  {coinIsRunning && botStatus?.pid && (
                     <div className="text-xs text-muted-foreground">
-                      PID: {bot.pid}
-                    </div>
-                  )}
-
-                  {/* Uptime */}
-                  {bot?.startedAt && isRunning && (
-                    <div className="text-xs text-muted-foreground">
-                      {formatUptime(bot.startedAt)}
+                      PID: {botStatus.pid}
                     </div>
                   )}
 
                   {/* Toggle Switch */}
                   <Switch
-                    checked={isRunning}
-                    onCheckedChange={() => handleToggle(coin.symbol, isRunning)}
+                    checked={coinIsRunning}
+                    onCheckedChange={handleToggle}
                     disabled={startBot.isPending || stopBot.isPending}
                   />
                 </div>
@@ -176,7 +146,7 @@ export function BotControlPanel() {
         <div className="mt-4 p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
           <div className="flex items-center justify-between">
             <span>Aktif Bot Sayısı:</span>
-            <span className="font-medium text-foreground">{runningCount} / {SUPPORTED_COINS.length}</span>
+            <span className="font-medium text-foreground">{isRunning ? 1 : 0} / {SUPPORTED_COINS.length}</span>
           </div>
         </div>
       </CardContent>
