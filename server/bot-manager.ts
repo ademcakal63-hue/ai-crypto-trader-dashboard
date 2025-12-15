@@ -5,6 +5,7 @@
 
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 
 class BotManager {
   private botProcess: ChildProcess | null = null;
@@ -25,25 +26,46 @@ class BotManager {
 
       console.log(`🤖 Starting bot: ${pythonPath} ${botPath} ${this.botSymbol}`);
 
+      // Create logs directory
+      const logsDir = path.join(process.cwd(), 'ai_bot', 'logs');
+      if (!fs.existsSync(logsDir)) {
+        fs.mkdirSync(logsDir, { recursive: true });
+      }
+      
+      // Create log file
+      const logFile = path.join(logsDir, `bot_${this.botSymbol}.log`);
+      const logStream = fs.createWriteStream(logFile, { flags: 'a' });
+      
       // Spawn Python process
       const dashboardUrl = `http://localhost:${process.env.PORT || 3000}`;
-      this.botProcess = spawn(pythonPath, [botPath, '--symbol', this.botSymbol], {
+      
+      // Clean environment - remove PYTHONPATH to prevent module conflicts
+      const cleanEnv = { ...process.env };
+      delete cleanEnv.PYTHONPATH;
+      delete cleanEnv.PYTHONHOME;
+      
+      this.botProcess = spawn(pythonPath, ['-u', botPath, '--symbol', this.botSymbol], {
         cwd: path.join(process.cwd(), 'ai_bot'),
         env: { 
-          ...process.env,
+          ...cleanEnv,
           DASHBOARD_URL: dashboardUrl,
+          PYTHONUNBUFFERED: '1',
         },
         detached: false,
       });
 
       // Handle stdout
       this.botProcess.stdout?.on('data', (data) => {
-        console.log(`[BOT] ${data.toString().trim()}`);
+        const output = data.toString();
+        console.log(`[BOT] ${output.trim()}`);
+        logStream.write(output);
       });
 
       // Handle stderr
       this.botProcess.stderr?.on('data', (data) => {
-        console.error(`[BOT ERROR] ${data.toString().trim()}`);
+        const output = data.toString();
+        console.error(`[BOT ERROR] ${output.trim()}`);
+        logStream.write(`ERROR: ${output}`);
       });
 
       // Handle process exit

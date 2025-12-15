@@ -32,20 +32,20 @@ export function PaperTradingStatus() {
   }
 
   const {
-    currentBalance,
-    initialBalance,
-    totalPnl,
-    totalPnlPercent,
-    currentCycle,
-    tradesInCycle,
-    tradesPerCycle,
-    totalTrades,
-    winRate,
-    mode,
-  } = paperStatus;
+    currentBalance = 10000,
+    initialBalance = 10000,
+    totalPnl = 0,
+    totalPnlPercent = 0,
+    currentCycle = 1,
+    tradesInCycle = 0,
+    tradesPerCycle = 100,
+    totalTrades = 0,
+    winRate = 0,
+    mode = "PAPER",
+  } = paperStatus || {};
 
-  const progress = (tradesInCycle / tradesPerCycle) * 100;
-  const isProfitable = totalPnl >= 0;
+  const progress = tradesPerCycle > 0 ? (tradesInCycle / tradesPerCycle) * 100 : 0;
+  const isProfitable = (totalPnl ?? 0) >= 0;
 
   return (
     <Card className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border-purple-500/30">
@@ -73,13 +73,13 @@ export function PaperTradingStatus() {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-white">
-                ${currentBalance.toFixed(2)}
+                ${(currentBalance ?? 10000).toFixed(2)}
               </div>
               <div className={cn(
                 "text-sm font-medium",
                 isProfitable ? "text-green-400" : "text-red-400"
               )}>
-                {isProfitable ? "+" : ""}${totalPnl.toFixed(2)} ({totalPnlPercent >= 0 ? "+" : ""}{totalPnlPercent.toFixed(2)}%)
+                {isProfitable ? "+" : ""}${(totalPnl ?? 0).toFixed(2)} ({(totalPnlPercent ?? 0) >= 0 ? "+" : ""}{(totalPnlPercent ?? 0).toFixed(2)}%)
               </div>
             </div>
           </div>
@@ -113,7 +113,7 @@ export function PaperTradingStatus() {
               "text-xl font-bold",
               winRate >= 60 ? "text-green-400" : winRate >= 50 ? "text-yellow-400" : "text-red-400"
             )}>
-              {winRate.toFixed(1)}%
+              {(winRate ?? 0).toFixed(1)}%
             </div>
           </div>
 
