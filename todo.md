@@ -1091,3 +1091,4 @@ Dashboard'dan tek tıkla:
 - [ ] Fine-tuning için trade kaydı doğrulama
 
 - [x] Toplam P&L kartını açık pozisyonların unrealized P&L'ini gösterecek şekilde güncelle
+- [x] Açık pozisyon kartlarında gerçek P&L değerlerini göster (şu an +$0.00 görünüyor)

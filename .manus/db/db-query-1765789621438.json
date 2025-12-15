@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, symbol, direction, entry_price, current_price, pnl, pnl_percentage, status FROM positions WHERE status = 'OPEN' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute SELECT id, symbol, direction, entry_price, current_price, pnl, pnl_percentage, status FROM positions WHERE status = 'OPEN' LIMIT 5;",
+  "rows": [
+    {
+      "id": "30001",
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
+      "entry_price": "89666.6",
+      "current_price": "89770.80",
+      "pnl": "-39.08",
+      "pnl_percentage": "-0.12",
+      "status": "OPEN"
+    },
+    {
+      "id": "30002",
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
+      "entry_price": "89670.0",
+      "current_price": "89770.80",
+      "pnl": "-40.04",
+      "pnl_percentage": "-0.11",
+      "status": "OPEN"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsymbol\tdirection\tentry_price\tcurrent_price\tpnl\tpnl_percentage\tstatus\n30001\tBTCUSDT\tSHORT\t89666.6\t89770.80\t-39.08\t-0.12\tOPEN\n30002\tBTCUSDT\tSHORT\t89670.0\t89770.80\t-40.04\t-0.11\tOPEN\n",
+  "stderr": "",
+  "execution_time_ms": 1992
+}

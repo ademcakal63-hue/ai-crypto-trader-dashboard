@@ -195,12 +195,12 @@ export default function Home() {
                   <div className="text-right">
                     <div className={cn(
                       "font-medium",
-                      (position.currentPnL ?? 0) >= 0 ? "text-green-600" : "text-red-600"
+                      parseFloat(position.pnl || "0") >= 0 ? "text-green-600" : "text-red-600"
                     )}>
-                      {(position.currentPnL ?? 0) >= 0 ? "+" : ""}${(position.currentPnL ?? 0).toFixed(2)}
+                      {parseFloat(position.pnl || "0") >= 0 ? "+" : ""}${parseFloat(position.pnl || "0").toFixed(2)}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {(position.currentPnL ?? 0) >= 0 ? "+" : ""}{((position.currentPnL ?? 0) / (parseFloat(position.entryPrice) || 1) * 100).toFixed(2)}%
+                      {parseFloat(position.pnlPercentage || "0") >= 0 ? "+" : ""}{parseFloat(position.pnlPercentage || "0").toFixed(2)}%
                     </div>
                   </div>
                 </div>
