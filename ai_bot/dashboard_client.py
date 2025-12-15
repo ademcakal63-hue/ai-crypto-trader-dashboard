@@ -61,6 +61,24 @@ class DashboardClient:
         except Exception as e:
             print(f"⚠️ Pozisyon açma bildirimi hatası: {e}")
     
+    def update_position_pnl(self, position_update: Dict):
+        """Pozisyon P&L güncelleme"""
+        try:
+            # tRPC format: {"json": {...}}
+            payload = {"json": position_update}
+            print(f"   📤 Sending P&L update: {position_update}")
+            response = requests.post(
+                f"{self.api_base}/bot.updatePositionPnL",
+                json=payload,
+                timeout=5
+            )
+            if response.status_code != 200:
+                print(f"   ⚠️ P&L update failed: {response.status_code} - {response.text[:200]}")
+            else:
+                print(f"   ✅ P&L güncellendi: ID {position_update.get('id')}")
+        except Exception as e:
+            print(f"   ⚠️ P&L update API hatası: {e}")
+    
     def close_position_notification(self, position: Dict):
         """Pozisyon kapandı bildirimi"""
         try:

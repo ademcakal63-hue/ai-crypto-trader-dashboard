@@ -1081,3 +1081,11 @@ Dashboard'dan tek tıkla:
 - [ ] Dashboard'dan bot kontrolü ekle
 - [ ] 7/24 çalışma için background process
 - [ ] Test ve doğrulama
+
+
+## Real-time P&L ve Bot Güvenlik (Şu An)
+
+- [ ] Real-time P&L update - Bot her döngüde açık pozisyonların currentPrice ve unrealized P&L güncellesin
+- [ ] Dashboard'da gerçek zamanlı kar/zarar gösterimi
+- [ ] 2 bot çakışması önleme kontrolü
+- [ ] Fine-tuning için trade kaydı doğrulama

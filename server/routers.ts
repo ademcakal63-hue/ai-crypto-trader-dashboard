@@ -82,6 +82,24 @@ export const appRouter = router({
         return await updatePosition(input);
       }),
     
+    updatePositionPnL: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        // Update position P&L in database
+        const { updatePosition } = await import('./botApi');
+        return await updatePosition({
+          positionId: parseInt(input.id),
+          currentPrice: input.currentPrice,
+          pnl: input.currentPnL,
+          pnlPercentage: input.pnlPercent,
+        });
+      }),
+    
     closePosition: publicProcedure
       .input((val: unknown) => {
         if (typeof val === 'object' && val !== null) {

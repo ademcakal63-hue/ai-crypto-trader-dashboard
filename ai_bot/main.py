@@ -364,11 +364,46 @@ class TradingBot:
         
         print(f"\n🔍 Checking {len(self.paper_trading.open_positions)} open positions...")
         
-        # Check positions
+        # Update P&L for all open positions and send to dashboard
+        self._update_positions_pnl(current_price)
+        
+        # Check positions for SL/TP
         self.paper_trading.check_positions({self.symbol: current_price})
         
         # If any positions were closed, record them
         # (This is handled inside paper_trading.check_positions)
+    
+    def _update_positions_pnl(self, current_price: float):
+        """Update unrealized P&L for all open positions and send to dashboard"""
+        
+        for pos_id, position in self.paper_trading.open_positions.items():
+            entry_price = position['entry_price']
+            quantity = position['quantity']
+            side = position['side']
+            
+            # Calculate unrealized P&L
+            if side == "BUY":
+                unrealized_pnl = (current_price - entry_price) * quantity
+            else:  # SELL (SHORT)
+                unrealized_pnl = (entry_price - current_price) * quantity
+            
+            pnl_percent = (unrealized_pnl / position['position_size_usd']) * 100
+            
+            # Print P&L update
+            pnl_color = "🟢" if unrealized_pnl >= 0 else "🔴"
+            print(f"   {pnl_color} {position['symbol']} {side}: ${unrealized_pnl:+.2f} ({pnl_percent:+.2f}%)")
+            
+            # Send update to dashboard
+            try:
+                update_data = {
+                    "id": pos_id.replace("paper_", ""),
+                    "currentPrice": f"{current_price:.2f}",
+                    "currentPnL": f"{unrealized_pnl:.2f}",
+                    "pnlPercent": f"{pnl_percent:.2f}"
+                }
+                self.dashboard.update_position_pnl(update_data)
+            except Exception as e:
+                print(f"   ⚠️ P&L update hatası: {e}")
 
 
 def main():
