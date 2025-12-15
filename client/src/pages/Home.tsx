@@ -22,8 +22,12 @@ import { PaperTradingStatus } from "@/components/PaperTradingStatus";
 export default function Home() {
   
   // Fetch real dashboard data
-  const { data: overview, isLoading: overviewLoading } = trpc.dashboard.overview.useQuery();
-  const { data: openPositions, isLoading: positionsLoading } = trpc.dashboard.openPositions.useQuery();
+  const { data: overview, isLoading: overviewLoading } = trpc.dashboard.overview.useQuery(undefined, {
+    refetchInterval: 10000, // Refresh every 10 seconds for real-time P&L
+  });
+  const { data: openPositions, isLoading: positionsLoading } = trpc.dashboard.openPositions.useQuery(undefined, {
+    refetchInterval: 10000, // Refresh every 10 seconds for real-time P&L
+  });
   const { data: aiLearning, isLoading: aiLoading } = trpc.dashboard.aiLearning.useQuery();
   const { data: performance, isLoading: perfLoading } = trpc.dashboard.performance.useQuery();
   const { data: botStatus } = trpc.bot.status.useQuery(undefined, {

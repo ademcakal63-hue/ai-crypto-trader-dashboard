@@ -1089,3 +1089,5 @@ Dashboard'dan tek tıkla:
 - [ ] Dashboard'da gerçek zamanlı kar/zarar gösterimi
 - [ ] 2 bot çakışması önleme kontrolü
 - [ ] Fine-tuning için trade kaydı doğrulama
+
+- [x] Toplam P&L kartını açık pozisyonların unrealized P&L'ini gösterecek şekilde güncelle
