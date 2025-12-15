@@ -218,7 +218,7 @@ export async function loadBotStatus() {
  * Get logs for a specific bot
  */
 export async function getBotLogs(symbol: string) {
-  const logFile = path.join(process.cwd(), 'ai_bot', 'logs', `${symbol}.log`);
+  const logFile = path.join(process.cwd(), 'ai_bot', 'logs', `bot_${symbol}.log`);
   
   try {
     const data = await fs.readFile(logFile, 'utf-8');

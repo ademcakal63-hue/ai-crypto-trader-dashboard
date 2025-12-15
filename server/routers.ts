@@ -336,23 +336,25 @@ export const appRouter = router({
   // Bot Control
   botControl: router({
     start: publicProcedure.mutation(async () => {
-      const { botManager } = await import('./bot-manager');
-      return await botManager.start();
+      const { startBot } = await import('./botControl');
+      return await startBot('BTCUSDT');
     }),
 
     stop: publicProcedure.mutation(async () => {
-      const { botManager } = await import('./bot-manager');
-      return await botManager.stop();
+      const { stopBot } = await import('./botControl');
+      return await stopBot('BTCUSDT');
     }),
 
     restart: publicProcedure.mutation(async () => {
-      const { botManager } = await import('./bot-manager');
-      return await botManager.restart();
+      const { stopBot, startBot } = await import('./botControl');
+      await stopBot('BTCUSDT');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return await startBot('BTCUSDT');
     }),
 
     status: publicProcedure.query(async () => {
-      const { botManager } = await import('./bot-manager');
-      return botManager.getStatus();
+      const { getBotStatus } = await import('./botControl');
+      return await getBotStatus();
     }),
   }),
 });

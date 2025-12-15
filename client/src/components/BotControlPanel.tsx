@@ -26,7 +26,7 @@ export function BotControlPanel() {
   });
 
   const handleToggle = () => {
-    if (botStatus?.isRunning) {
+    if (botStatus?.totalRunning && botStatus.totalRunning > 0) {
       stopBot.mutate();
     } else {
       startBot.mutate();
@@ -34,18 +34,18 @@ export function BotControlPanel() {
   };
 
   const handleStartAll = useCallback(() => {
-    if (!botStatus?.isRunning) {
+    if (!botStatus?.totalRunning || botStatus.totalRunning === 0) {
       startBot.mutate();
     }
   }, [botStatus, startBot]);
 
   const handleStopAll = () => {
-    if (botStatus?.isRunning) {
+    if (botStatus?.totalRunning && botStatus.totalRunning > 0) {
       stopBot.mutate();
     }
   };
 
-  const isRunning = botStatus?.isRunning || false;
+  const isRunning = (botStatus?.totalRunning || 0) > 0;
   const allRunning = isRunning;
   const noneRunning = !isRunning;
 
@@ -94,7 +94,8 @@ export function BotControlPanel() {
       <CardContent>
         <div className="space-y-4">
           {SUPPORTED_COINS.map((coin) => {
-            const coinIsRunning = isRunning && botStatus?.symbol === coin.symbol;
+            const coinBot = botStatus?.bots?.find(b => b.symbol === coin.symbol);
+            const coinIsRunning = coinBot?.status === 'running';
 
             return (
               <div
@@ -124,9 +125,9 @@ export function BotControlPanel() {
                   )}
 
                   {/* Process Info */}
-                  {coinIsRunning && botStatus?.pid && (
+                  {coinIsRunning && coinBot?.pid && (
                     <div className="text-xs text-muted-foreground">
-                      PID: {botStatus.pid}
+                      PID: {coinBot.pid}
                     </div>
                   )}
 
