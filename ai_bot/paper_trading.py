@@ -42,6 +42,44 @@ class PaperTradingManager:
             if paper_state:
                 self.current_balance = paper_state.get('current_balance', self.initial_balance)
             
+            # Load open positions from database
+            try:
+                import requests
+                print(f"📡 Loading positions from: {self.dashboard.api_base}/dashboard.openPositions")
+                response = requests.get(
+                    f"{self.dashboard.api_base}/dashboard.openPositions",
+                    timeout=10
+                )
+                print(f"📡 Response status: {response.status_code}")
+                if response.status_code == 200:
+                    db_positions = response.json().get('result', {}).get('data', {}).get('json', [])
+                    
+                    # Convert database positions to paper trading format
+                    if db_positions:
+                        open_positions = {}
+                        for pos in db_positions:
+                            position_id = f"paper_{pos['id']}"
+                            open_positions[position_id] = {
+                                "id": position_id,
+                                "symbol": pos['symbol'],
+                                "side": "SELL" if pos['direction'] == "SHORT" else "BUY",
+                                "entry_price": float(pos['entryPrice']),
+                                "stop_loss": float(pos['stopLoss']),
+                                "take_profit": float(pos['takeProfit']),
+                                "quantity": float(pos['positionSize']) / float(pos['entryPrice']),
+                                "position_size_usd": float(pos['positionSize']),
+                                "position_size_percent": 0,  # Will be calculated
+                                "leverage": 0,  # Will be calculated
+                                "confidence": float(pos.get('confidence', 0.85)),
+                                "reasoning": pos.get('pattern', 'AI Analysis'),
+                                "opened_at": pos['openedAt'],
+                                "status": "OPEN"
+                            }
+                        paper_state['open_positions'] = open_positions
+                        print(f"📥 Loaded {len(open_positions)} open positions from database")
+            except Exception as e:
+                print(f"⚠️ Failed to load positions from database: {e}")
+            
             return paper_state
         except:
             return {}
@@ -253,8 +291,28 @@ class PaperTradingManager:
         # Remove from open positions
         del self.open_positions[position_id]
         
+        # Notify dashboard to close position in database
+        try:
+            dashboard_data = {
+                "id": position_id.replace("paper_", ""),
+                "symbol": position['symbol'],
+                "exitPrice": str(exit_price),
+                "pnl": str(pnl_usd),
+                "pnlPercent": str(pnl_percent),
+                "closeReason": reason
+            }
+            self.dashboard.close_position_notification(dashboard_data)
+        except Exception as e:
+            print(f"⚠️ Dashboard close notification hatası: {e}")
+        
         # Save state
         self._save_state()
+        
+        # Check if cycle completed (every 100 trades)
+        if len(self.trades) > 0 and len(self.trades) % 100 == 0:
+            print(f"\n🎯 CYCLE {len(self.trades) // 100} COMPLETED!")
+            print(f"   Total trades: {len(self.trades)}")
+            print(f"   Current balance: ${self.current_balance:,.2f}")
         
         print(f"\n📄 Paper Trade Closed:")
         print(f"   Symbol: {position['symbol']}")
