@@ -174,6 +174,35 @@ export async function stopBot(symbol: string) {
  * Get status of all bots
  */
 export async function getBotStatus() {
+  // First check if there are running bot processes not in our Map
+  // This handles server restart scenarios
+  try {
+    const { execSync } = await import('child_process');
+    const psOutput = execSync('ps aux | grep "python.*main.py" | grep -v grep', { encoding: 'utf-8' });
+    const lines = psOutput.trim().split('\n').filter(l => l.trim());
+    
+    for (const line of lines) {
+      const parts = line.split(/\s+/);
+      const pid = parseInt(parts[1]);
+      const symbolMatch = line.match(/--symbol\s+(\w+)/);
+      const symbol = symbolMatch ? symbolMatch[1] : 'BTCUSDT';
+      
+      // If this process is not in our Map, add it
+      if (!botProcesses.has(symbol)) {
+        console.log(`[BotControl] Found orphan bot process: ${symbol} (PID: ${pid})`);
+        botProcesses.set(symbol, {
+          symbol,
+          process: null as any, // We don't have the process handle
+          pid,
+          startedAt: new Date().toISOString(),
+          status: 'running',
+        });
+      }
+    }
+  } catch (error) {
+    // No running processes found, that's okay
+  }
+  
   const bots = Array.from(botProcesses.values()).map(bot => ({
     symbol: bot.symbol,
     pid: bot.pid,
@@ -218,10 +247,20 @@ export async function loadBotStatus() {
  * Get logs for a specific bot
  */
 export async function getBotLogs(symbol: string) {
-  const logFile = path.join(process.cwd(), 'ai_bot', 'logs', `bot_${symbol}.log`);
+  // Try both log file formats (Dashboard bot uses SYMBOL.log, manual uses bot_SYMBOL.log)
+  const logFile = path.join(process.cwd(), 'ai_bot', 'logs', `${symbol}.log`);
+  const altLogFile = path.join(process.cwd(), 'ai_bot', 'logs', `bot_${symbol}.log`);
   
   try {
-    const data = await fs.readFile(logFile, 'utf-8');
+    let data: string;
+    try {
+      // Try primary log file first (SYMBOL.log)
+      data = await fs.readFile(logFile, 'utf-8');
+    } catch {
+      // Fallback to alternative log file (bot_SYMBOL.log)
+      data = await fs.readFile(altLogFile, 'utf-8');
+    }
+    
     const lines = data.split('\n').filter(line => line.trim());
     
     // Return last 100 lines
