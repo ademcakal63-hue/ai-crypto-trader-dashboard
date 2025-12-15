@@ -191,12 +191,12 @@ export default function Home() {
                   <div className="text-right">
                     <div className={cn(
                       "font-medium",
-                      position.currentPnL >= 0 ? "text-green-600" : "text-red-600"
+                      (position.currentPnL ?? 0) >= 0 ? "text-green-600" : "text-red-600"
                     )}>
-                      {position.currentPnL >= 0 ? "+" : ""}${position.currentPnL.toFixed(2)}
+                      {(position.currentPnL ?? 0) >= 0 ? "+" : ""}${(position.currentPnL ?? 0).toFixed(2)}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {position.currentPnL >= 0 ? "+" : ""}{(position.currentPnL / position.entryPrice * 100).toFixed(2)}%
+                      {(position.currentPnL ?? 0) >= 0 ? "+" : ""}{((position.currentPnL ?? 0) / (parseFloat(position.entryPrice) || 1) * 100).toFixed(2)}%
                     </div>
                   </div>
                 </div>
