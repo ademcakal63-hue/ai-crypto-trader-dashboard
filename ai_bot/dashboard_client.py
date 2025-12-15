@@ -49,22 +49,30 @@ class DashboardClient:
     def open_position_notification(self, position: Dict):
         """Pozisyon açıldı bildirimi"""
         try:
-            requests.post(
-                f"{self.api_base}/bot.position.open",
-                json=position,
+            # tRPC format: {"json": {...}}
+            payload = {"json": position}
+            response = requests.post(
+                f"{self.api_base}/bot.openPosition",
+                json=payload,
                 timeout=10
             )
+            response.raise_for_status()
+            print(f"✅ Pozisyon database'e kaydedildi: {position['symbol']} {position['direction']}")
         except Exception as e:
             print(f"⚠️ Pozisyon açma bildirimi hatası: {e}")
     
     def close_position_notification(self, position: Dict):
         """Pozisyon kapandı bildirimi"""
         try:
-            requests.post(
-                f"{self.api_base}/bot.position.close",
-                json=position,
+            # tRPC format: {"json": {...}}
+            payload = {"json": position}
+            response = requests.post(
+                f"{self.api_base}/bot.closePosition",
+                json=payload,
                 timeout=10
             )
+            response.raise_for_status()
+            print(f"✅ Pozisyon kapatıldı: {position['symbol']}")
         except Exception as e:
             print(f"⚠️ Pozisyon kapatma bildirimi hatası: {e}")
     

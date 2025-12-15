@@ -122,6 +122,23 @@ class PaperTradingManager:
         # Save state
         self._save_state()
         
+        # Notify dashboard
+        try:
+            dashboard_data = {
+                "symbol": symbol,
+                "direction": "SHORT" if side == "SELL" else "LONG",
+                "entryPrice": str(entry_price),
+                "stopLoss": str(stop_loss),
+                "takeProfit": str(take_profit),
+                "positionSize": str(position_size_usd),
+                "riskAmount": str(abs(entry_price - stop_loss) * quantity),
+                "pattern": "AI Analysis",
+                "confidence": str(confidence)
+            }
+            self.dashboard.open_position_notification(dashboard_data)
+        except Exception as e:
+            print(f"⚠️ Dashboard bildirim hatası: {e}")
+        
         print(f"\n📄 Paper Trade Opened:")
         print(f"   Symbol: {symbol}")
         print(f"   Side: {side}")
