@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Settings, History, FlaskConical } from "lucide-react";
 import { NotificationDropdown } from "./NotificationDropdown";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -30,6 +30,8 @@ import { Button } from "./ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: History, label: "Trade Geçmişi", path: "/trade-history" },
+  { icon: FlaskConical, label: "Backtest", path: "/backtest" },
   { icon: Settings, label: "Ayarlar", path: "/settings" },
 ];
 

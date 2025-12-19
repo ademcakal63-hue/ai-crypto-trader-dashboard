@@ -1120,3 +1120,29 @@ Dashboard'dan tek tıkla:
 - [x] Trade evaluation for learning (fine-tuning için)
 - [x] main_pro.py oluşturuldu (Pro Trader Bot)
 - [x] paper_trading.py güncellendi (tek pozisyon kuralı)
+
+
+## Final Eksikler - Satış Öncesi (Şu An)
+
+### Bot Auto-Start Mekanizması
+- [x] Dashboard'dan "Başlat" butonuna basınca bot otomatik başlasın
+- [x] Bot process manager oluştur (Node.js child_process)
+- [x] Bot durumu real-time takip (çalışıyor/durdu)
+- [x] "Durdur" butonu ile bot'u güvenli kapat
+
+### Paper Trading Status Real-time
+- [x] Paper Trading Status kartı anlık güncellensin
+- [x] Balance, P&L, cycle bilgisi WebSocket/polling ile
+- [x] Bot her döngüde dashboard'a veri göndersin
+
+### Trade Geçmişi Sayfası
+- [x] Kapalı pozisyonları listeleyen sayfa oluştur
+- [x] Entry/Exit fiyat, P&L, süre, AI reasoning göster
+- [x] Filtreleme (tarih, coin, kar/zarar)
+- [x] Toplam istatistikler (win rate, total P&L)
+
+### Backtest Sistemi
+- [x] Geçmiş verilerle strateji testi
+- [x] Tarih aralığı seçimi
+- [x] Performans metrikleri (Sharpe, Drawdown, Win Rate)
+- [x] Equity curve grafiği

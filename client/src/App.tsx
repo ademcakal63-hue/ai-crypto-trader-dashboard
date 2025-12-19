@@ -7,6 +7,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
+import TradeHistory from "./pages/TradeHistory";
+import Backtest from "./pages/Backtest";
 import DashboardLayout from "./components/DashboardLayout";
 
 function Router() {
@@ -21,6 +23,16 @@ function Router() {
       <Route path={"/settings"}>
         <DashboardLayout>
           <Settings />
+        </DashboardLayout>
+      </Route>
+      <Route path={"/trade-history"}>
+        <DashboardLayout>
+          <TradeHistory />
+        </DashboardLayout>
+      </Route>
+      <Route path={"/backtest"}>
+        <DashboardLayout>
+          <Backtest />
         </DashboardLayout>
       </Route>
 

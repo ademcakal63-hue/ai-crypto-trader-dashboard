@@ -90,11 +90,42 @@ class PaperTradingManager:
             return {}
     
     def _save_state(self):
-        """Save paper trading state to database"""
+        """Save paper trading state to database for dashboard display"""
         try:
+            # Calculate statistics
+            stats = self.get_statistics()
+            
+            # Calculate cycle info
+            total_trades = len(self.trades)
+            current_cycle = (total_trades // 100) + 1
+            trades_in_cycle = total_trades % 100
+            
+            # Build state object matching dashboard expectations
             state = {
-                'current_balance': self.current_balance,
-                'trades': self.trades,
+                # Balance info
+                'currentBalance': self.current_balance,
+                'initialBalance': self.initial_balance,
+                'totalPnl': stats['total_pnl_usd'],
+                'totalPnlPercent': stats['total_pnl_percent'],
+                
+                # Cycle info
+                'currentCycle': current_cycle,
+                'tradesInCycle': trades_in_cycle,
+                'tradesPerCycle': 100,
+                'totalTrades': total_trades,
+                
+                # Performance
+                'winRate': stats['win_rate'],
+                'avgWin': stats['avg_win'],
+                'avgLoss': stats['avg_loss'],
+                'largestWin': stats['largest_win'],
+                'largestLoss': stats['largest_loss'],
+                
+                # Mode
+                'mode': 'PAPER',
+                
+                # Raw data (for recovery)
+                'trades': self.trades[-100:],  # Keep last 100 trades only
                 'open_positions': self.open_positions,
                 'daily_pnl': self.daily_pnl,
                 'last_updated': time.time()

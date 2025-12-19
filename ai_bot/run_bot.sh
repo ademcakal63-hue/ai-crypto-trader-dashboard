@@ -18,4 +18,5 @@ cd /home/ubuntu/ai-crypto-trader-dashboard/ai_bot || exit 1
 source venv/bin/activate || exit 1
 
 # Run bot with unbuffered output
-exec python -u main.py "$@"
+# Use Pro Trader AI (main_pro.py) for professional trading logic
+exec python -u main_pro.py "$@"

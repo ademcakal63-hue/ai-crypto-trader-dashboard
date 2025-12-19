@@ -329,25 +329,51 @@ export const appRouter = router({
       const settings = await getBotSettings();
       
       // Get paper trading state from settings (stored as JSON)
-      const paperState = settings?.paperTradingState ? JSON.parse(settings.paperTradingState) : null;
-      
-      if (!paperState) {
-        // Return default state
-        return {
-          currentBalance: 10000,
-          initialBalance: 10000,
-          totalPnl: 0,
-          totalPnlPercent: 0,
-          currentCycle: 1,
-          tradesInCycle: 0,
-          tradesPerCycle: 100,
-          totalTrades: 0,
-          winRate: 0,
-          mode: 'PAPER',
-        };
+      let paperState = null;
+      try {
+        paperState = settings?.paperTradingState ? JSON.parse(settings.paperTradingState) : null;
+      } catch (e) {
+        console.error('Failed to parse paper trading state:', e);
       }
       
-      return paperState;
+      // Default state
+      const defaultState = {
+        currentBalance: 10000,
+        initialBalance: 10000,
+        totalPnl: 0,
+        totalPnlPercent: 0,
+        currentCycle: 1,
+        tradesInCycle: 0,
+        tradesPerCycle: 100,
+        totalTrades: 0,
+        winRate: 0,
+        avgWin: 0,
+        avgLoss: 0,
+        largestWin: 0,
+        largestLoss: 0,
+        mode: 'PAPER',
+        lastUpdated: null,
+      };
+      
+      if (!paperState) {
+        return defaultState;
+      }
+      
+      // Merge with defaults to ensure all fields exist
+      return {
+        ...defaultState,
+        ...paperState,
+        // Ensure numeric fields are numbers
+        currentBalance: Number(paperState.currentBalance || defaultState.currentBalance),
+        initialBalance: Number(paperState.initialBalance || defaultState.initialBalance),
+        totalPnl: Number(paperState.totalPnl || 0),
+        totalPnlPercent: Number(paperState.totalPnlPercent || 0),
+        winRate: Number(paperState.winRate || 0),
+        totalTrades: Number(paperState.totalTrades || 0),
+        tradesInCycle: Number(paperState.tradesInCycle || 0),
+        currentCycle: Number(paperState.currentCycle || 1),
+        lastUpdated: paperState.last_updated || null,
+      };
     }),
   }),
 
