@@ -1146,3 +1146,12 @@ Dashboard'dan tek tıkla:
 - [x] Tarih aralığı seçimi
 - [x] Performans metrikleri (Sharpe, Drawdown, Win Rate)
 - [x] Equity curve grafiği
+
+
+## API Keys ve Backtest Güncellemesi
+
+- [ ] API key'lerin neden kaybolduğunu araştır
+- [ ] API key'lerin kalıcılığını sağla (database'de şifreli saklama)
+- [x] Backtest'i gerçek Binance verileriyle çalıştır
+- [x] Geçmiş mum verilerini çek (Binance API)
+- [x] AI stratejisini geçmiş verilere uygula (SMC patterns: OB, FVG, Liquidity Sweep, BOS)

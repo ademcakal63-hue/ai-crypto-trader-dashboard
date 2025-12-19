@@ -10,11 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -27,92 +24,24 @@ import {
 } from "recharts";
 import {
   Play,
-  Pause,
   RotateCcw,
   TrendingUp,
   TrendingDown,
   DollarSign,
   Target,
-  Calendar,
   Activity,
   AlertTriangle,
   CheckCircle,
-  Clock,
-  Percent,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
-// Demo backtest data generator
-function generateBacktestData(days: number, initialCapital: number) {
-  const data = [];
-  let equity = initialCapital;
-  let maxEquity = equity;
-  let drawdown = 0;
-  let wins = 0;
-  let losses = 0;
-  
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
-  
-  for (let i = 0; i < days; i++) {
-    const date = new Date(startDate);
-    date.setDate(date.getDate() + i);
-    
-    // Simulate daily trades (1-3 trades per day)
-    const tradesPerDay = Math.floor(Math.random() * 3) + 1;
-    let dailyPnl = 0;
-    
-    for (let t = 0; t < tradesPerDay; t++) {
-      // 55% win rate with 1.5:1 R:R
-      const isWin = Math.random() < 0.55;
-      const riskAmount = equity * 0.02; // 2% risk per trade
-      
-      if (isWin) {
-        dailyPnl += riskAmount * 1.5; // 1.5R win
-        wins++;
-      } else {
-        dailyPnl -= riskAmount; // 1R loss
-        losses++;
-      }
-    }
-    
-    equity += dailyPnl;
-    maxEquity = Math.max(maxEquity, equity);
-    drawdown = ((maxEquity - equity) / maxEquity) * 100;
-    
-    data.push({
-      date: date.toISOString().split('T')[0],
-      equity: Math.round(equity * 100) / 100,
-      drawdown: Math.round(drawdown * 100) / 100,
-      dailyPnl: Math.round(dailyPnl * 100) / 100,
-    });
-  }
-  
-  return {
-    equityData: data,
-    stats: {
-      totalTrades: wins + losses,
-      wins,
-      losses,
-      winRate: ((wins / (wins + losses)) * 100).toFixed(1),
-      totalPnl: Math.round((equity - initialCapital) * 100) / 100,
-      totalPnlPercent: (((equity - initialCapital) / initialCapital) * 100).toFixed(2),
-      maxDrawdown: Math.max(...data.map(d => d.drawdown)).toFixed(2),
-      sharpeRatio: (1.2 + Math.random() * 0.8).toFixed(2), // Simulated
-      profitFactor: ((wins * 1.5) / losses).toFixed(2),
-      avgWin: ((equity - initialCapital) / wins * 1.5).toFixed(2),
-      avgLoss: ((equity - initialCapital) / losses).toFixed(2),
-      finalEquity: Math.round(equity * 100) / 100,
-    }
-  };
-}
-
 export default function Backtest() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   
   // Backtest parameters
   const [symbol, setSymbol] = useState("BTCUSDT");
@@ -121,39 +50,51 @@ export default function Backtest() {
   const [initialCapital, setInitialCapital] = useState("10000");
   const [riskPerTrade, setRiskPerTrade] = useState("2");
 
+  const backtestMutation = trpc.backtest.run.useMutation({
+    onSuccess: (data) => {
+      setResults(data);
+      setIsRunning(false);
+      setProgress(100);
+      toast.success(`Backtest tamamlandı! ${data.stats.totalTrades} işlem analiz edildi.`);
+    },
+    onError: (error) => {
+      setError(error.message);
+      setIsRunning(false);
+      setProgress(0);
+      toast.error(`Backtest hatası: ${error.message}`);
+    },
+  });
+
   const runBacktest = async () => {
     setIsRunning(true);
-    setProgress(0);
+    setProgress(10);
     setResults(null);
+    setError(null);
     
-    // Simulate backtest progress
+    // Simulate progress while waiting for API
     const interval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 100) {
+        if (prev >= 90) {
           clearInterval(interval);
-          return 100;
+          return 90;
         }
-        return prev + 5;
+        return prev + 10;
       });
-    }, 100);
+    }, 500);
     
-    // Wait for progress to complete
-    await new Promise(resolve => setTimeout(resolve, 2200));
-    
-    // Generate backtest results
-    const backtestResults = generateBacktestData(
-      parseInt(days),
-      parseFloat(initialCapital)
-    );
-    
-    setResults(backtestResults);
-    setIsRunning(false);
-    toast.success("Backtest tamamlandı!");
+    backtestMutation.mutate({
+      symbol,
+      timeframe,
+      days: parseInt(days),
+      initialCapital: parseFloat(initialCapital),
+      riskPerTrade: parseFloat(riskPerTrade),
+    });
   };
 
   const resetBacktest = () => {
     setResults(null);
     setProgress(0);
+    setError(null);
   };
 
   return (
@@ -162,7 +103,7 @@ export default function Backtest() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Strateji Backtest</h1>
         <p className="text-muted-foreground mt-1">
-          AI trading stratejisini geçmiş verilerle test edin
+          AI trading stratejisini gerçek Binance verileriyle test edin
         </p>
       </div>
 
@@ -174,7 +115,7 @@ export default function Backtest() {
             Backtest Parametreleri
           </CardTitle>
           <CardDescription>
-            Test için parametreleri ayarlayın
+            Gerçek piyasa verileriyle strateji testi için parametreleri ayarlayın
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -215,8 +156,9 @@ export default function Backtest() {
                 value={days}
                 onChange={(e) => setDays(e.target.value)}
                 min="7"
-                max="365"
+                max="90"
               />
+              <p className="text-xs text-muted-foreground">Max 90 gün</p>
             </div>
 
             <div className="space-y-2">
@@ -251,7 +193,7 @@ export default function Backtest() {
               {isRunning ? (
                 <>
                   <Activity className="h-4 w-4 mr-2 animate-spin" />
-                  Test Çalışıyor...
+                  Gerçek Veriler Analiz Ediliyor...
                 </>
               ) : (
                 <>
@@ -273,10 +215,16 @@ export default function Backtest() {
           {isRunning && (
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span>İlerleme</span>
+                <span>Binance'den veri çekiliyor ve analiz ediliyor...</span>
                 <span>{progress}%</span>
               </div>
               <Progress value={progress} />
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-500">{error}</p>
             </div>
           )}
         </CardContent>
@@ -313,7 +261,7 @@ export default function Backtest() {
               <CardContent>
                 <div className={cn(
                   "text-2xl font-bold",
-                  parseFloat(results.stats.winRate) >= 55 ? "text-green-500" : "text-yellow-500"
+                  parseFloat(results.stats.winRate) >= 50 ? "text-green-500" : "text-yellow-500"
                 )}>
                   {results.stats.winRate}%
                 </div>
@@ -331,7 +279,7 @@ export default function Backtest() {
               <CardContent>
                 <div className={cn(
                   "text-2xl font-bold",
-                  parseFloat(results.stats.maxDrawdown) <= 10 ? "text-green-500" : "text-red-500"
+                  parseFloat(results.stats.maxDrawdown) <= 15 ? "text-green-500" : "text-red-500"
                 )}>
                   -{results.stats.maxDrawdown}%
                 </div>
@@ -349,7 +297,7 @@ export default function Backtest() {
               <CardContent>
                 <div className={cn(
                   "text-2xl font-bold",
-                  parseFloat(results.stats.sharpeRatio) >= 1.5 ? "text-green-500" : "text-yellow-500"
+                  parseFloat(results.stats.sharpeRatio) >= 1 ? "text-green-500" : "text-yellow-500"
                 )}>
                   {results.stats.sharpeRatio}
                 </div>
@@ -365,7 +313,7 @@ export default function Backtest() {
             <CardHeader>
               <CardTitle>Equity Curve</CardTitle>
               <CardDescription>
-                Sermaye değişimi grafiği
+                Gerçek {symbol} verileriyle sermaye değişimi
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -506,6 +454,14 @@ export default function Backtest() {
                   <span className="text-muted-foreground">Final Sermaye:</span>
                   <span className="font-medium">${results.stats.finalEquity.toLocaleString()}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Ortalama Kazanç:</span>
+                  <span className="font-medium text-green-500">${results.stats.avgWin}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Ortalama Kayıp:</span>
+                  <span className="font-medium text-red-500">${results.stats.avgLoss}</span>
+                </div>
               </CardContent>
             </Card>
 
@@ -529,6 +485,14 @@ export default function Backtest() {
                   <span className="text-muted-foreground">Risk/Trade:</span>
                   <span className="font-medium">{riskPerTrade}%</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Test Süresi:</span>
+                  <span className="font-medium">{days} gün</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Zaman Dilimi:</span>
+                  <span className="font-medium">{timeframe}</span>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -543,11 +507,13 @@ export default function Backtest() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                {days} günlük backtest sonucunda ${initialCapital} başlangıç sermayesi ile{" "}
+                <strong>{symbol}</strong> için {days} günlük gerçek verilerle yapılan backtest sonucunda, 
+                ${initialCapital} başlangıç sermayesi ile{" "}
                 <span className={results.stats.totalPnl >= 0 ? "text-green-500 font-medium" : "text-red-500 font-medium"}>
                   ${Math.abs(results.stats.totalPnl).toLocaleString()} {results.stats.totalPnl >= 0 ? "kar" : "zarar"}
                 </span>{" "}
-                elde edildi. Başarı oranı %{results.stats.winRate}, maksimum drawdown %{results.stats.maxDrawdown}.
+                elde edildi. Toplam {results.stats.totalTrades} işlem yapıldı, başarı oranı %{results.stats.winRate}, 
+                maksimum drawdown %{results.stats.maxDrawdown}.
               </p>
             </CardContent>
           </Card>
@@ -559,10 +525,11 @@ export default function Backtest() {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Activity className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">Backtest Hazır</h3>
+            <h3 className="text-lg font-medium">Gerçek Veri Backtest</h3>
             <p className="text-sm text-muted-foreground mt-1 text-center max-w-md">
               Parametreleri ayarlayın ve "Backtest Başlat" butonuna tıklayarak
-              AI trading stratejisini geçmiş verilerle test edin.
+              AI trading stratejisini gerçek Binance verileriyle test edin.
+              SMC pattern'leri (OB, FVG, Liquidity Sweep, BOS) tespit edilecek.
             </p>
           </CardContent>
         </Card>
