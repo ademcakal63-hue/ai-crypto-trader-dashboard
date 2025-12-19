@@ -1092,3 +1092,31 @@ Dashboard'dan tek tıkla:
 
 - [x] Toplam P&L kartını açık pozisyonların unrealized P&L'ini gösterecek şekilde güncelle
 - [x] Açık pozisyon kartlarında gerçek P&L değerlerini göster (şu an +$0.00 görünüyor)
+- [ ] Paper trading margin kontrolü düzelt - toplam sermayeyi aşan pozisyon açılmasını engelle
+- [ ] Her pozisyon sermayenin yarısını kullansın ($5,000)
+- [ ] Her pozisyonda toplam sermayenin %2'si riske edilsin ($200)
+- [ ] Paper Trading Status kartı gerçek zamanlı güncellensin
+- [ ] AI tek pozisyon kuralı - açık pozisyon varken yeni pozisyon açma
+- [ ] Sadece OB/FVG entry - Order Block veya FVG'de giriş yap
+- [ ] Minimum R:R = 1:2 kontrolü
+- [ ] Akıllı ters pozisyon - BOS/CHoCH algılayıp ters yönde gir
+- [ ] Sweep sonrası giriş mantığı
+
+
+## Pro Trader AI Sistemi (Tamamlandı)
+- [x] Pro Trader AI modülü oluşturuldu (pro_trader_ai.py)
+- [x] Tek pozisyon kuralı - açık pozisyon varken yeni pozisyon açma
+- [x] Tüm sermaye tek pozisyonda kullanılsın ($10,000)
+- [x] Her pozisyonda toplam sermayenin %2'si riske edilsin ($200)
+- [x] Günlük max kayıp %4 ($400)
+- [x] Sadece OB/FVG entry - Order Block veya FVG'de giriş yap
+- [x] Minimum R:R = 1:2 kontrolü
+- [x] Akıllı ters pozisyon - BOS/CHoCH algılayıp ters yönde gir (CLOSE_AND_REVERSE)
+- [x] Sweep sonrası giriş mantığı
+- [x] Market structure analizi (trend, structure break, entry zones)
+- [x] Order book bias analizi
+- [x] Dinamik pozisyon boyutlandırma (SL mesafesine göre kaldıraç)
+- [x] Max kaldıraç 10x limiti
+- [x] Trade evaluation for learning (fine-tuning için)
+- [x] main_pro.py oluşturuldu (Pro Trader Bot)
+- [x] paper_trading.py güncellendi (tek pozisyon kuralı)

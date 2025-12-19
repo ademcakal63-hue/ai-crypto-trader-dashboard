@@ -134,19 +134,19 @@ class RiskManager:
         """
         Calculate position size based on risk amount
         
-        Formula:
-        - Risk amount (USD) = capital × risk_percent
+        FORMULA (Full Capital, Single Position):
+        - Risk amount (USD) = capital × risk_percent (2% = $200)
         - SL distance (%) = |entry - stop_loss| / entry × 100
         - Position size (USD) = risk_amount / (SL_distance / 100)
-        - Position size (%) = (position_size_usd / capital) × 100
-        - Leverage = position_size_percent / 100
+        - Position can use FULL capital (no cap)
+        - Leverage = position_size_usd / capital
         
         Args:
-            capital: Current capital in USD
+            capital: Total capital in USD ($10,000)
             entry_price: Entry price
             stop_loss: Stop loss price
             side: BUY or SELL
-            risk_percent: Risk percentage (default: MAX_RISK_PER_TRADE_PERCENT)
+            risk_percent: Risk percentage (default: 2%)
             
         Returns:
             {
@@ -172,20 +172,21 @@ class RiskManager:
                 raise ValueError("Stop loss must be above entry for SELL")
             sl_distance_percent = ((stop_loss - entry_price) / entry_price) * 100
         
-        # Calculate risk amount
+        # Calculate risk amount (2% of $10,000 = $200)
         risk_amount_usd = capital * (risk_percent / 100)
         
-        # Calculate position size
+        # Calculate position size based on risk
+        # If SL is 0.5% away, position = $200 / 0.005 = $40,000 (4x leverage)
         position_size_usd = risk_amount_usd / (sl_distance_percent / 100)
         position_size_percent = (position_size_usd / capital) * 100
         
         # Calculate leverage
-        leverage = position_size_percent / 100
+        leverage = position_size_usd / capital
         
         return {
             'position_size_usd': position_size_usd,
             'position_size_percent': position_size_percent,
-            'leverage': round(leverage, 1),
+            'leverage': round(leverage, 2),
             'risk_amount_usd': risk_amount_usd,
             'risk_amount_percent': risk_percent,
             'sl_distance_percent': sl_distance_percent
