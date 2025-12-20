@@ -1187,3 +1187,10 @@ Dashboard'dan tek tıkla:
 - [x] Order Book teyidi ile OB/FVG'ye emir koy
 - [x] Sadece büyük alıcı/satıcı varsa emir ver
 - [x] 5dk'da bir emirleri kontrol et ve güncelle
+
+
+## Bug Fix - Hybrid Bot
+
+- [x] PaperTradingManager'a get_open_positions methodu ekle
+- [x] PaperTradingManager'a update_position_pnl methodu ekle
+- [x] SMCDetector.detect_patterns -> detect_all_patterns düzelt

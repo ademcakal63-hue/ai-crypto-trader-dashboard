@@ -372,6 +372,44 @@ class PaperTradingManager:
         
         return trade
     
+    def get_open_positions(self) -> List[Dict]:
+        """Get list of open positions"""
+        return list(self.open_positions.values())
+    
+    def update_position_pnl(self, position_id: str, current_price: float) -> Optional[Dict]:
+        """
+        Update P&L for an open position
+        
+        Args:
+            position_id: Position ID
+            current_price: Current market price
+            
+        Returns:
+            Updated position or None if not found
+        """
+        if position_id not in self.open_positions:
+            return None
+        
+        position = self.open_positions[position_id]
+        entry_price = position['entry_price']
+        position_size = position['position_size']
+        side = position['side']
+        
+        # Calculate P&L
+        if side == 'BUY':
+            pnl_percent = ((current_price - entry_price) / entry_price) * 100
+        else:
+            pnl_percent = ((entry_price - current_price) / entry_price) * 100
+        
+        pnl_usd = (pnl_percent / 100) * position_size
+        
+        # Update position
+        position['current_price'] = current_price
+        position['pnl'] = pnl_usd
+        position['pnl_percent'] = pnl_percent
+        
+        return position
+    
     def get_daily_loss_percent(self) -> float:
         """Get today's loss as percentage of initial balance"""
         today = datetime.now().strftime("%Y-%m-%d")

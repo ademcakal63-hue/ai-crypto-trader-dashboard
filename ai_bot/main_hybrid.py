@@ -230,7 +230,7 @@ class HybridTradingBot:
             return
         
         try:
-            smc_patterns = self.smc_detector.detect_patterns(candles)
+            smc_patterns = self.smc_detector.detect_all_patterns(candles, '15m')
             pattern_count = sum(len(v) if isinstance(v, list) else 0 for v in smc_patterns.values())
             print(f"   Patterns found: {pattern_count}")
             
