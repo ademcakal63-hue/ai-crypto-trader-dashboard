@@ -402,21 +402,6 @@ export const appRouter = router({
     }),
   }),
 
-  // Backtest Router
-  backtest: router({
-    run: publicProcedure
-      .input(z.object({
-        symbol: z.string(),
-        timeframe: z.string(),
-        days: z.number(),
-        initialCapital: z.number(),
-        riskPerTrade: z.number(),
-      }))
-      .mutation(async ({ input }) => {
-        const { runBacktest } = await import('./backtest');
-        return await runBacktest(input);
-      }),
-  }),
 });
 
 export type AppRouter = typeof appRouter;

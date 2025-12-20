@@ -41,9 +41,6 @@ export default function Settings() {
           isConnected: true,
         });
         
-        // localStorage'daki draft'i temizle (artık database'de)
-        localStorage.removeItem('settingsFormDraft');
-        
         // Settings'i yeniden yükle
         refetch();
       } else {
@@ -71,59 +68,41 @@ export default function Settings() {
     },
   });
 
-  // localStorage'dan form verilerini yükle
-  const loadFormFromStorage = () => {
-    try {
-      const saved = localStorage.getItem('settingsFormDraft');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (error) {
-      console.error('localStorage yükleme hatası:', error);
-    }
-    return {
-      binanceApiKey: "",
-      binanceApiSecret: "",
-      openaiApiKey: "",
-      capitalLimit: "",
-      useAllBalance: true,
-      compoundEnabled: false,
-      dailyLossLimitPercent: "4.00",
-      riskPerTradePercent: "2.00",
-      maxDailyTrades: 10,
-    };
+  // Default form değerleri
+  const defaultFormData = {
+    binanceApiKey: "",
+    binanceApiSecret: "",
+    openaiApiKey: "",
+    capitalLimit: "",
+    useAllBalance: true,
+    compoundEnabled: false,
+    dailyLossLimitPercent: "4.00",
+    riskPerTradePercent: "2.00",
+    maxDailyTrades: 10,
   };
 
-  const [formData, setFormData] = useState(loadFormFromStorage);
-  // Settings yükleninindiğinde form'u güncelle (database'den)
-  // SADECE localStorage boşsa database'den yükle
+  const [formData, setFormData] = useState(defaultFormData);
+  const [isFormLoaded, setIsFormLoaded] = useState(false);
+  
+  // Settings yüklenindiğinde form'u güncelle (HER ZAMAN database'den)
+  // localStorage kullanmıyoruz - iframe/preview panel sorunları için
   useEffect(() => {
-    if (settings) {
-      // localStorage'da draft var mı kontrol et
-      const savedDraft = localStorage.getItem('settingsFormDraft');
-      
-      // Eğer localStorage'da draft yoksa, database'den yükle
-      if (!savedDraft) {
-        const newFormData = {
-          binanceApiKey: settings.binanceApiKey || "",
-          binanceApiSecret: settings.binanceApiSecret || "",
-          openaiApiKey: settings.openaiApiKey || "",
-          capitalLimit: settings.capitalLimit || "",
-          useAllBalance: settings.useAllBalance || false,
-          compoundEnabled: settings.compoundEnabled,
-          dailyLossLimitPercent: settings.dailyLossLimitPercent,
-          riskPerTradePercent: settings.riskPerTradePercent,
-          maxDailyTrades: settings.maxDailyTrades,
-        };
-        setFormData(newFormData);
-      }
-      // localStorage varsa, onu kullan (kullanıcı girişi öncelikli)
+    if (settings && !isFormLoaded) {
+      const newFormData = {
+        binanceApiKey: settings.binanceApiKey || "",
+        binanceApiSecret: settings.binanceApiSecret || "",
+        openaiApiKey: settings.openaiApiKey || "",
+        capitalLimit: settings.capitalLimit || "",
+        useAllBalance: settings.useAllBalance ?? true,
+        compoundEnabled: settings.compoundEnabled ?? false,
+        dailyLossLimitPercent: settings.dailyLossLimitPercent || "4.00",
+        riskPerTradePercent: settings.riskPerTradePercent || "2.00",
+        maxDailyTrades: settings.maxDailyTrades || 10,
+      };
+      setFormData(newFormData);
+      setIsFormLoaded(true);
     }
-  }, [settings]);
-  // Form değiştiğinde localStorage'a kaydet
-  useEffect(() => {
-    localStorage.setItem('settingsFormDraft', JSON.stringify(formData));
-  }, [formData]);  const handleSubmit = (e: React.FormEvent) => {
+  }, [settings, isFormLoaded]);  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validasyon
@@ -142,8 +121,6 @@ export default function Settings() {
     }
 
     saveMutation.mutate(formData);
-    // Kaydedildiğinde localStorage'daki draft'i temizle (artık database'de)
-    localStorage.removeItem('settingsFormDraft');
   };
 
   // Bakiye güncelleme

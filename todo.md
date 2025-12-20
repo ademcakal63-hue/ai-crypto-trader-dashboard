@@ -1155,3 +1155,12 @@ Dashboard'dan tek tıkla:
 - [x] Backtest'i gerçek Binance verileriyle çalıştır
 - [x] Geçmiş mum verilerini çek (Binance API)
 - [x] AI stratejisini geçmiş verilere uygula (SMC patterns: OB, FVG, Liquidity Sweep, BOS)
+
+
+## Backtest Kaldırma ve API Key Düzeltme
+
+- [x] Backtest sayfasını kaldır
+- [x] Backtest route'ını kaldır
+- [x] Sidebar'dan Backtest linkini kaldır
+- [x] API key'lerin iframe/preview panelde görünmeme sorununu düzelt
+- [x] localStorage yerine sadece database kullan
