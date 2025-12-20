@@ -37,6 +37,8 @@ class OrderBookWebSocket:
         self.whale_orders = []
         self.walls = {"buy": [], "sell": []}
         self.absorptions = []
+        self._logged_absorptions = set()  # Spam önleme için
+        self._logged_whales = set()  # Spam önleme için
         
         self.running = False
         self.callbacks = []
@@ -196,6 +198,10 @@ class OrderBookWebSocket:
         """Whale trade tespit et"""
         direction = "SELL" if trade["is_buyer_maker"] else "BUY"
         
+        # Spam önleme - aynı fiyat ve yönde 30 saniye içinde tekrar loglama
+        whale_key = f"{direction}_{round(trade['price'], 0)}"
+        current_time = datetime.now().timestamp()
+        
         whale_info = {
             "timestamp": trade["timestamp"],
             "direction": direction,
@@ -210,7 +216,21 @@ class OrderBookWebSocket:
         if len(self.whale_orders) > 100:
             self.whale_orders = self.whale_orders[-100:]
         
+        # Spam kontrolü - aynı whale 30 saniye içinde tekrar loglanmasın
+        if whale_key in self._logged_whales:
+            return
+        
+        self._logged_whales.add(whale_key)
         print(f"🐋 WHALE {direction}: ${trade['value_usd']:,.0f} @ {trade['price']:,.2f}")
+        
+        # 30 saniye sonra key'i temizle
+        def clear_whale_key():
+            import time
+            time.sleep(30)
+            self._logged_whales.discard(whale_key)
+        
+        import threading
+        threading.Thread(target=clear_whale_key, daemon=True).start()
     
     def _detect_absorption(self, trade: Dict):
         """Absorption tespit et - büyük emirlerin yutulması"""
@@ -245,6 +265,12 @@ class OrderBookWebSocket:
                 else:
                     continue
                 
+                # Spam önleme - aynı absorption 60 saniye içinde tekrar loglanmasın
+                absorption_key = f"{absorption_type}_{price}"
+                
+                if absorption_key in self._logged_absorptions:
+                    continue
+                
                 absorption = {
                     "timestamp": datetime.now(),
                     "price": price,
@@ -254,7 +280,17 @@ class OrderBookWebSocket:
                 }
                 
                 self.absorptions.append(absorption)
+                self._logged_absorptions.add(absorption_key)
                 print(f"🔥 {absorption_type} @ {price:,.0f} - ${data['volume']:,.0f}")
+                
+                # 60 saniye sonra key'i temizle
+                def clear_absorption_key(key):
+                    import time
+                    time.sleep(60)
+                    self._logged_absorptions.discard(key)
+                
+                import threading
+                threading.Thread(target=clear_absorption_key, args=(absorption_key,), daemon=True).start()
         
         # Son 50 absorption'ı tut
         if len(self.absorptions) > 50:

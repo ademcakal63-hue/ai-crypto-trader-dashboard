@@ -1194,3 +1194,5 @@ Dashboard'dan tek tıkla:
 - [x] PaperTradingManager'a get_open_positions methodu ekle
 - [x] PaperTradingManager'a update_position_pnl methodu ekle
 - [x] SMCDetector.detect_patterns -> detect_all_patterns düzelt
+
+- [x] Order Book WebSocket log spam düzelt - aynı event tekrar loglanmasın (60s cooldown)
