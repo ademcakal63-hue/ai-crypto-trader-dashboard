@@ -229,13 +229,16 @@ class ProTradingBot:
             current_position=current_position
         )
         
-        print(f"   Action: {decision.get('action')}")
-        print(f"   Confidence: {decision.get('confidence', 0):.2f}")
+        print(f"   Action: {decision.get('action', 'HOLD')}")
+        confidence = decision.get('confidence') or 0
+        print(f"   Confidence: {confidence:.2f}")
         if decision.get('entry_zone_type'):
             print(f"   Entry Zone: {decision.get('entry_zone_type')}")
-        if decision.get('rr_ratio'):
-            print(f"   R:R Ratio: {decision.get('rr_ratio'):.2f}")
-        print(f"   Reasoning: {decision.get('reasoning', '')[:150]}...")
+        rr_ratio = decision.get('rr_ratio')
+        if rr_ratio:
+            print(f"   R:R Ratio: {rr_ratio:.2f}")
+        reasoning = decision.get('reasoning') or ''
+        print(f"   Reasoning: {reasoning[:150]}...")
         
         # 7. Execute decision
         self._execute_decision(decision, current_price)
