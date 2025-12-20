@@ -1169,3 +1169,21 @@ Dashboard'dan tek tıkla:
 ## Bug Fix - Pro Trader AI TypeError
 
 - [x] pro_trader_ai.py line 198 TypeError düzelt - daily_pnl dict vs int sorunu (main_pro.py'de düzeltildi)
+
+
+## Hibrit Trading Sistemi
+
+### Order Book WebSocket
+- [x] Binance Futures WebSocket bağlantısı kur
+- [x] Büyük emirleri gerçek zamanlı izle (absorption, iceberg)
+- [x] Alıcı/satıcı duvarlarını tespit et
+
+### Limit Emir Sistemi
+- [x] Paper trading için simüle limit order sistemi
+- [x] Pending orders tablosu oluştur
+- [x] Fiyat seviyeye gelince otomatik pozisyon aç
+
+### Pro Trader AI Güncelleme
+- [x] Order Book teyidi ile OB/FVG'ye emir koy
+- [x] Sadece büyük alıcı/satıcı varsa emir ver
+- [x] 5dk'da bir emirleri kontrol et ve güncelle
