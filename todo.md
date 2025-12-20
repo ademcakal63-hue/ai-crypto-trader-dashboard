@@ -1164,3 +1164,8 @@ Dashboard'dan tek tıkla:
 - [x] Sidebar'dan Backtest linkini kaldır
 - [x] API key'lerin iframe/preview panelde görünmeme sorununu düzelt
 - [x] localStorage yerine sadece database kullan
+
+
+## Bug Fix - Pro Trader AI TypeError
+
+- [x] pro_trader_ai.py line 198 TypeError düzelt - daily_pnl dict vs int sorunu (main_pro.py'de düzeltildi)

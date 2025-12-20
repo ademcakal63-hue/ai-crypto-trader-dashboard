@@ -217,7 +217,9 @@ class ProTradingBot:
         
         # 6. Pro Trader AI - Trading Decision
         print(f"\n🎯 Pro Trader AI - Trading Decision...")
-        daily_pnl = self.risk_manager.daily_pnl
+        # Get today's P&L as a number (not dict)
+        today = datetime.now().strftime("%Y-%m-%d")
+        daily_pnl = self.risk_manager.daily_pnl.get(today, 0)
         
         decision = self.pro_trader.make_trading_decision(
             market_analysis=market_analysis,
