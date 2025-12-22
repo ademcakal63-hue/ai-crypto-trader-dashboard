@@ -8,6 +8,7 @@ import time
 from typing import Dict, List, Optional
 from datetime import datetime
 from dashboard_client import DashboardClient
+from models import LimitOrder, normalize_params
 
 class LimitOrderManager:
     """
@@ -51,10 +52,11 @@ class LimitOrderManager:
         stop_loss: float,
         take_profit: float,
         leverage: float,
-        reason: str,
-        entry_zone_type: str,
-        confidence: float,
-        expiry_minutes: int = 30
+        reason: str = None,  # Eski parametre (geriye uyumluluk)
+        entry_zone_type: str = "AI_DECISION",
+        confidence: float = 0.75,
+        expiry_minutes: int = 30,
+        reasoning: str = None  # STANDART parametre
     ) -> Dict:
         """
         Yeni limit emir oluştur
@@ -67,7 +69,7 @@ class LimitOrderManager:
             stop_loss: Stop loss fiyatı
             take_profit: Take profit fiyatı
             leverage: Kaldıraç
-            reason: AI'ın gerekçesi
+            reasoning: AI'ın gerekçesi (STANDART parametre)
             entry_zone_type: OB, FVG, SWEEP vs
             confidence: Güven skoru
             expiry_minutes: Emir geçerlilik süresi (dakika)
@@ -75,6 +77,8 @@ class LimitOrderManager:
         Returns:
             Oluşturulan emir
         """
+        # Geriye uyumluluk: reason veya reasoning kullan
+        final_reasoning = reasoning or reason or "AI decision"
         order_id = f"LO_{int(time.time() * 1000)}"
         
         order = {
@@ -89,7 +93,7 @@ class LimitOrderManager:
             "stop_loss": stop_loss,
             "take_profit": take_profit,
             "leverage": leverage,
-            "reason": reason,
+            "reasoning": final_reasoning,  # STANDART: reasoning kullan
             "entry_zone_type": entry_zone_type,
             "confidence": confidence,
             "created_at": datetime.now().isoformat(),

@@ -9,6 +9,7 @@ import time
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from dashboard_client import DashboardClient
+from models import Position, TradeRecord, normalize_params, validate_position_params
 
 class PaperTradingManager:
     def __init__(self, initial_balance: float = 10000):
@@ -207,7 +208,7 @@ class PaperTradingManager:
         # Save state
         self._save_state()
         
-        # Notify dashboard
+        # Notify dashboard and get database ID
         try:
             dashboard_data = {
                 "symbol": symbol,
@@ -220,7 +221,11 @@ class PaperTradingManager:
                 "pattern": "AI Analysis",
                 "confidence": str(confidence)
             }
-            self.dashboard.open_position_notification(dashboard_data)
+            db_id = self.dashboard.open_position_notification(dashboard_data)
+            if db_id:
+                # Store database ID for later use when closing
+                position['db_id'] = db_id
+                self.open_positions[position['id']] = position
         except Exception as e:
             print(f"⚠️ Dashboard bildirim hatası: {e}")
         
@@ -315,6 +320,15 @@ class PaperTradingManager:
         self.current_balance += pnl_usd
         
         # Create trade record
+        # Handle opened_at as string or float
+        opened_at = position.get('opened_at', time.time())
+        if isinstance(opened_at, str):
+            try:
+                from datetime import datetime as dt
+                opened_at = dt.fromisoformat(opened_at.replace('Z', '+00:00')).timestamp()
+            except:
+                opened_at = time.time()
+        
         trade = {
             **position,
             "exit_price": exit_price,
@@ -322,7 +336,7 @@ class PaperTradingManager:
             "pnl_percent": pnl_percent,
             "close_reason": reason,
             "closed_at": time.time(),
-            "duration_seconds": time.time() - position['opened_at'],
+            "duration_seconds": time.time() - opened_at,
             "status": "CLOSED"
         }
         
@@ -335,22 +349,54 @@ class PaperTradingManager:
             self.daily_pnl[today] = 0
         self.daily_pnl[today] += pnl_usd
         
-        # Remove from open positions
-        del self.open_positions[position_id]
-        
-        # Notify dashboard to close position in database
+        # Notify dashboard to close position in database (BEFORE removing from dict)
         try:
+            # Calculate R ratio (risk/reward)
+            sl_distance = abs(entry_price - position.get('stop_loss', entry_price))
+            if sl_distance > 0:
+                r_ratio = abs(pnl_usd) / (sl_distance * quantity)
+            else:
+                r_ratio = 0
+            
+            # Determine exit reason format
+            exit_reason_map = {
+                'STOP_LOSS': 'SL',
+                'TAKE_PROFIT': 'TP',
+                'MANUAL': 'MANUAL',
+                'SL': 'SL',
+                'TP': 'TP'
+            }
+            exit_reason = exit_reason_map.get(reason.upper(), 'MANUAL')
+            
+            # Calculate duration in minutes
+            duration_minutes = int((time.time() - opened_at) / 60)
+            
+            # Use database ID if available, otherwise try to parse from position_id
+            db_id = position.get('db_id')
+            if not db_id:
+                try:
+                    # Try to extract numeric ID from position_id
+                    id_part = position_id.replace("paper_", "").split("_")[0]
+                    db_id = int(id_part)
+                except:
+                    db_id = 0
+            
             dashboard_data = {
-                "id": position_id.replace("paper_", ""),
-                "symbol": position['symbol'],
+                "positionId": db_id,
                 "exitPrice": str(exit_price),
-                "pnl": str(pnl_usd),
-                "pnlPercent": str(pnl_percent),
-                "closeReason": reason
+                "exitReason": exit_reason,
+                "finalPnl": str(round(pnl_usd, 2)),
+                "finalPnlPercentage": str(round(pnl_percent, 2)),
+                "rRatio": str(round(r_ratio, 2)),
+                "result": "WIN" if pnl_usd >= 0 else "LOSS",
+                "duration": duration_minutes
             }
             self.dashboard.close_position_notification(dashboard_data)
         except Exception as e:
             print(f"⚠️ Dashboard close notification hatası: {e}")
+        
+        # Remove from open positions (AFTER dashboard notification)
+        del self.open_positions[position_id]
         
         # Save state
         self._save_state()

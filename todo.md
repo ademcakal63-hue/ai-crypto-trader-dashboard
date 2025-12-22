@@ -1196,3 +1196,12 @@ Dashboard'dan tek tıkla:
 - [x] SMCDetector.detect_patterns -> detect_all_patterns düzelt
 
 - [x] Order Book WebSocket log spam düzelt - aynı event tekrar loglanmasın (60s cooldown)
+
+
+## Tam Bağımsız AI Trader
+
+- [ ] AI karar mekanizmasını yeniden tasarla
+- [ ] Tüm verileri AI'a gönder (order book, mumlar, açık emirler, pozisyonlar)
+- [ ] AI kendi kararını versin (bekle, emir koy, iptal et, pozisyon aç/kapat)
+- [ ] Kod sadece AI kararlarını uygulasın
+- [ ] Fine-tuning için her karar loglansin

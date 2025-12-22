@@ -46,8 +46,8 @@ class DashboardClient:
             print(f"⚠️ Daily loss kontrolü hatası: {e}")
             return {"exceeded": False, "currentLoss": 0, "limit": 1000, "remaining": 1000, "percentage": 0}
     
-    def open_position_notification(self, position: Dict):
-        """Pozisyon açıldı bildirimi"""
+    def open_position_notification(self, position: Dict) -> int:
+        """Pozisyon açıldı bildirimi - returns database ID"""
         try:
             # tRPC format: {"json": {...}}
             payload = {"json": position}
@@ -57,9 +57,17 @@ class DashboardClient:
                 timeout=10
             )
             response.raise_for_status()
-            print(f"✅ Pozisyon database'e kaydedildi: {position['symbol']} {position['direction']}")
+            
+            # Get database ID from response
+            result = response.json()
+            # Response format: {"result": {"data": {"json": {"positionId": 123, ...}}}}
+            db_id = result.get('result', {}).get('data', {}).get('json', {}).get('positionId', 0)
+            
+            print(f"✅ Pozisyon database'e kaydedildi: {position['symbol']} {position['direction']} (ID: {db_id})")
+            return db_id
         except Exception as e:
             print(f"⚠️ Pozisyon açma bildirimi hatası: {e}")
+            return 0
     
     def update_position_pnl(self, position_update: Dict):
         """Pozisyon P&L güncelleme"""
@@ -90,7 +98,7 @@ class DashboardClient:
                 timeout=10
             )
             response.raise_for_status()
-            print(f"✅ Pozisyon kapatıldı: {position['symbol']}")
+            print(f"✅ Pozisyon kapatıldı (ID: {position.get('positionId', 'unknown')})")
         except Exception as e:
             print(f"⚠️ Pozisyon kapatma bildirimi hatası: {e}")
     

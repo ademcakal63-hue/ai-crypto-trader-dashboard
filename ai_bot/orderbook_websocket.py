@@ -24,7 +24,7 @@ class OrderBookWebSocket:
     """
     
     # Büyük emir eşikleri (USD)
-    WHALE_ORDER_THRESHOLD = 100000  # $100K+ = whale
+    WHALE_ORDER_THRESHOLD = 200000  # $200K+ = whale (increased to reduce spam)
     WALL_THRESHOLD = 500000  # $500K+ = duvar
     
     def __init__(self, symbol: str = "BTCUSDT"):
@@ -475,9 +475,19 @@ class OrderBookWebSocket:
         print(f"🚀 Order Book WebSocket started for {self.symbol.upper()}")
     
     def stop(self):
-        """WebSocket'leri durdur"""
+        """WebSocket'leri durdur ve bağlantıları kapat"""
+        print(f"🛑 Stopping Order Book WebSocket for {self.symbol.upper()}...")
         self.running = False
-        print(f"🛑 Order Book WebSocket stopped for {self.symbol.upper()}")
+        
+        # Thread'in bitmesini bekle (maksimum 5 saniye)
+        if hasattr(self, '_thread') and self._thread.is_alive():
+            self._thread.join(timeout=5)
+            if self._thread.is_alive():
+                print(f"⚠️ WebSocket thread still alive after 5s timeout")
+            else:
+                print(f"✅ WebSocket thread stopped cleanly")
+        
+        print(f"✅ Order Book WebSocket stopped for {self.symbol.upper()}")
 
 
 # Test

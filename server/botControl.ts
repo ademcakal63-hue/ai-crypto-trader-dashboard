@@ -135,24 +135,69 @@ export async function stopBot(symbol: string) {
     const botInfo = botProcesses.get(symbol);
 
     if (!botInfo) {
+      // Try to find and kill orphan processes
+      try {
+        const { execSync } = await import('child_process');
+        const psOutput = execSync(`ps aux | grep "python.*main_autonomous.py" | grep -v grep`, { encoding: 'utf-8' });
+        const lines = psOutput.trim().split('\n').filter(l => l.trim());
+        
+        if (lines.length > 0) {
+          for (const line of lines) {
+            const parts = line.trim().split(/\s+/);
+            const pid = parseInt(parts[1]);
+            if (pid) {
+              console.log(`[BotControl] Killing orphan bot process: ${pid}`);
+              execSync(`kill -9 ${pid}`);
+            }
+          }
+          return {
+            success: true,
+            message: `Orphan bot process killed for ${symbol}`,
+          };
+        }
+      } catch (e) {
+        // No orphan processes found
+      }
+      
       return {
         success: false,
         message: `No running bot found for ${symbol}`,
       };
     }
 
+    console.log(`[BotControl] Stopping bot ${symbol} (PID: ${botInfo.pid})`);
+    
     // Send SIGTERM for graceful shutdown
-    botInfo.process.kill('SIGTERM');
+    try {
+      botInfo.process.kill('SIGTERM');
+      console.log(`[BotControl] Sent SIGTERM to ${botInfo.pid}`);
+    } catch (e) {
+      console.log(`[BotControl] SIGTERM failed, trying SIGKILL`);
+      botInfo.process.kill('SIGKILL');
+    }
 
-    // Wait a bit, then force kill if still running
-    setTimeout(() => {
-      if (botProcesses.has(symbol)) {
-        botInfo.process.kill('SIGKILL');
+    // Wait for graceful shutdown, then force kill if needed
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => {
+        if (botProcesses.has(symbol)) {
+          console.log(`[BotControl] Bot ${symbol} didn't stop gracefully, force killing...`);
+          try {
+            botInfo.process.kill('SIGKILL');
+          } catch (e) {
+            console.error(`[BotControl] Force kill failed:`, e);
+          }
+          botProcesses.delete(symbol);
+        }
+        resolve();
+      }, 8000);  // 8 seconds for graceful shutdown
+      
+      botInfo.process.on('exit', () => {
+        clearTimeout(timeout);
         botProcesses.delete(symbol);
-      }
-    }, 5000);
-
-    botProcesses.delete(symbol);
+        console.log(`[BotControl] Bot ${symbol} exited cleanly`);
+        resolve();
+      });
+    });
 
     // Save status to file
     await saveBotStatus();

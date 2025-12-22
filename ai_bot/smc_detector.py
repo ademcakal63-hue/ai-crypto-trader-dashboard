@@ -11,7 +11,13 @@ import os
 
 class SMCDetector:
     def __init__(self, api_key: str = None):
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        # Her zaman Dashboard'dan API key'i yükle (env var eski olabilir)
+        self._load_api_key_from_dashboard()
+        
+        # Eğer parametre verilmişse onu kullan
+        if api_key:
+            self.api_key = api_key
+        
         if self.api_key:
             # Use direct OpenAI API (bypass Manus proxy to preserve fine-tuning)
             self.client = OpenAI(
@@ -19,9 +25,23 @@ class SMCDetector:
                 base_url="https://api.openai.com/v1"  # Direct OpenAI, not Manus proxy
             )
             self.use_ai = True
+            print(f"✅ SMC Detector: OpenAI API loaded")
         else:
             print("⚠️ OPENAI_API_KEY not found. Using rule-based SMC detection.")
             self.use_ai = False
+    
+    def _load_api_key_from_dashboard(self):
+        """Dashboard'dan OpenAI API key'i yükle"""
+        try:
+            import requests
+            resp = requests.get("http://localhost:3000/api/trpc/settings.get", timeout=5)
+            if resp.status_code == 200:
+                data = resp.json().get('result', {}).get('data', {})
+                if 'json' in data:
+                    data = data['json']
+                self.api_key = data.get('openaiApiKey')
+        except Exception as e:
+            print(f"⚠️ Could not load API key from Dashboard: {e}")
     
     def detect_all_patterns(self, candles: List[Dict], timeframe: str) -> Dict:
         """

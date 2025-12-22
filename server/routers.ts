@@ -402,6 +402,21 @@ export const appRouter = router({
     }),
   }),
 
+  // AI Decision Router - Server-side AI using Manus built-in LLM
+  ai: router({
+    decision: publicProcedure
+      .input((val: unknown) => {
+        if (typeof val === 'object' && val !== null) {
+          return val as any;
+        }
+        throw new Error('Invalid input');
+      })
+      .mutation(async ({ input }) => {
+        const { makeAIDecision } = await import('./aiDecision');
+        return await makeAIDecision(input);
+      }),
+  }),
+
 });
 
 export type AppRouter = typeof appRouter;
