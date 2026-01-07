@@ -22,16 +22,49 @@ const BOT_STATUS_FILE = path.join(process.cwd(), 'ai_bot', 'bot_status.json');
  */
 export async function startBot(symbol: string) {
   try {
-    // Check if bot is already running
+    // CRITICAL: Check if bot is already running in memory
     if (botProcesses.has(symbol)) {
       const existing = botProcesses.get(symbol);
       if (existing?.status === 'running') {
+        console.log(`[BotControl] Bot ${symbol} already in memory (PID: ${existing.pid})`);
         return {
           success: false,
           message: `Bot for ${symbol} is already running`,
           pid: existing.pid,
         };
       }
+    }
+    
+    // CRITICAL: Also check for orphan processes (server restart scenario)
+    try {
+      const { execSync } = await import('child_process');
+      const psOutput = execSync(`ps aux | grep "python.*main_autonomous.py" | grep -v grep`, { encoding: 'utf-8' });
+      const lines = psOutput.trim().split('\n').filter(l => l.trim());
+      
+      if (lines.length > 0) {
+        // Found running bot process - don't start another one
+        const parts = lines[0].trim().split(/\s+/);
+        const existingPid = parseInt(parts[1]);
+        console.log(`[BotControl] Found existing bot process (PID: ${existingPid}) - preventing duplicate`);
+        
+        // Add to our tracking
+        botProcesses.set(symbol, {
+          symbol,
+          process: null as any,
+          pid: existingPid,
+          startedAt: new Date().toISOString(),
+          status: 'running',
+        });
+        
+        return {
+          success: false,
+          message: `Bot is already running (PID: ${existingPid}). Stop it first before starting a new one.`,
+          pid: existingPid,
+        };
+      }
+    } catch (e) {
+      // No running processes found - safe to start
+      console.log(`[BotControl] No existing bot processes found - safe to start`);
     }
 
     // Use clean wrapper script to completely isolate from Python 3.13
@@ -223,7 +256,7 @@ export async function getBotStatus() {
   // This handles server restart scenarios
   try {
     const { execSync } = await import('child_process');
-    const psOutput = execSync('ps aux | grep "python.*main.py" | grep -v grep', { encoding: 'utf-8' });
+    const psOutput = execSync('ps aux | grep "python.*main_autonomous.py" | grep -v grep', { encoding: 'utf-8' });
     const lines = psOutput.trim().split('\n').filter(l => l.trim());
     
     for (const line of lines) {

@@ -1205,3 +1205,34 @@ Dashboard'dan tek tıkla:
 - [ ] AI kendi kararını versin (bekle, emir koy, iptal et, pozisyon aç/kapat)
 - [ ] Kod sadece AI kararlarını uygulasın
 - [ ] Fine-tuning için her karar loglansin
+
+
+## Yeni İyileştirmeler (Şu An)
+
+### Pozisyon Kapatma Bildirimleri
+- [x] SL tetiklendiğinde detaylı bildirim
+- [x] TP tetiklendiğinde detaylı bildirim
+- [x] Manuel kapatma bildirimi
+- [x] Kapatma sebebi ve P&L bilgisi
+
+### WebSocket Bağlantı Durumu
+- [x] Dashboard'da WebSocket durumu göster
+- [x] Connected/Disconnected/Reconnecting badge
+- [x] Bağlantı kopunca uyarı
+
+### Tek Bot Garantisi
+- [x] Duplicate bot prevention
+- [x] PID file ile kontrol
+- [x] Başlatmadan önce mevcut bot kontrolü
+- [x] Durdururken doğru bot'u durdur
+
+### Cycle Takip Sorunu
+- [x] Paper trading state database'e kaydedilsin
+- [x] Her işlem sonrası state güncelle
+- [x] Cycle sayacı düzgün çalışsın
+
+### Vultr Deploy
+- [ ] Deploy rehberi hazırla
+- [ ] Gerekli dosyaları paketle
+- [ ] Kurulum script'i yaz
+

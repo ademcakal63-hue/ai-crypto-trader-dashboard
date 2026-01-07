@@ -96,18 +96,53 @@ class DashboardNotifier:
         )
     
     def send_position_closed(self, symbol: str, pnl: float, 
-                              reason: str = None, reasoning: str = None):  # Geriye uyumluluk
-        """Pozisyon kapandı bildirimi"""
+                              reason: str = None, reasoning: str = None,
+                              close_type: str = None, entry_price: float = None,
+                              exit_price: float = None, side: str = None,
+                              pnl_percent: float = None, duration_minutes: int = None):  # Geriye uyumluluk
+        """Pozisyon kapandı bildirimi - Detaylı"""
         # STANDART: reasoning kullan
         final_reason = reasoning or reason or "Position closed"
         emoji = "🟢" if pnl >= 0 else "🔴"
+        
+        # Close type emoji
+        close_emoji = ""
+        if close_type == "STOP_LOSS" or close_type == "SL":
+            close_emoji = "🚨 STOP LOSS"
+        elif close_type == "TAKE_PROFIT" or close_type == "TP":
+            close_emoji = "🎯 TAKE PROFIT"
+        elif close_type == "MANUAL":
+            close_emoji = "✋ MANUAL"
+        else:
+            close_emoji = close_type or "CLOSED"
+        
+        # Build detailed message
+        message_parts = [f"P&L: ${pnl:,.2f}"]
+        if pnl_percent is not None:
+            message_parts.append(f"({pnl_percent:+.2f}%)")
+        if entry_price and exit_price:
+            message_parts.append(f"| Entry: ${entry_price:,.2f} → Exit: ${exit_price:,.2f}")
+        if duration_minutes is not None:
+            if duration_minutes >= 60:
+                hours = duration_minutes // 60
+                mins = duration_minutes % 60
+                message_parts.append(f"| Duration: {hours}h {mins}m")
+            else:
+                message_parts.append(f"| Duration: {duration_minutes}m")
+        
         return self.send_notification(
             "POSITION_CLOSED",
-            f"{emoji} Position Closed: {symbol}",
-            f"P&L: ${pnl:,.2f}",
+            f"{emoji} {close_emoji}: {symbol}",
+            " ".join(message_parts),
             {
                 "symbol": symbol,
                 "pnl": pnl,
+                "pnl_percent": pnl_percent,
+                "close_type": close_type,
+                "entry_price": entry_price,
+                "exit_price": exit_price,
+                "side": side,
+                "duration_minutes": duration_minutes,
                 "reasoning": final_reason
             }
         )

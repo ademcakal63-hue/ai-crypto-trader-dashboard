@@ -132,9 +132,15 @@ class PaperTradingManager:
                 'last_updated': time.time()
             }
             
-            self.dashboard.update_settings({'paper_trading_state': state})
+            # Convert state to JSON string for database storage
+            import json
+            state_json = json.dumps(state)
+            self.dashboard.update_settings({'paperTradingState': state_json})
+            print(f"✅ Paper trading state saved: Cycle {current_cycle}, Trades {total_trades}, Balance ${self.current_balance:,.2f}")
         except Exception as e:
             print(f"⚠️ Failed to save paper trading state: {e}")
+            import traceback
+            traceback.print_exc()
     
     def open_position(self, 
                      symbol: str,
@@ -415,6 +421,24 @@ class PaperTradingManager:
         print(f"   P&L: ${pnl_usd:,.2f} ({pnl_percent:+.2f}%)")
         print(f"   Reason: {reason}")
         print(f"   Balance: ${self.current_balance:,.2f}")
+        
+        # Send detailed close notification to dashboard
+        try:
+            from dashboard_notifier import DashboardNotifier
+            notifier = DashboardNotifier(self.dashboard.dashboard_url)
+            notifier.send_position_closed(
+                symbol=position['symbol'],
+                pnl=pnl_usd,
+                close_type=reason,
+                entry_price=entry_price,
+                exit_price=exit_price,
+                side=side,
+                pnl_percent=pnl_percent,
+                duration_minutes=duration_minutes,
+                reasoning=f"Position closed by {reason}"
+            )
+        except Exception as e:
+            print(f"⚠️ Close notification error: {e}")
         
         return trade
     

@@ -44,6 +44,15 @@ class OrderBookWebSocket:
         self.callbacks = []
         self._lock = threading.Lock()
         
+        # WebSocket connection status
+        self.connection_status = {
+            "depth": "DISCONNECTED",  # CONNECTED, DISCONNECTED, RECONNECTING
+            "trade": "DISCONNECTED",
+            "last_depth_update": None,
+            "last_trade_update": None,
+            "reconnect_count": 0
+        }
+        
         # Son analiz sonuçları
         self.last_analysis = {
             "timestamp": None,
@@ -425,17 +434,22 @@ class OrderBookWebSocket:
         """Order book WebSocket döngüsü"""
         while self.running:
             try:
+                self.connection_status["depth"] = "RECONNECTING"
                 async with websockets.connect(self.ws_url) as ws:
+                    self.connection_status["depth"] = "CONNECTED"
                     print(f"📡 Order Book WebSocket connected: {self.symbol.upper()}")
                     while self.running:
                         try:
                             msg = await asyncio.wait_for(ws.recv(), timeout=30)
                             data = json.loads(msg)
+                            self.connection_status["last_depth_update"] = datetime.now().isoformat()
                             await self._process_depth(data)
                         except asyncio.TimeoutError:
                             # Ping to keep alive
                             await ws.ping()
             except Exception as e:
+                self.connection_status["depth"] = "DISCONNECTED"
+                self.connection_status["reconnect_count"] += 1
                 print(f"❌ Order Book WS error: {e}")
                 if self.running:
                     await asyncio.sleep(5)
@@ -444,19 +458,38 @@ class OrderBookWebSocket:
         """Trade WebSocket döngüsü"""
         while self.running:
             try:
+                self.connection_status["trade"] = "RECONNECTING"
                 async with websockets.connect(self.trade_url) as ws:
+                    self.connection_status["trade"] = "CONNECTED"
                     print(f"📡 Trade WebSocket connected: {self.symbol.upper()}")
                     while self.running:
                         try:
                             msg = await asyncio.wait_for(ws.recv(), timeout=30)
                             data = json.loads(msg)
+                            self.connection_status["last_trade_update"] = datetime.now().isoformat()
                             await self._process_trade(data)
                         except asyncio.TimeoutError:
                             await ws.ping()
             except Exception as e:
+                self.connection_status["trade"] = "DISCONNECTED"
+                self.connection_status["reconnect_count"] += 1
                 print(f"❌ Trade WS error: {e}")
                 if self.running:
                     await asyncio.sleep(5)
+    
+    def get_connection_status(self) -> dict:
+        """Get current WebSocket connection status"""
+        return {
+            "depth_ws": self.connection_status["depth"],
+            "trade_ws": self.connection_status["trade"],
+            "last_depth_update": self.connection_status["last_depth_update"],
+            "last_trade_update": self.connection_status["last_trade_update"],
+            "reconnect_count": self.connection_status["reconnect_count"],
+            "is_healthy": (
+                self.connection_status["depth"] == "CONNECTED" and 
+                self.connection_status["trade"] == "CONNECTED"
+            )
+        }
     
     def start(self):
         """WebSocket'leri başlat (ayrı thread'de)"""
