@@ -39,6 +39,7 @@ from limit_order_manager import LimitOrderManager
 import requests
 from dashboard_notifier import DashboardNotifier
 from models import normalize_params, Position, LimitOrder, AIDecision, validate_position_params
+from local_ai_decision import LocalAIDecision
 
 class AutonomousTradingBot:
     """
@@ -88,8 +89,24 @@ class AutonomousTradingBot:
         # Limit Order Manager
         self.limit_orders = LimitOrderManager()
         
-        # Autonomous AI - Server-side API kullanır (OpenAI key gerektirmez)
+        # Autonomous AI - Local OpenAI API kullanır (VPS için)
         self.dashboard_url = "http://localhost:3000"
+        
+        # Initialize Local AI Decision (uses OpenAI API directly)
+        openai_key = os.getenv("OPENAI_API_KEY", "")
+        if openai_key:
+            try:
+                self.local_ai = LocalAIDecision(api_key=openai_key)
+                self.use_local_ai = True
+                print("✅ Local AI Decision initialized (OpenAI API)")
+            except Exception as e:
+                print(f"⚠️ Local AI init failed: {e}")
+                self.local_ai = None
+                self.use_local_ai = False
+        else:
+            self.local_ai = None
+            self.use_local_ai = False
+            print("⚠️ OPENAI_API_KEY not set - will try Dashboard API")
         
         # Dashboard Notifier
         self.notifier = DashboardNotifier("http://localhost:3000")
@@ -273,8 +290,21 @@ class AutonomousTradingBot:
             return 0
     
     def _get_ai_decision(self, market_data: Dict) -> Dict:
-        """Server-side AI'dan karar al (Manus built-in LLM kullanır)"""
+        """AI'dan karar al - önce local OpenAI, sonra Dashboard API"""
+        
+        # 1. Önce Local AI dene (OpenAI API)
+        if self.use_local_ai and self.local_ai:
+            try:
+                print("   Using Local AI (OpenAI API)...")
+                decision = self.local_ai.make_decision(market_data)
+                if decision and decision.get("action"):
+                    return decision
+            except Exception as e:
+                print(f"   ⚠️ Local AI error: {e}")
+        
+        # 2. Fallback: Dashboard API dene
         try:
+            print("   Trying Dashboard API...")
             # Datetime objelerini string'e çevir
             import json
             from datetime import datetime
