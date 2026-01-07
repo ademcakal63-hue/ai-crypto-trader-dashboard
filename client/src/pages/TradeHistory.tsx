@@ -11,28 +11,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   History,
   TrendingUp,
   TrendingDown,
   DollarSign,
   Target,
-  Calendar,
   Filter,
-  Download,
   RefreshCw,
   ArrowUpRight,
   ArrowDownRight,
   Clock,
-  Percent,
-  Brain
+  Brain,
+  BarChart3,
+  Zap,
+  Award,
+  AlertCircle,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
@@ -42,12 +36,10 @@ export default function TradeHistory() {
   const [filterResult, setFilterResult] = useState<string>("all");
   const [searchSymbol, setSearchSymbol] = useState("");
 
-  // Fetch trade history
   const { data: trades, isLoading, refetch } = trpc.dashboard.tradeHistory.useQuery(undefined, {
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 
-  // Calculate statistics
   const stats = useMemo(() => {
     if (!trades || trades.length === 0) {
       return {
@@ -59,7 +51,6 @@ export default function TradeHistory() {
         largestWin: 0,
         largestLoss: 0,
         profitFactor: 0,
-        avgHoldTime: "0m",
       };
     }
 
@@ -79,26 +70,21 @@ export default function TradeHistory() {
       largestWin: wins.length > 0 ? Math.max(...wins.map((t: any) => parseFloat(t.pnl || "0"))) : 0,
       largestLoss: losses.length > 0 ? Math.min(...losses.map((t: any) => parseFloat(t.pnl || "0"))) : 0,
       profitFactor: totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? Infinity : 0,
-      avgHoldTime: "~5m", // Placeholder
     };
   }, [trades]);
 
-  // Filter trades
   const filteredTrades = useMemo(() => {
     if (!trades) return [];
     
     return trades.filter((trade: any) => {
-      // Direction filter
       if (filterDirection !== "all" && trade.direction !== filterDirection) {
         return false;
       }
       
-      // Result filter
       const pnl = parseFloat(trade.pnl || "0");
       if (filterResult === "win" && pnl <= 0) return false;
       if (filterResult === "loss" && pnl > 0) return false;
       
-      // Symbol search
       if (searchSymbol && !trade.symbol.toLowerCase().includes(searchSymbol.toLowerCase())) {
         return false;
       }
@@ -109,149 +95,196 @@ export default function TradeHistory() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <History className="h-8 w-8 animate-pulse text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Trade geçmişi yükleniyor...</p>
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-primary/20 rounded-full animate-pulse" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-primary rounded-full animate-spin" />
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-medium">Trade Geçmişi Yükleniyor</p>
+            <p className="text-sm text-muted-foreground mt-1">Veriler hazırlanıyor...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Trade Geçmişi</h1>
-          <p className="text-muted-foreground mt-1">
-            Tamamlanan tüm işlemlerin detaylı listesi
-          </p>
+    <div className="space-y-8 pb-8">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700/50 p-8">
+        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                  <History className="h-6 w-6 text-blue-400" />
+                </div>
+                <Badge variant="outline" className="bg-slate-500/10 text-slate-400 border-slate-500/30">
+                  {stats.totalTrades} İşlem
+                </Badge>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+                Trade Geçmişi
+              </h1>
+              <p className="text-slate-400 mt-2 max-w-lg">
+                Tamamlanan tüm işlemlerin detaylı listesi
+              </p>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => refetch()}
+              className="border-slate-700 hover:border-slate-600 hover:bg-slate-800"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Yenile
+            </Button>
+          </div>
         </div>
-        <Button variant="outline" onClick={() => refetch()}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Yenile
-        </Button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="relative overflow-hidden border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam İşlem</CardTitle>
-            <History className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-400">Toplam İşlem</CardTitle>
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <History className="h-4 w-4 text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalTrades}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Tamamlanan trade sayısı
-            </p>
+            <div className="text-3xl font-bold text-white">{stats.totalTrades}</div>
+            <p className="text-xs text-slate-500 mt-2">Tamamlanan trade sayısı</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Başarı Oranı</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-400">Başarı Oranı</CardTitle>
+            <div className="p-2 rounded-lg bg-emerald-500/10">
+              <Target className="h-4 w-4 text-emerald-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className={cn(
-              "text-2xl font-bold",
-              stats.winRate >= 60 ? "text-green-500" : stats.winRate >= 50 ? "text-yellow-500" : "text-red-500"
+              "text-3xl font-bold",
+              stats.winRate >= 60 ? "text-emerald-400" : stats.winRate >= 50 ? "text-amber-400" : "text-red-400"
             )}>
               {stats.winRate.toFixed(1)}%
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Karlı işlem oranı
-            </p>
+            <p className="text-xs text-slate-500 mt-2">Karlı işlem oranı</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+          <div className={cn(
+            "absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2",
+            stats.totalPnl >= 0 ? "bg-emerald-500/5" : "bg-red-500/5"
+          )} />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam P&L</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-400">Toplam P&L</CardTitle>
+            <div className={cn(
+              "p-2 rounded-lg",
+              stats.totalPnl >= 0 ? "bg-emerald-500/10" : "bg-red-500/10"
+            )}>
+              <DollarSign className={cn(
+                "h-4 w-4",
+                stats.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"
+              )} />
+            </div>
           </CardHeader>
           <CardContent>
             <div className={cn(
-              "text-2xl font-bold",
-              stats.totalPnl >= 0 ? "text-green-500" : "text-red-500"
+              "text-3xl font-bold",
+              stats.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"
             )}>
               {stats.totalPnl >= 0 ? "+" : ""}${stats.totalPnl.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Net kar/zarar
-            </p>
+            <p className="text-xs text-slate-500 mt-2">Net kar/zarar</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Profit Factor</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-400">Profit Factor</CardTitle>
+            <div className="p-2 rounded-lg bg-purple-500/10">
+              <TrendingUp className="h-4 w-4 text-purple-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className={cn(
-              "text-2xl font-bold",
-              stats.profitFactor >= 1.5 ? "text-green-500" : stats.profitFactor >= 1 ? "text-yellow-500" : "text-red-500"
+              "text-3xl font-bold",
+              stats.profitFactor >= 1.5 ? "text-emerald-400" : stats.profitFactor >= 1 ? "text-amber-400" : "text-red-400"
             )}>
               {stats.profitFactor === Infinity ? "∞" : stats.profitFactor.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Toplam kar / Toplam zarar
-            </p>
+            <p className="text-xs text-slate-500 mt-2">Toplam kar / Toplam zarar</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Detailed Stats */}
+      {/* Win/Loss Stats */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+        <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
           <CardHeader>
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              Kazanç İstatistikleri
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Ortalama Kazanç:</span>
-              <span className="font-medium text-green-500">+${stats.avgWin.toFixed(2)}</span>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <TrendingUp className="h-5 w-5 text-emerald-400" />
+              </div>
+              <CardTitle className="text-lg">Kazanç İstatistikleri</CardTitle>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">En Büyük Kazanç:</span>
-              <span className="font-medium text-green-500">+${stats.largestWin.toFixed(2)}</span>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
+              <span className="text-slate-400">Ortalama Kazanç:</span>
+              <span className="font-bold text-emerald-400">+${stats.avgWin.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
+              <span className="text-slate-400">En Büyük Kazanç:</span>
+              <span className="font-bold text-emerald-400">+${stats.largestWin.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
           <CardHeader>
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-red-500" />
-              Kayıp İstatistikleri
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Ortalama Kayıp:</span>
-              <span className="font-medium text-red-500">-${stats.avgLoss.toFixed(2)}</span>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/20">
+                <TrendingDown className="h-5 w-5 text-red-400" />
+              </div>
+              <CardTitle className="text-lg">Kayıp İstatistikleri</CardTitle>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">En Büyük Kayıp:</span>
-              <span className="font-medium text-red-500">${stats.largestLoss.toFixed(2)}</span>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
+              <span className="text-slate-400">Ortalama Kayıp:</span>
+              <span className="font-bold text-red-400">-${stats.avgLoss.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
+              <span className="text-slate-400">En Büyük Kayıp:</span>
+              <span className="font-bold text-red-400">${stats.largestLoss.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
         <CardHeader>
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Filtreler
-          </CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-slate-500/10 border border-slate-500/20">
+              <Filter className="h-5 w-5 text-slate-400" />
+            </div>
+            <CardTitle className="text-lg">Filtreler</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
@@ -260,10 +293,11 @@ export default function TradeHistory() {
                 placeholder="Sembol ara (örn: BTC)"
                 value={searchSymbol}
                 onChange={(e) => setSearchSymbol(e.target.value)}
+                className="bg-slate-800/50 border-slate-700 focus:border-primary"
               />
             </div>
             <Select value={filterDirection} onValueChange={setFilterDirection}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-[150px] bg-slate-800/50 border-slate-700">
                 <SelectValue placeholder="Yön" />
               </SelectTrigger>
               <SelectContent>
@@ -273,7 +307,7 @@ export default function TradeHistory() {
               </SelectContent>
             </Select>
             <Select value={filterResult} onValueChange={setFilterResult}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-[150px] bg-slate-800/50 border-slate-700">
                 <SelectValue placeholder="Sonuç" />
               </SelectTrigger>
               <SelectContent>
@@ -286,92 +320,131 @@ export default function TradeHistory() {
         </CardContent>
       </Card>
 
-      {/* Trade Table */}
-      <Card>
+      {/* Trade List */}
+      <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
         <CardHeader>
-          <CardTitle>İşlem Listesi</CardTitle>
-          <CardDescription>
-            {filteredTrades.length} işlem gösteriliyor
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <BarChart3 className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">İşlem Listesi</CardTitle>
+                <CardDescription>{filteredTrades.length} işlem gösteriliyor</CardDescription>
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {filteredTrades.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <History className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">Henüz işlem yok</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Bot çalışmaya başladığında tamamlanan işlemler burada görünecek
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="p-4 rounded-2xl bg-slate-800/50 mb-4">
+                <AlertCircle className="h-12 w-12 text-slate-500" />
+              </div>
+              <p className="text-lg font-medium text-slate-300">Henüz işlem yok</p>
+              <p className="text-sm text-slate-500 mt-2 max-w-md">
+                Bot işlem yaptıkça burada görünecek
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead>Sembol</TableHead>
-                    <TableHead>Yön</TableHead>
-                    <TableHead>Giriş</TableHead>
-                    <TableHead>Çıkış</TableHead>
-                    <TableHead>P&L</TableHead>
-                    <TableHead>Pattern</TableHead>
-                    <TableHead>Güven</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTrades.map((trade: any, index: number) => {
-                    const pnl = parseFloat(trade.pnl || "0");
-                    const isProfit = pnl > 0;
+            <div className="space-y-3">
+              {/* Table Header */}
+              <div className="hidden md:grid grid-cols-7 gap-4 px-4 py-2 text-xs text-slate-500 uppercase tracking-wider border-b border-slate-800">
+                <div>Tarih</div>
+                <div>Sembol</div>
+                <div>Yön</div>
+                <div className="text-right">Giriş</div>
+                <div className="text-right">Çıkış</div>
+                <div className="text-right">P&L</div>
+                <div className="text-right">Pattern</div>
+              </div>
+              
+              {/* Trade Rows */}
+              {filteredTrades.map((trade: any) => {
+                const pnl = parseFloat(trade.pnl || "0");
+                const isProfit = pnl > 0;
+                
+                return (
+                  <div
+                    key={trade.id}
+                    className={cn(
+                      "grid grid-cols-2 md:grid-cols-7 gap-4 p-4 rounded-xl border transition-all hover:bg-slate-800/50",
+                      isProfit 
+                        ? "border-emerald-500/20 bg-emerald-500/5" 
+                        : "border-red-500/20 bg-red-500/5"
+                    )}
+                  >
+                    {/* Date */}
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-slate-500" />
+                      <div>
+                        <div className="text-sm text-white">
+                          {new Date(trade.closedAt || trade.createdAt).toLocaleDateString('tr-TR')}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {new Date(trade.closedAt || trade.createdAt).toLocaleTimeString('tr-TR')}
+                        </div>
+                      </div>
+                    </div>
                     
-                    return (
-                      <TableRow key={trade.id || index}>
-                        <TableCell className="text-sm">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3 text-muted-foreground" />
-                            {new Date(trade.closedAt || trade.openedAt).toLocaleDateString('tr-TR')}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(trade.closedAt || trade.openedAt).toLocaleTimeString('tr-TR')}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">{trade.symbol}</TableCell>
-                        <TableCell>
-                          <Badge variant={trade.direction === "LONG" ? "default" : "secondary"}>
-                            {trade.direction === "LONG" ? (
-                              <ArrowUpRight className="h-3 w-3 mr-1" />
-                            ) : (
-                              <ArrowDownRight className="h-3 w-3 mr-1" />
-                            )}
-                            {trade.direction}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>${parseFloat(trade.entryPrice).toLocaleString()}</TableCell>
-                        <TableCell>${parseFloat(trade.exitPrice).toLocaleString()}</TableCell>
-                        <TableCell>
-                          <span className={cn(
-                            "font-medium",
-                            isProfit ? "text-green-500" : "text-red-500"
-                          )}>
-                            {isProfit ? "+" : ""}${pnl.toFixed(2)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-xs">
-                            <Brain className="h-3 w-3 mr-1" />
-                            {trade.pattern || "AI Analysis"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Percent className="h-3 w-3 text-muted-foreground" />
-                            {trade.confidence ? `${(parseFloat(trade.confidence) * 100).toFixed(0)}%` : "-"}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                    {/* Symbol */}
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-white">{trade.symbol}</span>
+                    </div>
+                    
+                    {/* Direction */}
+                    <div className="flex items-center">
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "gap-1",
+                          trade.direction === "LONG" 
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
+                            : "bg-red-500/10 text-red-400 border-red-500/30"
+                        )}
+                      >
+                        {trade.direction === "LONG" ? (
+                          <ArrowUpRight className="h-3 w-3" />
+                        ) : (
+                          <ArrowDownRight className="h-3 w-3" />
+                        )}
+                        {trade.direction}
+                      </Badge>
+                    </div>
+                    
+                    {/* Entry Price */}
+                    <div className="text-right">
+                      <div className="text-sm text-white">${parseFloat(trade.entryPrice).toFixed(1)}</div>
+                    </div>
+                    
+                    {/* Exit Price */}
+                    <div className="text-right">
+                      <div className="text-sm text-white">${parseFloat(trade.exitPrice || trade.entryPrice).toFixed(1)}</div>
+                    </div>
+                    
+                    {/* P&L */}
+                    <div className="text-right">
+                      <div className={cn(
+                        "text-sm font-bold",
+                        isProfit ? "text-emerald-400" : "text-red-400"
+                      )}>
+                        {isProfit ? "+" : ""}${pnl.toFixed(2)}
+                      </div>
+                    </div>
+                    
+                    {/* Pattern */}
+                    <div className="flex items-center justify-end gap-2">
+                      <Badge variant="secondary" className="bg-slate-700/50 text-slate-300 border-0 gap-1">
+                        <Brain className="h-3 w-3" />
+                        {trade.pattern || "AI Analysis"}
+                      </Badge>
+                      <div className="text-xs text-slate-500">
+                        % {trade.confidence || 75}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>

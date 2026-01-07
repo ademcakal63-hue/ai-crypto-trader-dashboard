@@ -1242,3 +1242,15 @@ Dashboard'dan tek tıkla:
 - [x] OpenAI yerine Manus LLM kullan
 - [x] Paper Trading modunda Binance API key zorunluluğunu kaldır
 - [ ] Vultr VPS'e deploy et
+
+
+## Dashboard Yeniden Tasarım
+
+- [ ] Ana Dashboard - Modern, profesyonel trading UI
+- [ ] Bot Kontrol Paneli - Daha sezgisel kontroller
+- [ ] Paper Trading Status - Görsel olarak zengin
+- [ ] Performans grafikleri ve istatistikler
+- [ ] Trade Geçmişi - Filtreleme ve detaylı görünüm
+- [ ] Ayarlar sayfası - Kullanıcı dostu form tasarımı
+- [ ] Responsive tasarım - Mobil uyumlu
+- [ ] Dark theme optimizasyonu

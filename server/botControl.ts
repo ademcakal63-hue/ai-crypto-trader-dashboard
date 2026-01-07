@@ -200,13 +200,46 @@ export async function stopBot(symbol: string) {
 
     console.log(`[BotControl] Stopping bot ${symbol} (PID: ${botInfo.pid})`);
     
+    // Handle orphan processes (where we don't have process handle)
+    if (!botInfo.process) {
+      console.log(`[BotControl] No process handle - killing by PID`);
+      try {
+        const { execSync } = await import('child_process');
+        execSync(`kill -9 ${botInfo.pid}`);
+        botProcesses.delete(symbol);
+        await saveBotStatus();
+        return {
+          success: true,
+          message: `Orphan bot killed for ${symbol}`,
+        };
+      } catch (e) {
+        // Process might already be dead
+        botProcesses.delete(symbol);
+        await saveBotStatus();
+        return {
+          success: true,
+          message: `Bot ${symbol} was already stopped`,
+        };
+      }
+    }
+    
     // Send SIGTERM for graceful shutdown
     try {
       botInfo.process.kill('SIGTERM');
       console.log(`[BotControl] Sent SIGTERM to ${botInfo.pid}`);
     } catch (e) {
       console.log(`[BotControl] SIGTERM failed, trying SIGKILL`);
-      botInfo.process.kill('SIGKILL');
+      try {
+        botInfo.process.kill('SIGKILL');
+      } catch (e2) {
+        // Process already dead
+        botProcesses.delete(symbol);
+        await saveBotStatus();
+        return {
+          success: true,
+          message: `Bot ${symbol} was already stopped`,
+        };
+      }
     }
 
     // Wait for graceful shutdown, then force kill if needed
@@ -252,8 +285,9 @@ export async function stopBot(symbol: string) {
  * Get status of all bots
  */
 export async function getBotStatus() {
-  // First check if there are running bot processes not in our Map
-  // This handles server restart scenarios
+  // CRITICAL: First verify which processes are ACTUALLY running
+  const runningPids = new Set<number>();
+  
   try {
     const { execSync } = await import('child_process');
     const psOutput = execSync('ps aux | grep "python.*main_autonomous.py" | grep -v grep', { encoding: 'utf-8' });
@@ -265,12 +299,14 @@ export async function getBotStatus() {
       const symbolMatch = line.match(/--symbol\s+(\w+)/);
       const symbol = symbolMatch ? symbolMatch[1] : 'BTCUSDT';
       
+      runningPids.add(pid);
+      
       // If this process is not in our Map, add it
       if (!botProcesses.has(symbol)) {
         console.log(`[BotControl] Found orphan bot process: ${symbol} (PID: ${pid})`);
         botProcesses.set(symbol, {
           symbol,
-          process: null as any, // We don't have the process handle
+          process: null as any,
           pid,
           startedAt: new Date().toISOString(),
           status: 'running',
@@ -278,8 +314,19 @@ export async function getBotStatus() {
       }
     }
   } catch (error) {
-    // No running processes found, that's okay
+    // No running processes found - clear all from Map
+    console.log(`[BotControl] No running bot processes found - clearing stale entries`);
   }
+  
+  // CRITICAL: Remove bots from Map that are no longer running
+  const symbolsToRemove: string[] = [];
+  botProcesses.forEach((bot, symbol) => {
+    if (!runningPids.has(bot.pid)) {
+      console.log(`[BotControl] Bot ${symbol} (PID: ${bot.pid}) is no longer running - removing from tracking`);
+      symbolsToRemove.push(symbol);
+    }
+  });
+  symbolsToRemove.forEach(symbol => botProcesses.delete(symbol));
   
   const bots = Array.from(botProcesses.values()).map(bot => ({
     symbol: bot.symbol,

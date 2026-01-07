@@ -2,19 +2,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Play, Square, RefreshCw, Activity } from "lucide-react";
+import { 
+  Play, 
+  Square, 
+  RefreshCw, 
+  Activity, 
+  Cpu, 
+  Zap,
+  TrendingUp,
+  Clock,
+  Settings2
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 const SUPPORTED_COINS = [
-  { symbol: "BTCUSDT", name: "Bitcoin", icon: "₿" },
-  // { symbol: "ETHUSDT", name: "Ethereum", icon: "Ξ" },  // Disabled for cost optimization
-  // { symbol: "SOLUSDT", name: "Solana", icon: "◎" },  // Disabled for cost optimization
+  { symbol: "BTCUSDT", name: "Bitcoin", icon: "₿", color: "from-amber-500 to-orange-600" },
 ];
 
 export function BotControlPanel() {
+  const [uptime, setUptime] = useState<string>("");
+  
   const { data: botStatus, refetch } = trpc.botControl.status.useQuery(undefined, {
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: 5000,
   });
 
   const startBot = trpc.botControl.start.useMutation({
@@ -49,27 +60,83 @@ export function BotControlPanel() {
   const allRunning = isRunning;
   const noneRunning = !isRunning;
 
+  // Update uptime every second
+  useEffect(() => {
+    if (!isRunning) {
+      setUptime("");
+      return;
+    }
+
+    const coinBot = botStatus?.bots?.find(b => b.status === 'running');
+    if (!coinBot?.startedAt) return;
+
+    const updateUptime = () => {
+      const start = new Date(coinBot.startedAt);
+      const now = new Date();
+      const diffMs = now.getTime() - start.getTime();
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffDays > 0) {
+        setUptime(`${diffDays}g ${diffHours % 24}s ${diffMins % 60}d`);
+      } else if (diffHours > 0) {
+        setUptime(`${diffHours}s ${diffMins % 60}d ${diffSecs % 60}sn`);
+      } else if (diffMins > 0) {
+        setUptime(`${diffMins}d ${diffSecs % 60}sn`);
+      } else {
+        setUptime(`${diffSecs}sn`);
+      }
+    };
+
+    updateUptime();
+    const interval = setInterval(updateUptime, 1000);
+    return () => clearInterval(interval);
+  }, [isRunning, botStatus]);
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Bot Kontrol Paneli
-            </CardTitle>
-            <CardDescription>
-              Trading bot'larını başlatın, durdurun ve izleyin
-            </CardDescription>
+    <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur overflow-hidden">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "p-2 rounded-xl border",
+              isRunning 
+                ? "bg-emerald-500/10 border-emerald-500/20" 
+                : "bg-slate-500/10 border-slate-500/20"
+            )}>
+              <Cpu className={cn(
+                "h-5 w-5",
+                isRunning ? "text-emerald-400" : "text-slate-400"
+              )} />
+            </div>
+            <div>
+              <CardTitle className="text-lg flex items-center gap-2">
+                Bot Kontrol Paneli
+                {isRunning && (
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                )}
+              </CardTitle>
+              <CardDescription>Trading bot'larını başlatın, durdurun ve izleyin</CardDescription>
+            </div>
           </div>
-          <div className="flex gap-2">
+          
+          <div className="flex items-center gap-2">
             <Button
               size="sm"
               variant="outline"
               onClick={handleStartAll}
               disabled={allRunning || startBot.isPending}
+              className={cn(
+                "border-slate-700 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all",
+                startBot.isPending && "opacity-50"
+              )}
             >
-              <Play className="h-4 w-4 mr-1" />
+              <Play className="h-4 w-4 mr-1.5" />
               Tümünü Başlat
             </Button>
             <Button
@@ -77,93 +144,155 @@ export function BotControlPanel() {
               variant="outline"
               onClick={handleStopAll}
               disabled={noneRunning || stopBot.isPending}
+              className={cn(
+                "border-slate-700 hover:border-red-500/50 hover:bg-red-500/10 transition-all",
+                stopBot.isPending && "opacity-50"
+              )}
             >
-              <Square className="h-4 w-4 mr-1" />
+              <Square className="h-4 w-4 mr-1.5" />
               Tümünü Durdur
             </Button>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => refetch()}
+              className="hover:bg-slate-800"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className={cn(
+                "h-4 w-4",
+                (startBot.isPending || stopBot.isPending) && "animate-spin"
+              )} />
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {SUPPORTED_COINS.map((coin) => {
-            const coinBot = botStatus?.bots?.find(b => b.symbol === coin.symbol);
-            const coinIsRunning = coinBot?.status === 'running';
+      
+      <CardContent className="space-y-4">
+        {SUPPORTED_COINS.map((coin) => {
+          const coinBot = botStatus?.bots?.find(b => b.symbol === coin.symbol);
+          const coinIsRunning = coinBot?.status === 'running';
 
-            return (
-              <div
-                key={coin.symbol}
-                className="flex items-center justify-between p-4 rounded-lg border bg-card"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-2xl">{coin.icon}</span>
-                  <div>
-                    <div className="font-medium">{coin.name}</div>
-                    <div className="text-sm text-muted-foreground">{coin.symbol}</div>
+          return (
+            <div
+              key={coin.symbol}
+              className={cn(
+                "relative overflow-hidden rounded-xl border transition-all duration-300",
+                coinIsRunning 
+                  ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-transparent" 
+                  : "border-slate-700/50 bg-slate-800/30 hover:border-slate-600/50"
+              )}
+            >
+              {/* Animated gradient border for running state */}
+              {coinIsRunning && (
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-transparent to-emerald-500/10 animate-pulse" />
+              )}
+              
+              <div className="relative p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {/* Coin Icon with gradient background */}
+                    <div className={cn(
+                      "relative w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold",
+                      `bg-gradient-to-br ${coin.color}`,
+                      "shadow-lg"
+                    )}>
+                      <span className="text-white drop-shadow">{coin.icon}</span>
+                      {coinIsRunning && (
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
+                          <Activity className="w-2.5 h-2.5 text-white animate-pulse" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-white text-lg">{coin.name}</span>
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-xs font-mono",
+                            coinIsRunning 
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
+                              : "bg-slate-700/50 text-slate-400 border-slate-600/50"
+                          )}
+                        >
+                          {coin.symbol}
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 mt-1">
+                        {coinIsRunning ? (
+                          <>
+                            <Badge className="bg-emerald-500/20 text-emerald-400 border-0 gap-1">
+                              <Zap className="h-3 w-3" />
+                              Çalışıyor
+                            </Badge>
+                            {coinBot?.pid && (
+                              <span className="text-xs text-slate-500 font-mono">
+                                PID: {coinBot.pid}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <Badge variant="secondary" className="bg-slate-700/50 text-slate-400 border-0">
+                            Durduruldu
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {/* Uptime display */}
+                    {coinIsRunning && uptime && (
+                      <div className="text-right hidden sm:block">
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <Clock className="h-3 w-3" />
+                          Çalışma Süresi
+                        </div>
+                        <div className="text-sm font-mono text-slate-300">{uptime}</div>
+                      </div>
+                    )}
+                    
+                    {/* Toggle Switch */}
+                    <div className="flex flex-col items-center gap-1">
+                      <Switch
+                        checked={coinIsRunning}
+                        onCheckedChange={handleToggle}
+                        disabled={startBot.isPending || stopBot.isPending}
+                        className={cn(
+                          "data-[state=checked]:bg-emerald-500",
+                          (startBot.isPending || stopBot.isPending) && "opacity-50"
+                        )}
+                      />
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+                        {coinIsRunning ? "ON" : "OFF"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4">
-                  {/* Status Badge */}
-                  {coinIsRunning && (
-                    <Badge variant="default" className="bg-green-500">
-                      <Activity className="h-3 w-3 mr-1 animate-pulse" />
-                      Çalışıyor
-                    </Badge>
-                  )}
-                  {!coinIsRunning && (
-                    <Badge variant="secondary">
-                      Durduruldu
-                    </Badge>
-                  )}
-
-                  {/* Process Info */}
-                  {coinIsRunning && coinBot?.pid && (
-                    <div className="text-xs text-muted-foreground">
-                      PID: {coinBot.pid}
-                    </div>
-                  )}
-
-                  {/* Toggle Switch */}
-                  <Switch
-                    checked={coinIsRunning}
-                    onCheckedChange={handleToggle}
-                    disabled={startBot.isPending || stopBot.isPending}
-                  />
-                </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
 
-        {/* Summary */}
-        <div className="mt-4 p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-          <div className="flex items-center justify-between">
+        {/* Summary Footer */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            <Settings2 className="h-4 w-4" />
             <span>Aktif Bot Sayısı:</span>
-            <span className="font-medium text-foreground">{isRunning ? 1 : 0} / {SUPPORTED_COINS.length}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={cn(
+              "text-lg font-bold",
+              isRunning ? "text-emerald-400" : "text-slate-400"
+            )}>
+              {isRunning ? 1 : 0}
+            </span>
+            <span className="text-slate-500">/ {SUPPORTED_COINS.length}</span>
           </div>
         </div>
       </CardContent>
     </Card>
   );
-}
-
-function formatUptime(startedAt: string): string {
-  const start = new Date(startedAt);
-  const now = new Date();
-  const diffMs = now.getTime() - start.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffDays > 0) return `${diffDays}g ${diffHours % 24}s`;
-  if (diffHours > 0) return `${diffHours}s ${diffMins % 60}d`;
-  return `${diffMins}d`;
 }
