@@ -1232,7 +1232,7 @@ Dashboard'dan tek tıkla:
 - [x] Cycle sayacı düzgün çalışsın
 
 ### Vultr Deploy
-- [ ] Deploy rehberi hazırla
-- [ ] Gerekli dosyaları paketle
-- [ ] Kurulum script'i yaz
+- [x] Deploy rehberi hazırla (VULTR_DEPLOY.md)
+- [x] Gerekli dosyaları paketle
+- [x] Kurulum script'i yaz (scripts/vps_setup.sh)
 
