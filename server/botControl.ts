@@ -1,11 +1,11 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, execSync } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { processLogLine } from './logKeywordMonitor';
 
 interface BotProcess {
   symbol: string;
-  process: ChildProcess;
+  process: ChildProcess | null;
   pid: number;
   startedAt: string;
   status: 'running' | 'stopped' | 'error';
@@ -18,139 +18,129 @@ const botProcesses = new Map<string, BotProcess>();
 const BOT_STATUS_FILE = path.join(process.cwd(), 'ai_bot', 'bot_status.json');
 
 /**
- * Start a trading bot for a specific symbol
+ * Check if PM2 is managing the bot
+ */
+function isPM2Bot(symbol: string): { managed: boolean; pid?: number; status?: string } {
+  try {
+    const pm2Output = execSync('pm2 jlist', { encoding: 'utf-8' });
+    const pm2List = JSON.parse(pm2Output);
+    
+    const tradingBot = pm2List.find((p: any) => p.name === 'trading-bot');
+    
+    if (tradingBot) {
+      return {
+        managed: true,
+        pid: tradingBot.pid,
+        status: tradingBot.pm2_env?.status || 'unknown'
+      };
+    }
+    
+    return { managed: false };
+  } catch (error) {
+    return { managed: false };
+  }
+}
+
+/**
+ * Start a trading bot for a specific symbol using PM2
  */
 export async function startBot(symbol: string) {
   try {
-    // CRITICAL: Check if bot is already running in memory
-    if (botProcesses.has(symbol)) {
-      const existing = botProcesses.get(symbol);
-      if (existing?.status === 'running') {
-        console.log(`[BotControl] Bot ${symbol} already in memory (PID: ${existing.pid})`);
-        return {
-          success: false,
-          message: `Bot for ${symbol} is already running`,
-          pid: existing.pid,
-        };
-      }
+    // Check if PM2 is already managing a bot
+    const pm2Status = isPM2Bot(symbol);
+    
+    if (pm2Status.managed && pm2Status.status === 'online') {
+      console.log(`[BotControl] Bot ${symbol} already running via PM2 (PID: ${pm2Status.pid})`);
+      return {
+        success: false,
+        message: `Bot for ${symbol} is already running`,
+        pid: pm2Status.pid,
+      };
     }
     
-    // CRITICAL: Also check for orphan processes (server restart scenario)
+    // Check for any running python bot processes
     try {
-      const { execSync } = await import('child_process');
       const psOutput = execSync(`ps aux | grep "python.*main_autonomous.py" | grep -v grep`, { encoding: 'utf-8' });
       const lines = psOutput.trim().split('\n').filter(l => l.trim());
       
       if (lines.length > 0) {
-        // Found running bot process - don't start another one
         const parts = lines[0].trim().split(/\s+/);
         const existingPid = parseInt(parts[1]);
-        console.log(`[BotControl] Found existing bot process (PID: ${existingPid}) - preventing duplicate`);
-        
-        // Add to our tracking
-        botProcesses.set(symbol, {
-          symbol,
-          process: null as any,
-          pid: existingPid,
-          startedAt: new Date().toISOString(),
-          status: 'running',
-        });
+        console.log(`[BotControl] Found existing bot process (PID: ${existingPid})`);
         
         return {
           success: false,
-          message: `Bot is already running (PID: ${existingPid}). Stop it first before starting a new one.`,
+          message: `Bot is already running (PID: ${existingPid}). Stop it first.`,
           pid: existingPid,
         };
       }
     } catch (e) {
-      // No running processes found - safe to start
-      console.log(`[BotControl] No existing bot processes found - safe to start`);
+      // No running processes - safe to start
     }
 
-    // Use clean wrapper script to completely isolate from Python 3.13
-    const wrapperScript = '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/run_bot.sh';
+    console.log(`[BotControl] Starting bot ${symbol} via PM2`);
     
-    console.log(`[BotControl] Starting bot ${symbol}`);
-    console.log(`[BotControl] Wrapper script: ${wrapperScript}`);
+    // Start bot using PM2
+    const botDir = path.join(process.cwd(), 'ai_bot');
     
-    // Use wrapper script with minimal environment (script handles venv activation)
-    const botProcess = spawn(wrapperScript, [
-      '--symbol',
-      symbol,
-    ], {
-      cwd: '/home/ubuntu/ai-crypto-trader-dashboard/ai_bot',
-      detached: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: {
-        ...process.env,
-        // Wrapper script will unset these, but start clean
-        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-      },
-    });
-
-    if (!botProcess.pid) {
-      throw new Error('Failed to start bot process');
+    // Check if .env file exists in bot directory
+    const envFile = path.join(botDir, '.env');
+    try {
+      await fs.access(envFile);
+    } catch {
+      return {
+        success: false,
+        message: 'Bot .env file not found. Please configure API keys first.',
+      };
     }
-
-    // Store process info
-    const botInfo: BotProcess = {
-      symbol,
-      process: botProcess,
-      pid: botProcess.pid,
-      startedAt: new Date().toISOString(),
-      status: 'running',
-    };
-
-    botProcesses.set(symbol, botInfo);
-
-    // Handle process events
-    botProcess.on('error', (error) => {
-      console.error(`Bot ${symbol} error:`, error);
-      const bot = botProcesses.get(symbol);
-      if (bot) {
-        bot.status = 'error';
+    
+    // Start with PM2
+    try {
+      execSync(`pm2 start main_autonomous.py --name trading-bot --interpreter python3 --cwd "${botDir}" -- --symbol ${symbol}`, {
+        encoding: 'utf-8',
+        cwd: botDir,
+      });
+    } catch (startError: any) {
+      // PM2 might already have a stopped process, try restart
+      try {
+        execSync('pm2 restart trading-bot', { encoding: 'utf-8' });
+      } catch (restartError) {
+        throw startError;
       }
-    });
-
-    botProcess.on('exit', (code) => {
-      console.log(`Bot ${symbol} exited with code ${code}`);
-      botProcesses.delete(symbol);
-    });
-
-    // Log stdout/stderr
-    const logDir = path.join(process.cwd(), 'ai_bot', 'logs');
-    await fs.mkdir(logDir, { recursive: true });
-    const logFile = path.join(logDir, `${symbol}.log`);
+    }
     
-    botProcess.stdout?.on('data', (data) => {
-      const rawLine = data.toString().trim();
-      const logLine = `[${new Date().toISOString()}] [INFO] ${rawLine}\n`;
-      console.log(`[${symbol}] ${rawLine}`);
-      fs.appendFile(logFile, logLine).catch(console.error);
+    // Wait a moment for PM2 to start the process
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Get the new PID
+    const newStatus = isPM2Bot(symbol);
+    
+    if (newStatus.managed && newStatus.status === 'online') {
+      const startedAt = new Date().toISOString();
       
-      // Check for keywords and send notifications
-      processLogLine(symbol, rawLine).catch(console.error);
-    });
-
-    botProcess.stderr?.on('data', (data) => {
-      const rawLine = data.toString().trim();
-      const logLine = `[${new Date().toISOString()}] [ERROR] ${rawLine}\n`;
-      console.error(`[${symbol}] ERROR: ${rawLine}`);
-      fs.appendFile(logFile, logLine).catch(console.error);
+      // Store in memory for tracking
+      botProcesses.set(symbol, {
+        symbol,
+        process: null,
+        pid: newStatus.pid!,
+        startedAt,
+        status: 'running',
+      });
       
-      // Check for keywords and send notifications
-      processLogLine(symbol, `ERROR: ${rawLine}`).catch(console.error);
-    });
-
-    // Save status to file
-    await saveBotStatus();
-
-    return {
-      success: true,
-      message: `Bot started for ${symbol}`,
-      pid: botProcess.pid,
-      startedAt: botInfo.startedAt,
-    };
+      await saveBotStatus();
+      
+      return {
+        success: true,
+        message: `Bot started for ${symbol}`,
+        pid: newStatus.pid,
+        startedAt,
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Bot failed to start. Check PM2 logs.',
+      };
+    }
   } catch (error) {
     console.error(`Failed to start bot for ${symbol}:`, error);
     return {
@@ -165,112 +155,64 @@ export async function startBot(symbol: string) {
  */
 export async function stopBot(symbol: string) {
   try {
-    const botInfo = botProcesses.get(symbol);
-
-    if (!botInfo) {
-      // Try to find and kill orphan processes
+    console.log(`[BotControl] Stopping bot ${symbol}`);
+    
+    // First try PM2
+    const pm2Status = isPM2Bot(symbol);
+    
+    if (pm2Status.managed) {
+      console.log(`[BotControl] Stopping PM2 managed bot (PID: ${pm2Status.pid})`);
+      
       try {
-        const { execSync } = await import('child_process');
-        const psOutput = execSync(`ps aux | grep "python.*main_autonomous.py" | grep -v grep`, { encoding: 'utf-8' });
-        const lines = psOutput.trim().split('\n').filter(l => l.trim());
+        execSync('pm2 stop trading-bot', { encoding: 'utf-8' });
+        botProcesses.delete(symbol);
+        await saveBotStatus();
         
-        if (lines.length > 0) {
-          for (const line of lines) {
-            const parts = line.trim().split(/\s+/);
-            const pid = parseInt(parts[1]);
-            if (pid) {
-              console.log(`[BotControl] Killing orphan bot process: ${pid}`);
-              execSync(`kill -9 ${pid}`);
-            }
-          }
-          return {
-            success: true,
-            message: `Orphan bot process killed for ${symbol}`,
-          };
-        }
-      } catch (e) {
-        // No orphan processes found
-      }
-      
-      return {
-        success: false,
-        message: `No running bot found for ${symbol}`,
-      };
-    }
-
-    console.log(`[BotControl] Stopping bot ${symbol} (PID: ${botInfo.pid})`);
-    
-    // Handle orphan processes (where we don't have process handle)
-    if (!botInfo.process) {
-      console.log(`[BotControl] No process handle - killing by PID`);
-      try {
-        const { execSync } = await import('child_process');
-        execSync(`kill -9 ${botInfo.pid}`);
-        botProcesses.delete(symbol);
-        await saveBotStatus();
         return {
           success: true,
-          message: `Orphan bot killed for ${symbol}`,
+          message: `Bot stopped for ${symbol}`,
         };
       } catch (e) {
-        // Process might already be dead
-        botProcesses.delete(symbol);
-        await saveBotStatus();
-        return {
-          success: true,
-          message: `Bot ${symbol} was already stopped`,
-        };
+        console.error('[BotControl] PM2 stop failed:', e);
       }
     }
     
-    // Send SIGTERM for graceful shutdown
+    // Fallback: Kill any python bot processes directly
     try {
-      botInfo.process.kill('SIGTERM');
-      console.log(`[BotControl] Sent SIGTERM to ${botInfo.pid}`);
-    } catch (e) {
-      console.log(`[BotControl] SIGTERM failed, trying SIGKILL`);
-      try {
-        botInfo.process.kill('SIGKILL');
-      } catch (e2) {
-        // Process already dead
+      const psOutput = execSync(`ps aux | grep "python.*main_autonomous.py" | grep -v grep`, { encoding: 'utf-8' });
+      const lines = psOutput.trim().split('\n').filter(l => l.trim());
+      
+      if (lines.length > 0) {
+        for (const line of lines) {
+          const parts = line.trim().split(/\s+/);
+          const pid = parseInt(parts[1]);
+          if (pid) {
+            console.log(`[BotControl] Killing bot process: ${pid}`);
+            execSync(`kill -9 ${pid}`);
+          }
+        }
+        
         botProcesses.delete(symbol);
         await saveBotStatus();
+        
         return {
           success: true,
-          message: `Bot ${symbol} was already stopped`,
+          message: `Bot stopped for ${symbol}`,
         };
       }
+    } catch (e) {
+      // No processes found
     }
-
-    // Wait for graceful shutdown, then force kill if needed
-    await new Promise<void>((resolve) => {
-      const timeout = setTimeout(() => {
-        if (botProcesses.has(symbol)) {
-          console.log(`[BotControl] Bot ${symbol} didn't stop gracefully, force killing...`);
-          try {
-            botInfo.process.kill('SIGKILL');
-          } catch (e) {
-            console.error(`[BotControl] Force kill failed:`, e);
-          }
-          botProcesses.delete(symbol);
-        }
-        resolve();
-      }, 8000);  // 8 seconds for graceful shutdown
-      
-      botInfo.process.on('exit', () => {
-        clearTimeout(timeout);
-        botProcesses.delete(symbol);
-        console.log(`[BotControl] Bot ${symbol} exited cleanly`);
-        resolve();
-      });
-    });
-
-    // Save status to file
-    await saveBotStatus();
-
+    
+    // Also remove from memory tracking
+    if (botProcesses.has(symbol)) {
+      botProcesses.delete(symbol);
+      await saveBotStatus();
+    }
+    
     return {
       success: true,
-      message: `Bot stopped for ${symbol}`,
+      message: `Bot ${symbol} was already stopped`,
     };
   } catch (error) {
     console.error(`Failed to stop bot for ${symbol}:`, error);
@@ -285,55 +227,83 @@ export async function stopBot(symbol: string) {
  * Get status of all bots
  */
 export async function getBotStatus() {
-  // CRITICAL: First verify which processes are ACTUALLY running
-  const runningPids = new Set<number>();
+  const bots: Array<{
+    symbol: string;
+    pid: number;
+    startedAt: string;
+    status: 'running' | 'stopped' | 'error';
+  }> = [];
   
-  try {
-    const { execSync } = await import('child_process');
-    const psOutput = execSync('ps aux | grep "python.*main_autonomous.py" | grep -v grep', { encoding: 'utf-8' });
-    const lines = psOutput.trim().split('\n').filter(l => l.trim());
+  // Check PM2 first
+  const pm2Status = isPM2Bot('BTCUSDT');
+  
+  if (pm2Status.managed && pm2Status.status === 'online') {
+    // Get uptime from PM2
+    let startedAt = new Date().toISOString();
+    try {
+      const pm2Output = execSync('pm2 jlist', { encoding: 'utf-8' });
+      const pm2List = JSON.parse(pm2Output);
+      const tradingBot = pm2List.find((p: any) => p.name === 'trading-bot');
+      if (tradingBot?.pm2_env?.pm_uptime) {
+        startedAt = new Date(tradingBot.pm2_env.pm_uptime).toISOString();
+      }
+    } catch (e) {}
     
-    for (const line of lines) {
-      const parts = line.split(/\s+/);
-      const pid = parseInt(parts[1]);
-      const symbolMatch = line.match(/--symbol\s+(\w+)/);
-      const symbol = symbolMatch ? symbolMatch[1] : 'BTCUSDT';
+    bots.push({
+      symbol: 'BTCUSDT',
+      pid: pm2Status.pid!,
+      startedAt,
+      status: 'running',
+    });
+    
+    // Update memory tracking
+    botProcesses.set('BTCUSDT', {
+      symbol: 'BTCUSDT',
+      process: null,
+      pid: pm2Status.pid!,
+      startedAt,
+      status: 'running',
+    });
+  } else {
+    // Check for any running python processes
+    try {
+      const psOutput = execSync('ps aux | grep "python.*main_autonomous.py" | grep -v grep', { encoding: 'utf-8' });
+      const lines = psOutput.trim().split('\n').filter(l => l.trim());
       
-      runningPids.add(pid);
-      
-      // If this process is not in our Map, add it
-      if (!botProcesses.has(symbol)) {
-        console.log(`[BotControl] Found orphan bot process: ${symbol} (PID: ${pid})`);
+      for (const line of lines) {
+        const parts = line.split(/\s+/);
+        const pid = parseInt(parts[1]);
+        const symbolMatch = line.match(/--symbol\s+(\w+)/);
+        const symbol = symbolMatch ? symbolMatch[1] : 'BTCUSDT';
+        
+        bots.push({
+          symbol,
+          pid,
+          startedAt: new Date().toISOString(),
+          status: 'running',
+        });
+        
+        // Update memory tracking
         botProcesses.set(symbol, {
           symbol,
-          process: null as any,
+          process: null,
           pid,
           startedAt: new Date().toISOString(),
           status: 'running',
         });
       }
+    } catch (error) {
+      // No running processes
     }
-  } catch (error) {
-    // No running processes found - clear all from Map
-    console.log(`[BotControl] No running bot processes found - clearing stale entries`);
   }
   
-  // CRITICAL: Remove bots from Map that are no longer running
-  const symbolsToRemove: string[] = [];
-  botProcesses.forEach((bot, symbol) => {
-    if (!runningPids.has(bot.pid)) {
-      console.log(`[BotControl] Bot ${symbol} (PID: ${bot.pid}) is no longer running - removing from tracking`);
-      symbolsToRemove.push(symbol);
+  // Clear stale entries from memory
+  const runningSymbols = new Set(bots.map(b => b.symbol));
+  botProcesses.forEach((_, symbol) => {
+    if (!runningSymbols.has(symbol)) {
+      botProcesses.delete(symbol);
     }
   });
-  symbolsToRemove.forEach(symbol => botProcesses.delete(symbol));
-  
-  const bots = Array.from(botProcesses.values()).map(bot => ({
-    symbol: bot.symbol,
-    pid: bot.pid,
-    startedAt: bot.startedAt,
-    status: bot.status,
-  }));
 
   return {
     bots,
@@ -361,8 +331,6 @@ export async function loadBotStatus() {
     const data = await fs.readFile(BOT_STATUS_FILE, 'utf-8');
     const status = JSON.parse(data);
     console.log('Loaded bot status:', status);
-    // Note: We don't automatically restart bots after server restart
-    // This is intentional to prevent unexpected behavior
   } catch (error) {
     // File doesn't exist or invalid, ignore
   }
@@ -372,23 +340,50 @@ export async function loadBotStatus() {
  * Get logs for a specific bot
  */
 export async function getBotLogs(symbol: string) {
-  // Try both log file formats (Dashboard bot uses SYMBOL.log, manual uses bot_SYMBOL.log)
+  // Try PM2 logs first
+  try {
+    const pm2LogPath = `/root/.pm2/logs/trading-bot-out.log`;
+    const pm2ErrPath = `/root/.pm2/logs/trading-bot-error.log`;
+    
+    let logs: string[] = [];
+    
+    // Read stdout logs
+    try {
+      const outData = await fs.readFile(pm2LogPath, 'utf-8');
+      const outLines = outData.split('\n').filter(line => line.trim());
+      logs = logs.concat(outLines.slice(-50));
+    } catch (e) {}
+    
+    // Read stderr logs
+    try {
+      const errData = await fs.readFile(pm2ErrPath, 'utf-8');
+      const errLines = errData.split('\n').filter(line => line.trim());
+      logs = logs.concat(errLines.slice(-50).map(l => `[ERROR] ${l}`));
+    } catch (e) {}
+    
+    if (logs.length > 0) {
+      // Sort by timestamp if present, otherwise keep order
+      const recentLines = logs.slice(-100);
+      return {
+        logs: recentLines,
+        totalLines: logs.length,
+      };
+    }
+  } catch (e) {}
+  
+  // Fallback to local log files
   const logFile = path.join(process.cwd(), 'ai_bot', 'logs', `${symbol}.log`);
   const altLogFile = path.join(process.cwd(), 'ai_bot', 'logs', `bot_${symbol}.log`);
   
   try {
     let data: string;
     try {
-      // Try primary log file first (SYMBOL.log)
       data = await fs.readFile(logFile, 'utf-8');
     } catch {
-      // Fallback to alternative log file (bot_SYMBOL.log)
       data = await fs.readFile(altLogFile, 'utf-8');
     }
     
     const lines = data.split('\n').filter(line => line.trim());
-    
-    // Return last 100 lines
     const recentLines = lines.slice(-100);
     
     return {
@@ -396,7 +391,6 @@ export async function getBotLogs(symbol: string) {
       totalLines: lines.length,
     };
   } catch (error) {
-    // Log file doesn't exist yet or can't be read
     return {
       logs: [],
       totalLines: 0,
