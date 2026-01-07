@@ -16,6 +16,17 @@ import argparse
 from datetime import datetime
 from typing import Dict, List, Optional
 
+# Load .env file if exists
+try:
+    from dotenv import load_dotenv
+    # Load from current directory
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+    if os.path.exists(env_path):
+        load_dotenv(env_path)
+        print(f"✅ Loaded .env from {env_path}")
+except ImportError:
+    print("⚠️ python-dotenv not installed, using environment variables only")
+
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
