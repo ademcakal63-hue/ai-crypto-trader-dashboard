@@ -28,8 +28,13 @@ class BinanceClient:
         else:
             self.base_url = "https://fapi.binance.com"
         
-        if not self.api_key or not self.api_secret:
-            raise ValueError("Binance API Key ve Secret gerekli! Env variable'ları ayarlayın.")
+        # Paper trading modunda API key zorunlu değil
+        self.paper_mode = not self.api_key or not self.api_secret
+        if self.paper_mode:
+            print("⚠️ Binance API key yok - Paper Trading modunda çalışıyor")
+            print("   Sadece public endpoint'ler kullanılacak (fiyat, mum verileri)")
+        else:
+            print("✅ Binance API bağlı - Gerçek işlem yapılabilir")
     
     def get_klines(self, symbol: str, interval: str, limit: int = 100) -> List[Dict]:
         """

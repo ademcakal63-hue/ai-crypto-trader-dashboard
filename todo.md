@@ -1236,3 +1236,9 @@ Dashboard'dan tek tıkla:
 - [x] Gerekli dosyaları paketle
 - [x] Kurulum script'i yaz (scripts/vps_setup.sh)
 
+
+## Manus LLM Entegrasyonu
+
+- [x] OpenAI yerine Manus LLM kullan
+- [x] Paper Trading modunda Binance API key zorunluluğunu kaldır
+- [ ] Vultr VPS'e deploy et

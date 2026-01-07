@@ -36,16 +36,28 @@ class AutonomousAI:
     """
     
     def __init__(self, api_key: str = None, dashboard_url: str = None):
-        # OpenAI API direkt kullan
-        self.api_url = "https://api.openai.com/v1/chat/completions"
+        # Manus LLM API kullan (OpenAI yerine)
         self.dashboard_url = dashboard_url or os.getenv("DASHBOARD_URL", "http://localhost:3000")
         
-        # Önce parametre olarak verilen key'i kullan
-        if api_key:
+        # Manus Forge API URL ve Key
+        self.forge_api_url = os.getenv("BUILT_IN_FORGE_API_URL", "https://forge.manus.im")
+        self.forge_api_key = os.getenv("BUILT_IN_FORGE_API_KEY", "")
+        self.api_url = f"{self.forge_api_url.rstrip('/')}/v1/chat/completions"
+        
+        # Fallback: OpenAI API key (eğer Manus key yoksa)
+        if self.forge_api_key:
+            self.api_key = self.forge_api_key
+            self.use_manus_llm = True
+            print("✅ Manus LLM API kullanılıyor")
+        elif api_key:
             self.api_key = api_key
+            self.api_url = "https://api.openai.com/v1/chat/completions"
+            self.use_manus_llm = False
+            print("⚠️ OpenAI API kullanılıyor (fallback)")
         else:
-            # Dashboard'dan API key'i çek (her zaman güncel key'i al)
+            # Dashboard'dan API key'i çek
             self._load_api_key_from_dashboard()
+            self.use_manus_llm = False
         
         # Karar geçmişi (fine-tuning için)
         self.decision_history = []
@@ -163,9 +175,11 @@ JSON formatında cevap ver:
         user_message = self._prepare_market_summary(market_data)
         
         try:
-            # OpenAI API kullan
+            # Manus LLM veya OpenAI API kullan
+            model = "gemini-2.5-flash" if self.use_manus_llm else "gpt-4o"
+            
             payload = {
-                "model": "gpt-4o",
+                "model": model,
                 "messages": [
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
