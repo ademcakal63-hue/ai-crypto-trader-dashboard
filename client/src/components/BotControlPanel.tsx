@@ -96,7 +96,7 @@ export function BotControlPanel() {
   }, [isRunning, botStatus]);
 
   return (
-    <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur overflow-hidden">
+    <Card className="border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur overflow-hidden">
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -104,11 +104,11 @@ export function BotControlPanel() {
               "p-2 rounded-xl border",
               isRunning 
                 ? "bg-emerald-500/10 border-emerald-500/20" 
-                : "bg-slate-500/10 border-slate-500/20"
+                : "bg-neutral-800/50 border-neutral-700/30"
             )}>
               <Cpu className={cn(
                 "h-5 w-5",
-                isRunning ? "text-emerald-400" : "text-slate-400"
+                isRunning ? "text-emerald-400" : "text-neutral-400"
               )} />
             </div>
             <div>
@@ -132,7 +132,7 @@ export function BotControlPanel() {
               onClick={handleStartAll}
               disabled={allRunning || startBot.isPending}
               className={cn(
-                "border-slate-700 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all",
+                "border-neutral-800 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all",
                 startBot.isPending && "opacity-50"
               )}
             >
@@ -145,7 +145,7 @@ export function BotControlPanel() {
               onClick={handleStopAll}
               disabled={noneRunning || stopBot.isPending}
               className={cn(
-                "border-slate-700 hover:border-red-500/50 hover:bg-red-500/10 transition-all",
+                "border-neutral-800 hover:border-red-500/50 hover:bg-red-500/10 transition-all",
                 stopBot.isPending && "opacity-50"
               )}
             >
@@ -156,7 +156,7 @@ export function BotControlPanel() {
               size="sm"
               variant="ghost"
               onClick={() => refetch()}
-              className="hover:bg-slate-800"
+              className="hover:bg-neutral-800"
             >
               <RefreshCw className={cn(
                 "h-4 w-4",
@@ -179,7 +179,7 @@ export function BotControlPanel() {
                 "relative overflow-hidden rounded-xl border transition-all duration-300",
                 coinIsRunning 
                   ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 to-transparent" 
-                  : "border-slate-700/50 bg-slate-800/30 hover:border-slate-600/50"
+                  : "border-neutral-800/50 bg-neutral-800/30 hover:border-neutral-700/50"
               )}
             >
               {/* Animated gradient border for running state */}
@@ -213,7 +213,7 @@ export function BotControlPanel() {
                             "text-xs font-mono",
                             coinIsRunning 
                               ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
-                              : "bg-slate-700/50 text-slate-400 border-slate-600/50"
+                              : "bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
                           )}
                         >
                           {coin.symbol}
@@ -228,13 +228,13 @@ export function BotControlPanel() {
                               Çalışıyor
                             </Badge>
                             {coinBot?.pid && (
-                              <span className="text-xs text-slate-500 font-mono">
+                              <span className="text-xs text-neutral-500 font-mono">
                                 PID: {coinBot.pid}
                               </span>
                             )}
                           </>
                         ) : (
-                          <Badge variant="secondary" className="bg-slate-700/50 text-slate-400 border-0">
+                          <Badge variant="secondary" className="bg-neutral-800/50 text-neutral-400 border-0">
                             Durduruldu
                           </Badge>
                         )}
@@ -246,11 +246,11 @@ export function BotControlPanel() {
                     {/* Uptime display */}
                     {coinIsRunning && uptime && (
                       <div className="text-right hidden sm:block">
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <div className="flex items-center gap-1 text-xs text-neutral-500">
                           <Clock className="h-3 w-3" />
                           Çalışma Süresi
                         </div>
-                        <div className="text-sm font-mono text-slate-300">{uptime}</div>
+                        <div className="text-sm font-mono text-neutral-300">{uptime}</div>
                       </div>
                     )}
                     
@@ -265,7 +265,7 @@ export function BotControlPanel() {
                           (startBot.isPending || stopBot.isPending) && "opacity-50"
                         )}
                       />
-                      <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+                      <span className="text-[10px] text-neutral-500 uppercase tracking-wider">
                         {coinIsRunning ? "ON" : "OFF"}
                       </span>
                     </div>
@@ -277,19 +277,19 @@ export function BotControlPanel() {
         })}
 
         {/* Summary Footer */}
-        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-          <div className="flex items-center gap-2 text-sm text-slate-400">
+        <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-800/50 border border-neutral-800/50">
+          <div className="flex items-center gap-2 text-sm text-neutral-400">
             <Settings2 className="h-4 w-4" />
             <span>Aktif Bot Sayısı:</span>
           </div>
           <div className="flex items-center gap-2">
             <span className={cn(
               "text-lg font-bold",
-              isRunning ? "text-emerald-400" : "text-slate-400"
+              isRunning ? "text-emerald-400" : "text-neutral-400"
             )}>
               {isRunning ? 1 : 0}
             </span>
-            <span className="text-slate-500">/ {SUPPORTED_COINS.length}</span>
+            <span className="text-neutral-500">/ {SUPPORTED_COINS.length}</span>
           </div>
         </div>
       </CardContent>

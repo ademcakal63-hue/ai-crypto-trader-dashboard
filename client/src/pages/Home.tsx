@@ -98,10 +98,10 @@ export default function Home() {
   return (
     <div className="space-y-8 pb-8">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700/50 p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-black via-neutral-950 to-black border border-amber-900/30 p-8">
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
         
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -110,7 +110,7 @@ export default function Home() {
                 <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
                   <Brain className="h-6 w-6 text-primary" />
                 </div>
-                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/30">
                   <Sparkles className="w-3 h-3 mr-1" />
                   AI Powered
                 </Badge>
@@ -118,14 +118,14 @@ export default function Home() {
               <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
                 Trading Dashboard
               </h1>
-              <p className="text-slate-400 mt-2 max-w-lg">
+              <p className="text-neutral-400 mt-2 max-w-lg">
                 Otonom AI kripto trading bot'unuzun gerçek zamanlı performansını izleyin ve yönetin
               </p>
             </div>
             
             <div className="flex flex-col items-end gap-2">
               <div className="text-right">
-                <p className="text-xs text-slate-500 uppercase tracking-wider">Şu anki zaman</p>
+                <p className="text-xs text-neutral-500 uppercase tracking-wider">Şu anki zaman</p>
                 <p className="text-2xl font-mono text-white">
                   {currentTime.toLocaleTimeString('tr-TR')}
                 </p>
@@ -136,7 +136,7 @@ export default function Home() {
                   "text-sm px-3 py-1",
                   isBotRunning 
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
-                    : "bg-slate-500/10 text-slate-400 border-slate-500/30"
+                    : "bg-neutral-800/50 text-neutral-400 border-neutral-700/30"
                 )}
               >
                 <span className={cn(
@@ -156,10 +156,10 @@ export default function Home() {
       {/* Main Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Paper Trading Balance */}
-        <Card className="relative overflow-hidden border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+        <Card className="relative overflow-hidden border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Paper Balance</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-400">Paper Balance</CardTitle>
             <div className="p-2 rounded-lg bg-emerald-500/10">
               <Wallet className="h-4 w-4 text-emerald-400" />
             </div>
@@ -180,19 +180,19 @@ export default function Home() {
               )}>
                 {paperPnL >= 0 ? "+" : ""}{paperPnLPercent.toFixed(2)}%
               </span>
-              <span className="text-xs text-slate-500">tüm zamanlar</span>
+              <span className="text-xs text-neutral-500">tüm zamanlar</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Total P&L */}
-        <Card className="relative overflow-hidden border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+        <Card className="relative overflow-hidden border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur">
           <div className={cn(
             "absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2",
             totalPnL >= 0 ? "bg-emerald-500/5" : "bg-red-500/5"
           )} />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Toplam P&L</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-400">Toplam P&L</CardTitle>
             <div className={cn(
               "p-2 rounded-lg",
               totalPnL >= 0 ? "bg-emerald-500/10" : "bg-red-500/10"
@@ -210,17 +210,17 @@ export default function Home() {
             )}>
               {totalPnL >= 0 ? "+" : ""}${Math.abs(totalPnL).toFixed(2)}
             </div>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-neutral-500 mt-2">
               Gerçekleşen kar/zarar
             </p>
           </CardContent>
         </Card>
 
         {/* Win Rate */}
-        <Card className="relative overflow-hidden border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+        <Card className="relative overflow-hidden border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Başarı Oranı</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-400">Başarı Oranı</CardTitle>
             <div className="p-2 rounded-lg bg-blue-500/10">
               <Target className="h-4 w-4 text-blue-400" />
             </div>
@@ -230,8 +230,8 @@ export default function Home() {
               {(winRate * 100).toFixed(1)}%
             </div>
             <div className="flex items-center gap-3 mt-2">
-              <span className="text-xs text-slate-500">{totalTrades} işlem</span>
-              <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <span className="text-xs text-neutral-500">{totalTrades} işlem</span>
+              <div className="flex-1 h-1.5 bg-neutral-800 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all"
                   style={{ width: `${winRate * 100}%` }}
@@ -242,17 +242,17 @@ export default function Home() {
         </Card>
 
         {/* Active Positions */}
-        <Card className="relative overflow-hidden border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+        <Card className="relative overflow-hidden border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur">
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">Açık Pozisyonlar</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-400">Açık Pozisyonlar</CardTitle>
             <div className="p-2 rounded-lg bg-amber-500/10">
               <Activity className="h-4 w-4 text-amber-400" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">{activePositions}</div>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-neutral-500 mt-2">
               {activePositions > 0 ? "Aktif işlemler mevcut" : "Pozisyon bekleniyor"}
             </p>
           </CardContent>
@@ -260,7 +260,7 @@ export default function Home() {
       </div>
 
       {/* Paper Trading Status - Enhanced */}
-      <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur overflow-hidden">
+      <Card className="border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-500 to-emerald-500" />
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -282,7 +282,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Balance Section */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2 text-sm text-neutral-400">
                 <DollarSign className="h-4 w-4" />
                 Balance
               </div>
@@ -299,53 +299,53 @@ export default function Home() {
 
             {/* Cycle Progress */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2 text-sm text-neutral-400">
                 <RefreshCw className="h-4 w-4" />
                 Cycle {currentCycle}
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-white">{cycleProgress}</span>
-                <span className="text-slate-500">/100 trades</span>
+                <span className="text-neutral-500">/100 trades</span>
               </div>
-              <Progress value={cycleProgress} className="h-2 bg-slate-800" />
+              <Progress value={cycleProgress} className="h-2 bg-neutral-800" />
             </div>
 
             {/* Remaining Trades */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2 text-sm text-neutral-400">
                 <Timer className="h-4 w-4" />
                 Kalan İşlem
               </div>
               <div className="text-3xl font-bold text-white">{tradesRemaining}</div>
-              <p className="text-xs text-slate-500">Cycle tamamlanmasına</p>
+              <p className="text-xs text-neutral-500">Cycle tamamlanmasına</p>
             </div>
           </div>
 
           {/* Stats Row */}
-          <Separator className="bg-slate-800" />
+          <Separator className="bg-neutral-800" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-3 rounded-lg bg-slate-800/50">
+            <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-sm">Win Rate</span>
               </div>
               <div className="text-xl font-bold text-white">{(winRate * 100).toFixed(1)}%</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-slate-800/50">
+            <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
                 <BarChart3 className="h-4 w-4" />
                 <span className="text-sm">Total Trades</span>
               </div>
               <div className="text-xl font-bold text-white">{totalTrades}</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-slate-800/50">
+            <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-amber-400 mb-1">
                 <Flame className="h-4 w-4" />
                 <span className="text-sm">Streak</span>
               </div>
               <div className="text-xl font-bold text-white">0</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-slate-800/50">
+            <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-purple-400 mb-1">
                 <Shield className="h-4 w-4" />
                 <span className="text-sm">Risk Level</span>
@@ -363,7 +363,7 @@ export default function Home() {
       />
 
       {/* Open Positions - Enhanced */}
-      <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+      <Card className="border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -385,11 +385,11 @@ export default function Home() {
         <CardContent>
           {activePositions === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="p-4 rounded-2xl bg-slate-800/50 mb-4">
-                <AlertCircle className="h-12 w-12 text-slate-500" />
+              <div className="p-4 rounded-2xl bg-neutral-800/50 mb-4">
+                <AlertCircle className="h-12 w-12 text-neutral-500" />
               </div>
-              <p className="text-lg font-medium text-slate-300">Şu anda açık pozisyon yok</p>
-              <p className="text-sm text-slate-500 mt-2 max-w-md">
+              <p className="text-lg font-medium text-neutral-300">Şu anda açık pozisyon yok</p>
+              <p className="text-sm text-neutral-500 mt-2 max-w-md">
                 Bot uygun market koşulları ve pattern tespit ettiğinde otomatik olarak pozisyon açacak
               </p>
             </div>
@@ -399,7 +399,7 @@ export default function Home() {
                 <div
                   key={position.id}
                   className={cn(
-                    "flex items-center justify-between p-4 rounded-xl border transition-all hover:bg-slate-800/50",
+                    "flex items-center justify-between p-4 rounded-xl border transition-all hover:bg-neutral-800/50",
                     position.direction === "LONG" 
                       ? "border-emerald-500/20 bg-emerald-500/5" 
                       : "border-red-500/20 bg-red-500/5"
@@ -431,7 +431,7 @@ export default function Home() {
                           {position.direction}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-slate-400 mt-1">
+                      <div className="flex items-center gap-3 text-sm text-neutral-400 mt-1">
                         <span>Entry: ${position.entryPrice}</span>
                         <span>•</span>
                         <span>{position.pattern}</span>
@@ -463,7 +463,7 @@ export default function Home() {
       {performance && performance.length > 0 ? (
         <PerformanceChart data={performance} />
       ) : (
-        <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+        <Card className="border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
@@ -477,11 +477,11 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="p-4 rounded-2xl bg-slate-800/50 mb-4">
-                <LineChart className="h-12 w-12 text-slate-500" />
+              <div className="p-4 rounded-2xl bg-neutral-800/50 mb-4">
+                <LineChart className="h-12 w-12 text-neutral-500" />
               </div>
-              <p className="text-lg font-medium text-slate-300">Henüz performans verisi yok</p>
-              <p className="text-sm text-slate-500 mt-2 max-w-md">
+              <p className="text-lg font-medium text-neutral-300">Henüz performans verisi yok</p>
+              <p className="text-sm text-neutral-500 mt-2 max-w-md">
                 Bot işlem yaptıkça performans verileri burada görselleştirilecek
               </p>
             </div>
@@ -490,7 +490,7 @@ export default function Home() {
       )}
 
       {/* AI Learning Status */}
-      <Card className="border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur">
+      <Card className="border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
@@ -504,21 +504,21 @@ export default function Home() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl bg-slate-800/50 text-center">
+            <div className="p-4 rounded-xl bg-neutral-800/50 text-center">
               <div className="text-2xl font-bold text-white">{aiLearning?.modelVersion || "v1.0"}</div>
-              <p className="text-xs text-slate-500 mt-1">Model Versiyonu</p>
+              <p className="text-xs text-neutral-500 mt-1">Model Versiyonu</p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-800/50 text-center">
+            <div className="p-4 rounded-xl bg-neutral-800/50 text-center">
               <div className="text-2xl font-bold text-emerald-400">Aktif</div>
-              <p className="text-xs text-slate-500 mt-1">Öğrenme Durumu</p>
+              <p className="text-xs text-neutral-500 mt-1">Öğrenme Durumu</p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-800/50 text-center">
+            <div className="p-4 rounded-xl bg-neutral-800/50 text-center">
               <div className="text-2xl font-bold text-white">{aiLearning?.patternsLearned || 0}</div>
-              <p className="text-xs text-slate-500 mt-1">Öğrenilen Pattern</p>
+              <p className="text-xs text-neutral-500 mt-1">Öğrenilen Pattern</p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-800/50 text-center">
+            <div className="p-4 rounded-xl bg-neutral-800/50 text-center">
               <div className="text-2xl font-bold text-blue-400">85%</div>
-              <p className="text-xs text-slate-500 mt-1">Tahmin Doğruluğu</p>
+              <p className="text-xs text-neutral-500 mt-1">Tahmin Doğruluğu</p>
             </div>
           </div>
         </CardContent>

@@ -64,7 +64,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
     if (line.includes('🔥') || line.includes('⚡') || line.includes('🚀')) {
       return <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />;
     }
-    return <Circle className="h-2 w-2 text-slate-500 shrink-0" />;
+    return <Circle className="h-2 w-2 text-neutral-500 shrink-0" />;
   };
 
   const getLogLevelColor = (line: string) => {
@@ -83,7 +83,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
     if (line.includes('🔥') || line.includes('⚡')) {
       return 'text-amber-300';
     }
-    return 'text-slate-400';
+    return 'text-neutral-400';
   };
 
   const getLogBgColor = (line: string) => {
@@ -115,7 +115,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
 
   return (
     <Card className={cn(
-      "border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur overflow-hidden transition-all duration-300",
+      "border-amber-900/20 bg-gradient-to-br from-neutral-950/80 to-black/40 backdrop-blur overflow-hidden transition-all duration-300",
       isExpanded && "fixed inset-4 z-50 m-0"
     )}>
       <CardHeader className="pb-3">
@@ -125,11 +125,11 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
               "p-2 rounded-xl border",
               isRunning 
                 ? "bg-emerald-500/10 border-emerald-500/20" 
-                : "bg-slate-500/10 border-slate-500/20"
+                : "bg-neutral-800/50 border-neutral-700/30"
             )}>
               <Terminal className={cn(
                 "h-5 w-5",
-                isRunning ? "text-emerald-400" : "text-slate-400"
+                isRunning ? "text-emerald-400" : "text-neutral-400"
               )} />
             </div>
             <div>
@@ -146,7 +146,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
                     Live
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="bg-slate-700/50 text-slate-400 border-0">
+                  <Badge variant="secondary" className="bg-neutral-800/50 text-neutral-400 border-0">
                     Stopped
                   </Badge>
                 )}
@@ -160,7 +160,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
               variant="ghost"
               onClick={handleClear}
               disabled={!hasLogs}
-              className="hover:bg-slate-800 text-slate-400 hover:text-slate-200"
+              className="hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -168,7 +168,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
               size="sm"
               variant="ghost"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="hover:bg-slate-800 text-slate-400 hover:text-slate-200"
+              className="hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200"
             >
               {isExpanded ? (
                 <Minimize2 className="h-4 w-4" />
@@ -182,18 +182,18 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
       
       <CardContent>
         {/* Terminal Window */}
-        <div className="rounded-xl overflow-hidden border border-slate-700/50 bg-slate-950">
+        <div className="rounded-xl overflow-hidden border border-neutral-800/50 bg-black">
           {/* Terminal Header */}
-          <div className="flex items-center justify-between px-4 py-2 bg-slate-900/80 border-b border-slate-700/50">
+          <div className="flex items-center justify-between px-4 py-2 bg-neutral-950/80 border-b border-neutral-800/50">
             <div className="flex items-center gap-2">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-red-500/80" />
                 <div className="w-3 h-3 rounded-full bg-amber-500/80" />
                 <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
               </div>
-              <span className="text-xs text-slate-500 ml-2 font-mono">bot@{symbol.toLowerCase()}</span>
+              <span className="text-xs text-neutral-500 ml-2 font-mono">bot@{symbol.toLowerCase()}</span>
             </div>
-            <span className="text-xs text-slate-600 font-mono">{logLines.length} lines</span>
+            <span className="text-xs text-neutral-600 font-mono">{logLines.length} lines</span>
           </div>
           
           {/* Terminal Content */}
@@ -205,7 +205,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
             )}
           >
             {!hasLogs && (
-              <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-3">
+              <div className="flex flex-col items-center justify-center h-full text-neutral-500 gap-3">
                 <Terminal className="h-12 w-12 opacity-20" />
                 {isRunning ? (
                   <>
@@ -218,7 +218,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
                 ) : (
                   <>
                     <p className="text-sm">Bot is not running</p>
-                    <p className="text-xs text-slate-600">Start the bot to see logs.</p>
+                    <p className="text-xs text-neutral-600">Start the bot to see logs.</p>
                   </>
                 )}
               </div>
@@ -232,13 +232,13 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
                     <div
                       key={index}
                       className={cn(
-                        "flex items-start gap-2 py-1 px-2 rounded-md transition-colors hover:bg-slate-800/50",
+                        "flex items-start gap-2 py-1 px-2 rounded-md transition-colors hover:bg-neutral-800/50",
                         getLogBgColor(line)
                       )}
                     >
                       {getLogIcon(line)}
                       {timestamp && (
-                        <span className="text-slate-600 text-xs shrink-0 font-mono flex items-center gap-1">
+                        <span className="text-neutral-600 text-xs shrink-0 font-mono flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {timestamp}
                         </span>
@@ -259,7 +259,7 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-3 px-1">
-          <div className="flex items-center gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-4 text-xs text-neutral-500">
             <span className="flex items-center gap-1">
               <Circle className="h-2 w-2 text-emerald-500" /> Success
             </span>
@@ -271,11 +271,11 @@ export function BotLogViewer({ symbol, isRunning }: BotLogViewerProps) {
             </span>
           </div>
           
-          <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-400 hover:text-slate-300 transition-colors">
+          <label className="flex items-center gap-2 cursor-pointer text-sm text-neutral-400 hover:text-neutral-300 transition-colors">
             <Checkbox
               checked={autoScroll}
               onCheckedChange={(checked) => setAutoScroll(checked as boolean)}
-              className="border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              className="border-neutral-700 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
             />
             Auto-scroll
           </label>
