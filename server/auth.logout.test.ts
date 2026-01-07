@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
-import { COOKIE_NAME } from "../shared/const";
+import { COOKIE_NAME } from "./simpleAuth";
 import type { TrpcContext } from "./_core/context";
 
 type CookieCall = {
@@ -15,14 +15,9 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
 
   const user: AuthenticatedUser = {
     id: 1,
-    openId: "sample-user",
-    email: "sample@example.com",
-    name: "Sample User",
-    loginMethod: "manus",
-    role: "user",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    lastSignedIn: new Date(),
+    email: "ademcakal63@gmail.com",
+    name: "Admin",
+    role: "admin",
   };
 
   const ctx: TrpcContext = {

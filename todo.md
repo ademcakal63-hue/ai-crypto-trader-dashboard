@@ -1254,3 +1254,12 @@ Dashboard'dan tek tıkla:
 - [ ] Ayarlar sayfası - Kullanıcı dostu form tasarımı
 - [ ] Responsive tasarım - Mobil uyumlu
 - [ ] Dark theme optimizasyonu
+
+
+## VPS Authentication Sistemi
+- [x] Manus OAuth kaldır
+- [x] Email/şifre login sistemi ekle
+- [x] Admin kullanıcı oluştur (ademcakal63@gmail.com)
+- [x] Login sayfası tasarla
+- [x] VPS test et
+

@@ -19,7 +19,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
+import { APP_LOGO, APP_TITLE } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { 
   LayoutDashboard, 
@@ -29,11 +29,10 @@ import {
   History,
   Brain,
   Zap,
-  TrendingUp
 } from "lucide-react";
 import { NotificationDropdown } from "./NotificationDropdown";
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Redirect } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
@@ -69,53 +68,9 @@ export default function DashboardLayout({
     return <DashboardLayoutSkeleton />
   }
 
+  // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
   if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black">
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-600/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-        
-        <div className="relative flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
-              <div className="relative p-4 rounded-2xl bg-neutral-800/50 border border-amber-900/30 backdrop-blur">
-                <img
-                  src={APP_LOGO}
-                  alt={APP_TITLE}
-                  className="h-16 w-16 rounded-xl object-cover"
-                />
-              </div>
-            </div>
-            <div className="text-center space-y-3">
-              <div className="flex items-center justify-center gap-2">
-                <Brain className="h-5 w-5 text-primary" />
-                <h1 className="text-2xl font-bold tracking-tight text-white">{APP_TITLE}</h1>
-              </div>
-              <p className="text-sm text-neutral-400">
-                AI destekli kripto trading bot'unuza erişmek için giriş yapın
-              </p>
-            </div>
-          </div>
-          
-          <Button
-            onClick={() => {
-              window.location.href = getLoginUrl();
-            }}
-            size="lg"
-            className="w-full bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
-          >
-            <Zap className="h-4 w-4 mr-2" />
-            Giriş Yap
-          </Button>
-          
-          <p className="text-xs text-neutral-500 text-center">
-            Manus hesabınızla güvenli giriş yapın
-          </p>
-        </div>
-      </div>
-    );
+    return <Redirect to="/login" />;
   }
 
   return (
@@ -199,7 +154,7 @@ function DashboardLayoutContent({
             <div className="flex items-center gap-3 pl-2 group-data-[collapsible=icon]:px-0 transition-all w-full">
               {isCollapsed ? (
                 <div className="relative h-9 w-9 shrink-0 group">
-                  <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm" />
+                  <div className="absolute inset-0 bg-amber-600/20 rounded-lg blur-sm" />
                   <img
                     src={APP_LOGO}
                     className="relative h-9 w-9 rounded-lg object-cover ring-1 ring-amber-900/30"
@@ -216,7 +171,7 @@ function DashboardLayoutContent({
                 <>
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-primary/20 rounded-lg blur-sm" />
+                      <div className="absolute inset-0 bg-amber-600/20 rounded-lg blur-sm" />
                       <img
                         src={APP_LOGO}
                         className="relative h-9 w-9 rounded-lg object-cover ring-1 ring-amber-900/30 shrink-0"
@@ -256,19 +211,19 @@ function DashboardLayoutContent({
                       className={cn(
                         "h-11 transition-all font-normal rounded-xl",
                         isActive 
-                          ? "bg-primary/10 text-primary border border-primary/20" 
+                          ? "bg-amber-600/10 text-amber-500 border border-amber-600/20" 
                           : "hover:bg-neutral-800/50 text-neutral-400 hover:text-white"
                       )}
                     >
                       <item.icon
                         className={cn(
                           "h-4 w-4",
-                          isActive ? "text-primary" : ""
+                          isActive ? "text-amber-500" : ""
                         )}
                       />
                       <span className={isActive ? "font-medium" : ""}>{item.label}</span>
                       {item.badge && (
-                        <Badge className="ml-auto bg-primary/20 text-primary text-[10px] px-1.5">
+                        <Badge className="ml-auto bg-amber-600/20 text-amber-500 text-[10px] px-1.5">
                           {item.badge}
                         </Badge>
                       )}
@@ -287,19 +242,18 @@ function DashboardLayoutContent({
                     <button className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-neutral-800/50 transition-colors w-full group-data-[collapsible=icon]:justify-center">
                       <div className="relative">
                         <Avatar className="h-9 w-9 shrink-0 ring-2 ring-amber-900/30">
-                          <AvatarFallback className="text-sm bg-gradient-to-br from-primary/20 to-blue-500/20 text-white">
+                          <AvatarFallback className="text-sm bg-gradient-to-br from-amber-600/20 to-orange-500/20 text-white">
                             {user?.name
                               ?.split(" ")
                               .map((n) => n[0])
                               .join("")
-                              .toUpperCase() || "U"}
+                              .toUpperCase() || "A"}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900" />
                       </div>
                       <div className="flex flex-col items-start min-w-0 group-data-[collapsible=icon]:hidden">
                         <span className="text-sm font-medium truncate w-full text-white">
-                          {user?.name || "User"}
+                          {user?.name || "Admin"}
                         </span>
                         <span className="text-xs text-neutral-500 truncate w-full">
                           {user?.email || ""}
@@ -326,7 +280,7 @@ function DashboardLayoutContent({
         </Sidebar>
         <div
           className={cn(
-            "absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/30 transition-colors",
+            "absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-amber-600/30 transition-colors",
             isCollapsed && "hidden"
           )}
           onMouseDown={() => {
