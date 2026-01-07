@@ -11,12 +11,12 @@ import os
 
 class SMCDetector:
     def __init__(self, api_key: str = None):
-        # Her zaman Dashboard'dan API key'i yükle (env var eski olabilir)
-        self._load_api_key_from_dashboard()
+        # Önce api_key'i None olarak başlat
+        self.api_key = api_key or os.environ.get('OPENAI_API_KEY')
         
-        # Eğer parametre verilmişse onu kullan
-        if api_key:
-            self.api_key = api_key
+        # Dashboard'dan yüklemeyi dene (opsiyonel)
+        if not self.api_key:
+            self._load_api_key_from_dashboard()
         
         if self.api_key:
             # Use direct OpenAI API (bypass Manus proxy to preserve fine-tuning)
