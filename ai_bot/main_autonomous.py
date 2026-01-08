@@ -401,7 +401,23 @@ class AutonomousTradingBot:
     
     async def _place_limit_order(self, params: Dict, market_data: Dict):
         """Limit emir koy"""
-        # Parametreleri standartlaştır
+        # SERMAYE VE POZISYON KONTROLU
+        open_positions = self.paper_trading.get_open_positions()
+        pending_orders = self.limit_orders.get_pending_orders()
+        
+        # Tek pozisyon kurali: Acik pozisyon varsa yeni emir koyma
+        if len(open_positions) >= 1:
+            print(f"   \u26a0\ufe0f Tek pozisyon kurali: Zaten {len(open_positions)} acik pozisyon var!")
+            print(f"   Yeni limit emir konulamaz.")
+            return
+        
+        # Bekleyen emir varsa yeni emir koyma
+        if len(pending_orders) >= 1:
+            print(f"   \u26a0\ufe0f Zaten {len(pending_orders)} bekleyen emir var!")
+            print(f"   Yeni limit emir konulamaz.")
+            return
+        
+        # Parametreleri standartlastir
         params = normalize_params(params)
         
         side = params.get("side", "BUY")
@@ -473,7 +489,14 @@ class AutonomousTradingBot:
             print(f"      Reason: {reason}")
     
     async def _open_market_position(self, params: Dict, market_data: Dict):
-        """Market emri ile pozisyon aç"""
+        """Market emri ile pozisyon ac"""
+        # TEK POZISYON KONTROLU
+        open_positions = self.paper_trading.get_open_positions()
+        if len(open_positions) >= 1:
+            print(f"   \u26a0\ufe0f Tek pozisyon kurali: Zaten {len(open_positions)} acik pozisyon var!")
+            print(f"   Yeni market pozisyon acilamaz.")
+            return
+        
         params = normalize_params(params)
         side = params.get("side", "BUY")
         stop_loss = params.get("stop_loss", 0)
@@ -536,9 +559,16 @@ class AutonomousTradingBot:
             print(f"   ✅ Closed {len(positions)} positions")
     
     async def _open_position_from_order(self, order: Dict, current_price: float):
-        """Tetiklenen emirden pozisyon aç"""
+        """Tetiklenen emirden pozisyon ac"""
         try:
-            # Parametreleri standartlaştır
+            # TEK POZISYON KONTROLU
+            open_positions = self.paper_trading.get_open_positions()
+            if len(open_positions) >= 1:
+                print(f"   \u26a0\ufe0f Tek pozisyon kurali: Zaten {len(open_positions)} acik pozisyon var!")
+                print(f"   Limit order tetiklendi ama pozisyon acilamaz.")
+                return
+            
+            # Parametreleri standartlastir
             order = normalize_params(order)
             
             side = order.get('side', 'BUY')

@@ -165,8 +165,14 @@ class PaperTradingManager:
             reasoning: AI reasoning
             
         Returns:
-            Trade result dict
+            Trade result dict or None if position cannot be opened
         """
+        
+        # TEK POZISYON KURALI: Ayni anda sadece 1 pozisyon acik olabilir
+        if len(self.open_positions) >= 1:
+            print(f"\n⚠️ Tek pozisyon kurali: Zaten {len(self.open_positions)} acik pozisyon var!")
+            print(f"   Yeni pozisyon acilamaz. Once mevcut pozisyonu kapatin.")
+            return None
         
         # Calculate position size in USD
         # SINGLE POSITION - Full capital available
