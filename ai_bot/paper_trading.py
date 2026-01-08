@@ -442,6 +442,65 @@ class PaperTradingManager:
         
         return trade
     
+    def modify_position(self, position_id: str, new_stop_loss: float = None, new_take_profit: float = None, reason: str = "AI decision") -> Optional[Dict]:
+        """
+        Modify SL/TP for an open position
+        
+        Args:
+            position_id: Position ID
+            new_stop_loss: New stop loss price (optional)
+            new_take_profit: New take profit price (optional)
+            reason: Reason for modification
+            
+        Returns:
+            Updated position or None if not found
+        """
+        if position_id not in self.open_positions:
+            # Try to find by partial match
+            for pid in self.open_positions.keys():
+                if position_id in pid or pid in position_id:
+                    position_id = pid
+                    break
+            else:
+                print(f"⚠️ Position {position_id} not found for modification")
+                return None
+        
+        position = self.open_positions[position_id]
+        
+        # Update SL if provided
+        if new_stop_loss is not None:
+            old_sl = position.get('stop_loss', 0)
+            position['stop_loss'] = new_stop_loss
+            print(f"   ✅ SL modified: ${old_sl:,.2f} → ${new_stop_loss:,.2f}")
+        
+        # Update TP if provided
+        if new_take_profit is not None:
+            old_tp = position.get('take_profit', 0)
+            position['take_profit'] = new_take_profit
+            print(f"   ✅ TP modified: ${old_tp:,.2f} → ${new_take_profit:,.2f}")
+        
+        # Save updated position
+        self.open_positions[position_id] = position
+        
+        # Save state
+        self._save_state()
+        
+        # Notify dashboard
+        try:
+            db_id = position.get('db_id')
+            if db_id:
+                self.dashboard.update_position_pnl({
+                    'id': db_id,
+                    'stopLoss': str(new_stop_loss) if new_stop_loss else None,
+                    'takeProfit': str(new_take_profit) if new_take_profit else None
+                })
+        except Exception as e:
+            print(f"⚠️ Dashboard SL/TP update error: {e}")
+        
+        print(f"   📝 Reason: {reason}")
+        
+        return position
+
     def get_open_positions(self) -> List[Dict]:
         """Get list of open positions"""
         return list(self.open_positions.values())

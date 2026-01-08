@@ -634,10 +634,34 @@ class AutonomousTradingBot:
         new_tp = params.get("new_take_profit")
         reason = params.get("reasoning", params.get("reason", "AI decision"))
         
-        # TODO: Implement modify SL/TP in paper_trading
-        print(f"   ⚠️ Modify SL/TP not implemented yet")
-        print(f"      Position: {position_id}")
-        print(f"      New SL: {new_sl}, New TP: {new_tp}")
+        # Get open positions
+        positions = self.paper_trading.get_open_positions()
+        
+        if not positions:
+            print(f"   ⚠️ No open positions to modify")
+            return
+        
+        # If no position_id specified, modify the first (and usually only) position
+        if not position_id and positions:
+            position_id = positions[0].get('id')
+        
+        # Modify the position
+        result = self.paper_trading.modify_position(
+            position_id=position_id,
+            new_stop_loss=new_sl,
+            new_take_profit=new_tp,
+            reason=reason
+        )
+        
+        if result:
+            print(f"   ✅ Position SL/TP modified successfully")
+            self.notifier.send_notification(
+                self.symbol,
+                "SL/TP Modified",
+                f"Position: SL=${new_sl:,.2f}, TP=${new_tp:,.2f}"
+            )
+        else:
+            print(f"   ❌ Failed to modify position SL/TP")
     
     def _notify_dashboard(self, decision: Dict, market_data: Dict):
         """Dashboard'a bildir"""
