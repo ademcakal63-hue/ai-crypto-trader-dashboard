@@ -84,13 +84,15 @@ export default function Home() {
   const totalTrades = overview?.todayPerformance?.totalTrades || 0;
   const activePositions = overview?.openPositionsCount || 0;
   
-  // Paper trading data
-  const paperBalance = paperTradingStatus?.balance || 10000;
+  // Paper trading data - API'den gelen alan adları
+  const paperBalance = paperTradingStatus?.currentBalance || 10000;
   const paperPnL = paperTradingStatus?.totalPnl || 0;
   const paperPnLPercent = paperTradingStatus?.totalPnlPercent || 0;
   const currentCycle = paperTradingStatus?.currentCycle || 1;
-  const cycleProgress = paperTradingStatus?.cycleProgress || 0;
-  const tradesRemaining = 100 - cycleProgress;
+  const cycleProgress = paperTradingStatus?.tradesInCycle || 0;
+  const tradesRemaining = (paperTradingStatus?.tradesPerCycle || 100) - cycleProgress;
+  const paperTotalTrades = paperTradingStatus?.totalTrades || 0;
+  const paperWinRate = paperTradingStatus?.winRate || 0;
 
   // Bot running status
   const isBotRunning = botStatus?.bots?.some((b: any) => b.status === 'running') || false;
@@ -329,14 +331,14 @@ export default function Home() {
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-sm">Win Rate</span>
               </div>
-              <div className="text-xl font-bold text-white">{(winRate * 100).toFixed(1)}%</div>
+              <div className="text-xl font-bold text-white">{(paperWinRate * 100).toFixed(1)}%</div>
             </div>
             <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
                 <BarChart3 className="h-4 w-4" />
                 <span className="text-sm">Total Trades</span>
               </div>
-              <div className="text-xl font-bold text-white">{totalTrades}</div>
+              <div className="text-xl font-bold text-white">{paperTotalTrades}</div>
             </div>
             <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-amber-400 mb-1">
