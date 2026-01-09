@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, symbol, direction, status FROM positions;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute SELECT id, symbol, direction, status FROM positions;",
+  "rows": [
+    {
+      "id": "60009",
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "status": "CLOSED"
+    },
+    {
+      "id": "90001",
+      "symbol": "BTCUSDT",
+      "direction": "LONG",
+      "status": "CLOSED"
+    },
+    {
+      "id": "120001",
+      "symbol": "BTCUSDT",
+      "direction": "SHORT",
+      "status": "CLOSED"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsymbol\tdirection\tstatus\n60009\tBTCUSDT\tLONG\tCLOSED\n90001\tBTCUSDT\tLONG\tCLOSED\n120001\tBTCUSDT\tSHORT\tCLOSED\n",
+  "stderr": "",
+  "execution_time_ms": 1512
+}

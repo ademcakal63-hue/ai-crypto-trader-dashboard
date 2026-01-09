@@ -134,5 +134,5 @@
   "messages": [],
   "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nsymbol\tvarchar(20)\tNO\t\tNULL\t\ndirection\tenum('LONG','SHORT')\tNO\t\tNULL\t\nentry_price\tvarchar(20)\tNO\t\tNULL\t\ncurrent_price\tvarchar(20)\tNO\t\tNULL\t\nstop_loss\tvarchar(20)\tNO\t\tNULL\t\ntake_profit\tvarchar(20)\tNO\t\tNULL\t\nposition_size\tvarchar(20)\tNO\t\tNULL\t\nrisk_amount\tvarchar(20)\tNO\t\tNULL\t\npnl\tvarchar(20)\tNO\t\tNULL\t\npnl_percentage\tvarchar(10)\tNO\t\tNULL\t\nstatus\tenum('OPEN','CLOSED')\tNO\t\tOPEN\t\npattern\ttext\tYES\t\tNULL\t\nconfidence\tvarchar(10)\tYES\t\tNULL\t\nopened_at\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nclosed_at\ttimestamp\tYES\t\tNULL\t\n",
   "stderr": "",
-  "execution_time_ms": 1652
+  "execution_time_ms": 1532
 }

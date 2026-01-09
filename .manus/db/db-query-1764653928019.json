@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS bot_settings (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  binance_api_key TEXT,\n  binance_api_secret TEXT,\n  is_connected BOOLEAN DEFAULT FALSE NOT NULL,\n  is_active BOOLEAN DEFAULT FALSE NOT NULL,\n  capital_limit VARCHAR(20),\n  use_all_balance BOOLEAN DEFAULT TRUE NOT NULL,\n  compound_enabled BOOLEAN DEFAULT FALSE NOT NULL,\n  daily_loss_limit_percent VARCHAR(10) DEFAULT '4.00' NOT NULL,\n  risk_per_trade_percent VARCHAR(10) DEFAULT '2.00' NOT NULL,\n  max_daily_trades INT DEFAULT 10 NOT NULL,\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute CREATE TABLE IF NOT EXISTS bot_settings (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  binance_api_key TEXT,\n  binance_api_secret TEXT,\n  is_connected BOOLEAN DEFAULT FALSE NOT NULL,\n  is_active BOOLEAN DEFAULT FALSE NOT NULL,\n  capital_limit VARCHAR(20),\n  use_all_balance BOOLEAN DEFAULT TRUE NOT NULL,\n  compound_enabled BOOLEAN DEFAULT FALSE NOT NULL,\n  daily_loss_limit_percent VARCHAR(10) DEFAULT '4.00' NOT NULL,\n  risk_per_trade_percent VARCHAR(10) DEFAULT '2.00' NOT NULL,\n  max_daily_trades INT DEFAULT 10 NOT NULL,\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL\n)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1623
-}

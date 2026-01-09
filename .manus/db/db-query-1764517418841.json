@@ -1,9 +1,0 @@
-{
-  "query": "ALTER TABLE notifications MODIFY COLUMN type ENUM(\n  'POSITION_OPENED',\n  'POSITION_CLOSED',\n  'RISK_LIMIT_WARNING',\n  'DAILY_LIMIT_REACHED',\n  'CONNECTION_LOST',\n  'CONNECTION_RESTORED',\n  'EMERGENCY_STOP',\n  'COST_WARNING',\n  'COST_EXCEEDED',\n  'MONTHLY_LIMIT_REACHED',\n  'PERFORMANCE_DROP',\n  'FINETUNING_SUCCESS',\n  'FINETUNING_FAILED',\n  'ROLLOUT_PHASE_UPDATE',\n  'CHECKPOINT_SAVED'\n) NOT NULL;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute ALTER TABLE notifications MODIFY COLUMN type ENUM(\n  'POSITION_OPENED',\n  'POSITION_CLOSED',\n  'RISK_LIMIT_WARNING',\n  'DAILY_LIMIT_REACHED',\n  'CONNECTION_LOST',\n  'CONNECTION_RESTORED',\n  'EMERGENCY_STOP',\n  'COST_WARNING',\n  'COST_EXCEEDED',\n  'MONTHLY_LIMIT_REACHED',\n  'PERFORMANCE_DROP',\n  'FINETUNING_SUCCESS',\n  'FINETUNING_FAILED',\n  'ROLLOUT_PHASE_UPDATE',\n  'CHECKPOINT_SAVED'\n) NOT NULL;",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1715
-}

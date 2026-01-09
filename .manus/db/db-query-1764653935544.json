@@ -1,9 +1,0 @@
-{
-  "query": "INSERT INTO bot_settings (is_connected, is_active, use_all_balance, compound_enabled, daily_loss_limit_percent, risk_per_trade_percent, max_daily_trades) \nVALUES (FALSE, FALSE, TRUE, FALSE, '4.00', '2.00', 10)",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute INSERT INTO bot_settings (is_connected, is_active, use_all_balance, compound_enabled, daily_loss_limit_percent, risk_per_trade_percent, max_daily_trades) \nVALUES (FALSE, FALSE, TRUE, FALSE, '4.00', '2.00', 10)",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1583
-}

@@ -174,6 +174,14 @@ class PaperTradingManager:
             print(f"   Yeni pozisyon acilamaz. Once mevcut pozisyonu kapatin.")
             return None
         
+        # GÜNLÜK KAYIP LİMİTİ KONTROLÜ (%4)
+        daily_loss_percent = self.get_daily_loss_percent()
+        if daily_loss_percent <= -4:
+            print(f"\n🚫 GÜNLÜK KAYIP LİMİTİ AŞILDI!")
+            print(f"   Günlük kayıp: {daily_loss_percent:.2f}% (Limit: -4%)")
+            print(f"   Bugün daha fazla işlem açılamaz.")
+            return None
+        
         # Calculate position size in USD
         # SINGLE POSITION - Full capital available
         # Position size is determined by risk (2% of capital / SL distance)
