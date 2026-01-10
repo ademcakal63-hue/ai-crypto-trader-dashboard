@@ -41,7 +41,25 @@ class PaperTradingManager:
             paper_state = settings.get('paper_trading_state', {})
             
             if paper_state:
-                self.current_balance = paper_state.get('current_balance', self.initial_balance)
+                # Load balance - check both camelCase and snake_case
+                self.current_balance = paper_state.get('currentBalance', 
+                                       paper_state.get('current_balance', self.initial_balance))
+                self.initial_balance = paper_state.get('initialBalance',
+                                       paper_state.get('initial_balance', self.initial_balance))
+                
+                # Load trades history
+                loaded_trades = paper_state.get('trades', [])
+                if loaded_trades:
+                    print(f"📥 Loaded {len(loaded_trades)} trades from database")
+                    paper_state['trades'] = loaded_trades
+                
+                # Load daily PnL
+                daily_pnl = paper_state.get('daily_pnl', {})
+                if daily_pnl:
+                    print(f"📥 Loaded daily PnL data: {len(daily_pnl)} days")
+                    paper_state['daily_pnl'] = daily_pnl
+                
+                print(f"📥 State loaded: Balance=${self.current_balance:,.2f}, Trades={len(loaded_trades)}")
             
             # Load open positions from database
             try:
