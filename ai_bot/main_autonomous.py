@@ -93,13 +93,15 @@ class AutonomousTradingBot:
         # Autonomous AI - Local OpenAI API kullanır (VPS için)
         self.dashboard_url = "http://localhost:3000"
         
-        # Initialize Local AI Decision (uses OpenAI API directly)
+        # Initialize Local AI Decision (DeepSeek V3 or OpenAI)
+        deepseek_key = os.getenv("DEEPSEEK_API_KEY", "")
         openai_key = os.getenv("OPENAI_API_KEY", "")
-        if openai_key:
+        if deepseek_key or openai_key:
             try:
-                self.local_ai = LocalAIDecision(api_key=openai_key)
+                self.local_ai = LocalAIDecision()  # Auto-detects DeepSeek or OpenAI
                 self.use_local_ai = True
-                print("✅ Local AI Decision initialized (OpenAI API)")
+                provider = getattr(self.local_ai, 'provider', 'Unknown')
+                print(f"✅ Local AI Decision initialized ({provider} API)")
             except Exception as e:
                 print(f"⚠️ Local AI init failed: {e}")
                 self.local_ai = None
@@ -107,7 +109,7 @@ class AutonomousTradingBot:
         else:
             self.local_ai = None
             self.use_local_ai = False
-            print("⚠️ OPENAI_API_KEY not set - will try Dashboard API")
+            print("⚠️ No API key set (DEEPSEEK_API_KEY or OPENAI_API_KEY) - will try Dashboard API")
         
         # Dashboard Notifier
         self.notifier = DashboardNotifier("http://localhost:3000")

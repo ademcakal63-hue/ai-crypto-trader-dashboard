@@ -64,23 +64,14 @@ class LocalAIDecision:
         "deepseek": {"input": 0.14, "output": 0.28}  # DeepSeek V3 - 70x cheaper!
     }
     
-    def __init__(self, api_key: str = None, use_deepseek: bool = None):
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        
-        # Auto-detect DeepSeek if DEEPSEEK_API_KEY is set
+    def __init__(self):
+        """Initialize with DeepSeek (preferred) or OpenAI API"""
+        # Check for API keys
         deepseek_key = os.getenv("DEEPSEEK_API_KEY")
+        openai_key = os.getenv("OPENAI_API_KEY")
         
-        # Priority: explicit parameter > env var > auto-detect
-        if use_deepseek is None:
-            use_deepseek = (
-                os.getenv("USE_DEEPSEEK", "").lower() == "true" or
-                (deepseek_key and not self.api_key)  # Use DeepSeek if only it's available
-            )
-        
-        # DeepSeek V3 - 70x cheaper than GPT-4!
-        if use_deepseek or deepseek_key:
-            if not deepseek_key:
-                raise ValueError("❌ DEEPSEEK_API_KEY not found!")
+        # DeepSeek V3 - 70x cheaper than GPT-4! Use it if available
+        if deepseek_key:
             self.client = OpenAI(
                 api_key=deepseek_key,
                 base_url="https://api.deepseek.com/v1"
@@ -90,11 +81,9 @@ class LocalAIDecision:
             self.cost_per_1m = self.COST_PER_1M_TOKENS["deepseek"]
             print("✅ Local AI Decision initialized with DeepSeek V3 API")
             print("   💰 Cost: $0.14/1M input, $0.28/1M output (70x cheaper than GPT-4!)")
-        else:
-            if not self.api_key:
-                raise ValueError("❌ API key not found! Set OPENAI_API_KEY or DEEPSEEK_API_KEY")
+        elif openai_key:
             self.client = OpenAI(
-                api_key=self.api_key,
+                api_key=openai_key,
                 base_url="https://api.openai.com/v1"
             )
             self.model = "gpt-4-turbo-preview"
@@ -103,6 +92,8 @@ class LocalAIDecision:
             print(f"✅ Local AI Decision initialized with OpenAI API")
             print("   💰 Cost: $10/1M input, $30/1M output")
             print("   💡 Tip: Set DEEPSEEK_API_KEY for 70x cost savings!")
+        else:
+            raise ValueError("❌ No API key found! Set DEEPSEEK_API_KEY or OPENAI_API_KEY in .env file")
         
         # Confidence threshold - don't trade below this
         self.min_confidence = 0.65
