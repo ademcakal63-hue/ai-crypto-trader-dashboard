@@ -40,6 +40,7 @@ import requests
 from dashboard_notifier import DashboardNotifier
 from models import normalize_params, Position, LimitOrder, AIDecision, validate_position_params
 from local_ai_decision import LocalAIDecision
+from learning_manager import HybridLearningManager
 
 class AutonomousTradingBot:
     """
@@ -110,6 +111,15 @@ class AutonomousTradingBot:
         
         # Dashboard Notifier
         self.notifier = DashboardNotifier("http://localhost:3000")
+        
+        # Learning System - Haftalık öğrenme ve fine-tuning
+        try:
+            self.learning_manager = HybridLearningManager()
+            self.learning_manager.initialize()
+            print("✅ Learning System initialized")
+        except Exception as e:
+            print(f"⚠️ Learning System init failed: {e}")
+            self.learning_manager = None
         
         print("✅ Autonomous AI Trader initialized!")
         print("🧠 AI is now in control - no fixed rules, pure intelligence")
@@ -195,6 +205,22 @@ class AutonomousTradingBot:
         print("\n" + "="*60)
         print(f"🧠 AI Decision Cycle - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*60)
+        
+        # 0. GÜNLÜK KAYIP LİMİTİ KONTROLÜ (KADEMELİ SİSTEM)
+        daily_loss_percent = self.paper_trading.get_daily_loss_percent()
+        if daily_loss_percent <= -4:
+            print("\n🚫 GÜNLÜK KAYIP LİMİTİ AŞILDI (-4%)!")
+            print("   Bugün daha fazla işlem yapılamaz.")
+            self.notifier.send_notification(
+                self.symbol, "DAILY_LIMIT", 
+                f"Günlük kayıp limiti aşıldı: {daily_loss_percent:.2f}%"
+            )
+            return
+        elif daily_loss_percent <= -3:
+            print(f"\n⚠️ UYARI: Günlük kayıp -{abs(daily_loss_percent):.1f}% (Limit: -4%)")
+            print("   Dikkatli olun, sadece 1 işlem hakkınız kaldı!")
+        elif daily_loss_percent <= -2:
+            print(f"\n⚠️ Günlük kayıp -{abs(daily_loss_percent):.1f}% (Limit: -4%)")
         
         # 1. Tüm piyasa verilerini topla
         print("\n📊 Gathering market data for AI...")

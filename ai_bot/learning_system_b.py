@@ -208,16 +208,38 @@ class FineTuningSystem:
     
     def _get_new_trades(self) -> List[Dict]:
         """Yeni işlemleri al (son checkpoint'ten sonraki)"""
-        # TODO: Dashboard API entegrasyonu
-        # last_checkpoint = self.checkpoint_manager.get_last_successful_checkpoint()
-        # if last_checkpoint:
-        #     last_date = last_checkpoint["created_at"]
-        #     return self.dashboard.get_trades_after(last_date)
-        # else:
-        #     return self.dashboard.get_all_trades()
+        from datetime import datetime, timedelta
         
-        # Şimdilik mock data
-        return []
+        trades_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/trade_history_for_learning.json"
+        
+        try:
+            with open(trades_file, "r") as f:
+                all_trades = json.load(f)
+        except:
+            print("⚠️ trade_history_for_learning.json bulunamadı")
+            return []
+        
+        # Son checkpoint'ten sonraki işlemleri filtrele
+        last_checkpoint = self.checkpoint_manager.get_last_successful_checkpoint()
+        
+        if last_checkpoint:
+            last_date = datetime.fromisoformat(last_checkpoint.get("created_at", "2020-01-01"))
+            
+            new_trades = []
+            for trade in all_trades:
+                try:
+                    exit_time = datetime.fromisoformat(trade.get("exit_time", ""))
+                    if exit_time > last_date:
+                        new_trades.append(trade)
+                except:
+                    continue
+            
+            print(f"📊 Son checkpoint'ten sonra {len(new_trades)} yeni işlem bulundu")
+            return new_trades
+        else:
+            # İlk fine-tuning - tüm işlemleri kullan
+            print(f"📊 İlk fine-tuning: {len(all_trades)} işlem kullanılacak")
+            return all_trades
     
     def _calculate_win_rate(self, trades: List[Dict]) -> float:
         """Win rate hesapla"""

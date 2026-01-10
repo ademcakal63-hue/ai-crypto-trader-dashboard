@@ -331,7 +331,7 @@ export default function Home() {
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-sm">Win Rate</span>
               </div>
-              <div className="text-xl font-bold text-white">{(paperWinRate * 100).toFixed(1)}%</div>
+              <div className="text-xl font-bold text-white">{paperWinRate.toFixed(1)}%</div>
             </div>
             <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
@@ -519,7 +519,11 @@ export default function Home() {
               <p className="text-xs text-neutral-500 mt-1">Öğrenilen Pattern</p>
             </div>
             <div className="p-4 rounded-xl bg-neutral-800/50 text-center">
-              <div className="text-2xl font-bold text-blue-400">85%</div>
+              <div className="text-2xl font-bold text-blue-400">
+                {aiLearning?.performanceAfterTuning 
+                  ? `${(parseFloat(aiLearning.performanceAfterTuning) * 100).toFixed(0)}%` 
+                  : paperWinRate > 0 ? `${(paperWinRate).toFixed(0)}%` : 'N/A'}
+              </div>
               <p className="text-xs text-neutral-500 mt-1">Tahmin Doğruluğu</p>
             </div>
           </div>

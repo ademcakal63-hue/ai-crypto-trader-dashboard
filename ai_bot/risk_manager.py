@@ -28,7 +28,7 @@ class RiskManager:
     MAX_RISK_PER_TRADE_PERCENT = 2.0  # Maximum risk per trade (stop loss distance)
     MAX_DAILY_LOSS_PERCENT = 4.0  # Maximum daily loss (2R = 2 trades × 2%)
     MIN_POSITION_SIZE_PERCENT = 0.5
-    MIN_RISK_REWARD_RATIO = 1.2  # Minimum 1:1.2 risk/reward - relaxed for paper trading data collection
+    MIN_RISK_REWARD_RATIO = 1.5  # Minimum 1:1.5 risk/reward - better quality trades
     
     def __init__(self):
         self.dashboard = DashboardClient()

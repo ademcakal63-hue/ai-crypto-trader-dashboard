@@ -60,12 +60,32 @@ class PromptLearningSystem:
         }
     
     def _get_last_week_trades(self) -> List[Dict]:
-        """Son 7 günün işlemlerini al (mock - gerçekte Dashboard API'den gelecek)"""
-        # TODO: Dashboard API entegrasyonu
-        # return self.dashboard.get_trades(days=7)
+        """Son 7 günün işlemlerini al"""
+        from datetime import datetime, timedelta
         
-        # Şimdilik mock data
-        return []
+        trades_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/trade_history_for_learning.json"
+        
+        try:
+            with open(trades_file, "r") as f:
+                all_trades = json.load(f)
+        except:
+            print("⚠️ trade_history_for_learning.json bulunamadı")
+            return []
+        
+        # Son 7 günün işlemlerini filtrele
+        week_ago = datetime.now() - timedelta(days=7)
+        
+        recent_trades = []
+        for trade in all_trades:
+            try:
+                exit_time = datetime.fromisoformat(trade.get("exit_time", ""))
+                if exit_time >= week_ago:
+                    recent_trades.append(trade)
+            except:
+                continue
+        
+        print(f"📊 Son 7 günde {len(recent_trades)} işlem bulundu")
+        return recent_trades
     
     def _analyze_pattern_success(self, trades: List[Dict]) -> Dict:
         """Pattern başarı oranlarını analiz et"""

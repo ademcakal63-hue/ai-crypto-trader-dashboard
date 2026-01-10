@@ -472,7 +472,54 @@ class PaperTradingManager:
         except Exception as e:
             print(f"⚠️ Close notification error: {e}")
         
+        # Learning System callback - işlem sonucunu kaydet
+        self._notify_learning_system(trade)
+        
         return trade
+    
+    def _notify_learning_system(self, trade: Dict):
+        """Learning system'e işlem sonucunu bildir"""
+        try:
+            # Learning manager'a erişmek için global instance kullan
+            # Bu callback, haftalık öğrenme için veri toplar
+            from learning_manager import HybridLearningManager
+            
+            # Trade verilerini öğrenme formatına çevir
+            learning_trade = {
+                "id": trade.get("id"),
+                "symbol": trade.get("symbol"),
+                "pattern": trade.get("reasoning", "AI Analysis"),
+                "direction": "LONG" if trade.get("side") == "BUY" else "SHORT",
+                "entry": trade.get("entry_price"),
+                "stop_loss": trade.get("stop_loss"),
+                "take_profit": trade.get("take_profit"),
+                "exit_price": trade.get("exit_price"),
+                "result": "WIN" if trade.get("pnl_usd", 0) >= 0 else "LOSS",
+                "pnl": trade.get("pnl_usd", 0),
+                "confidence": trade.get("confidence", 0.75),
+                "entry_time": datetime.fromtimestamp(trade.get("opened_at", time.time())).isoformat(),
+                "exit_time": datetime.fromtimestamp(trade.get("closed_at", time.time())).isoformat(),
+            }
+            
+            # Dosyaya kaydet (learning manager tarafından okunacak)
+            trades_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/trade_history_for_learning.json"
+            try:
+                with open(trades_file, "r") as f:
+                    trades = json.load(f)
+            except:
+                trades = []
+            
+            trades.append(learning_trade)
+            
+            # Son 200 işlemi tut
+            trades = trades[-200:]
+            
+            with open(trades_file, "w") as f:
+                json.dump(trades, f, indent=2)
+            
+            print(f"   📚 Trade saved for learning system")
+        except Exception as e:
+            print(f"   ⚠️ Learning system notification error: {e}")
     
     def modify_position(self, position_id: str, new_stop_loss: float = None, new_take_profit: float = None, reason: str = "AI decision") -> Optional[Dict]:
         """

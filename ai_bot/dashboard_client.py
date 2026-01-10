@@ -1,13 +1,55 @@
 """
 Dashboard API Client - AI Bot'tan Dashboard'a veri gönderme
+With retry mechanism and better error handling
 """
 
 import os
+import time
 import requests
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from functools import wraps
+
+
+def retry_on_failure(max_retries: int = 3, delay: float = 1.0, backoff: float = 2.0):
+    """Decorator for retrying failed API calls with exponential backoff"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            current_delay = delay
+            
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except requests.exceptions.Timeout:
+                    last_exception = TimeoutError(f"Request timed out after {attempt + 1} attempts")
+                    print(f"   ⏱️ Timeout (attempt {attempt + 1}/{max_retries})")
+                except requests.exceptions.ConnectionError as e:
+                    last_exception = e
+                    print(f"   🔌 Connection error (attempt {attempt + 1}/{max_retries})")
+                except requests.exceptions.HTTPError as e:
+                    # Don't retry on 4xx errors (client errors)
+                    if e.response and 400 <= e.response.status_code < 500:
+                        raise
+                    last_exception = e
+                    print(f"   ❌ HTTP error (attempt {attempt + 1}/{max_retries})")
+                except Exception as e:
+                    last_exception = e
+                    print(f"   ⚠️ Error: {e} (attempt {attempt + 1}/{max_retries})")
+                
+                if attempt < max_retries - 1:
+                    time.sleep(current_delay)
+                    current_delay *= backoff
+            
+            # All retries failed
+            print(f"   ❌ All {max_retries} attempts failed")
+            raise last_exception
+        return wrapper
+    return decorator
+
 
 class DashboardClient:
-    """Dashboard API ile iletişim"""
+    """Dashboard API ile iletişim - with retry and error handling"""
     
     def __init__(self, dashboard_url: str = None):
         # Get dashboard URL from environment or use localhost
@@ -16,7 +58,28 @@ class DashboardClient:
             "http://localhost:3000"
         )
         self.api_base = f"{self.dashboard_url}/api/trpc"
+        
+        # Connection health tracking
+        self._last_successful_call = 0
+        self._consecutive_failures = 0
+        self._max_consecutive_failures = 5
     
+    def _record_success(self):
+        """Record successful API call"""
+        self._last_successful_call = time.time()
+        self._consecutive_failures = 0
+    
+    def _record_failure(self):
+        """Record failed API call"""
+        self._consecutive_failures += 1
+        if self._consecutive_failures >= self._max_consecutive_failures:
+            print(f"   🚨 Dashboard API: {self._consecutive_failures} consecutive failures!")
+    
+    def is_healthy(self) -> bool:
+        """Check if dashboard connection is healthy"""
+        return self._consecutive_failures < self._max_consecutive_failures
+    
+    @retry_on_failure(max_retries=3, delay=1.0)
     def get_settings(self) -> Dict:
         """Dashboard'dan bot ayarlarını çek"""
         try:
@@ -25,9 +88,12 @@ class DashboardClient:
             data = response.json()["result"]["data"]
             # tRPC superjson wrapper - "json" key içinde gerçek data var
             if "json" in data:
+                self._record_success()
                 return data["json"]
+            self._record_success()
             return data
         except Exception as e:
+            self._record_failure()
             print(f"⚠️ Settings çekme hatası: {e}")
             return {}
     
@@ -36,16 +102,20 @@ class DashboardClient:
         settings = self.get_settings()
         return settings.get("isActive", False)
     
+    @retry_on_failure(max_retries=2, delay=0.5)
     def check_daily_loss_limit(self) -> Dict:
         """Günlük kayıp limiti kontrolü"""
         try:
             response = requests.get(f"{self.api_base}/dailyLoss.check", timeout=10)
             response.raise_for_status()
+            self._record_success()
             return response.json()["result"]["data"]
         except Exception as e:
+            self._record_failure()
             print(f"⚠️ Daily loss kontrolü hatası: {e}")
             return {"exceeded": False, "currentLoss": 0, "limit": 1000, "remaining": 1000, "percentage": 0}
     
+    @retry_on_failure(max_retries=3, delay=1.0)
     def open_position_notification(self, position: Dict) -> int:
         """Pozisyon açıldı bildirimi - returns database ID"""
         try:
@@ -63,30 +133,35 @@ class DashboardClient:
             # Response format: {"result": {"data": {"json": {"positionId": 123, ...}}}}
             db_id = result.get('result', {}).get('data', {}).get('json', {}).get('positionId', 0)
             
+            self._record_success()
             print(f"✅ Pozisyon database'e kaydedildi: {position['symbol']} {position['direction']} (ID: {db_id})")
             return db_id
         except Exception as e:
+            self._record_failure()
             print(f"⚠️ Pozisyon açma bildirimi hatası: {e}")
             return 0
     
+    @retry_on_failure(max_retries=2, delay=0.5)
     def update_position_pnl(self, position_update: Dict):
         """Pozisyon P&L güncelleme"""
         try:
             # tRPC format: {"json": {...}}
             payload = {"json": position_update}
-            print(f"   📤 Sending P&L update: {position_update}")
             response = requests.post(
                 f"{self.api_base}/bot.updatePositionPnL",
                 json=payload,
                 timeout=5
             )
             if response.status_code != 200:
-                print(f"   ⚠️ P&L update failed: {response.status_code} - {response.text[:200]}")
+                print(f"   ⚠️ P&L update failed: {response.status_code}")
             else:
+                self._record_success()
                 print(f"   ✅ P&L güncellendi: ID {position_update.get('id')}")
         except Exception as e:
+            self._record_failure()
             print(f"   ⚠️ P&L update API hatası: {e}")
     
+    @retry_on_failure(max_retries=3, delay=1.0)
     def close_position_notification(self, position: Dict):
         """Pozisyon kapandı bildirimi"""
         try:
@@ -98,8 +173,10 @@ class DashboardClient:
                 timeout=10
             )
             response.raise_for_status()
+            self._record_success()
             print(f"✅ Pozisyon kapatıldı (ID: {position.get('positionId', 'unknown')})")
         except Exception as e:
+            self._record_failure()
             print(f"⚠️ Pozisyon kapatma bildirimi hatası: {e}")
     
     def send_daily_report(self, report: Dict):
@@ -110,7 +187,9 @@ class DashboardClient:
                 json=report,
                 timeout=10
             )
+            self._record_success()
         except Exception as e:
+            self._record_failure()
             print(f"⚠️ Rapor gönderme hatası: {e}")
     
     def send_notification(self, notification_type: str, title: str, message: str, severity: str = "INFO"):
@@ -132,7 +211,7 @@ class DashboardClient:
             return False
     
     def send_cost_warning(self, current_cost: float, limit: float, cost_type: str = "fine-tuning"):
-        """İliyet uyarısı gönder"""
+        """Maliyet uyarısı gönder"""
         percentage = (current_cost / limit) * 100
         
         return self.send_notification(
@@ -249,6 +328,7 @@ class DashboardClient:
         from datetime import datetime
         return datetime.now().isoformat()
 
+    @retry_on_failure(max_retries=3, delay=1.0)
     def update_settings(self, updates: Dict) -> bool:
         """
         Update bot settings in database
@@ -269,7 +349,18 @@ class DashboardClient:
                 timeout=10
             )
             response.raise_for_status()
+            self._record_success()
             return True
         except Exception as e:
+            self._record_failure()
             print(f"⚠️ Settings güncelleme hatası: {e}")
             return False
+    
+    def get_connection_status(self) -> Dict:
+        """Get connection health status"""
+        return {
+            "healthy": self.is_healthy(),
+            "consecutive_failures": self._consecutive_failures,
+            "last_successful_call": self._last_successful_call,
+            "dashboard_url": self.dashboard_url
+        }
