@@ -323,7 +323,8 @@ class AutonomousTradingBot:
         # 1. Önce Local AI dene (OpenAI API)
         if self.use_local_ai and self.local_ai:
             try:
-                print("   Using Local AI (OpenAI API)...")
+                provider = getattr(self.local_ai, 'provider', 'AI')
+                print(f"   Using Local AI ({provider} API)...")
                 decision = self.local_ai.make_decision(market_data)
                 if decision and decision.get("action"):
                     return decision

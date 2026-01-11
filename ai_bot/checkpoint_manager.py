@@ -8,12 +8,15 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional
 
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class CheckpointManager:
     """Training data checkpoint yönetimi"""
     
     def __init__(self):
-        self.checkpoint_dir = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/checkpoints"
+        self.checkpoint_dir = os.path.join(BASE_DIR, "checkpoints")
         os.makedirs(self.checkpoint_dir, exist_ok=True)
     
     def save_checkpoint(self, trades: List[Dict], metadata: Dict) -> str:

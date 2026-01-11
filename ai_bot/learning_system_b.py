@@ -3,12 +3,16 @@ Learning System B: Gerçek OpenAI Fine-Tuning
 Haftalık fine-tuning job başlatıp yeni model oluşturur
 """
 
+import os
 import json
 import time
 import requests
 from datetime import datetime, timedelta
 from typing import Dict, List
 from dashboard_client import DashboardClient
+
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from finetuning_safety import FineTuningSafety
 from checkpoint_manager import CheckpointManager
 from incremental_finetuning import IncrementalFineTuning
@@ -210,7 +214,7 @@ class FineTuningSystem:
         """Yeni işlemleri al (son checkpoint'ten sonraki)"""
         from datetime import datetime, timedelta
         
-        trades_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/trade_history_for_learning.json"
+        trades_file = os.path.join(BASE_DIR, "trade_history_for_learning.json")
         
         try:
             with open(trades_file, "r") as f:
@@ -289,7 +293,7 @@ class FineTuningSystem:
             training_data.append(example)
         
         # JSONL dosyası yaz
-        file_path = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/training_data.jsonl"
+        file_path = os.path.join(BASE_DIR, "training_data.jsonl")
         with open(file_path, "w") as f:
             for example in training_data:
                 f.write(json.dumps(example) + "\n")
@@ -427,7 +431,7 @@ Pattern tespit et ve işlem kararı ver.
             "base_model": self.current_model
         }
         
-        with open("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/fine_tuned_model.json", "w") as f:
+        with open(os.path.join(BASE_DIR, "fine_tuned_model.json"), "w") as f:
             json.dump(model_info, f, indent=2)
         
         print(f"📝 Model bilgileri kaydedildi: fine_tuned_model.json")
@@ -436,7 +440,7 @@ Pattern tespit et ve işlem kararı ver.
         """Aktif modeli döndür (fine-tuned varsa onu, yoksa base model)"""
         
         try:
-            with open("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/fine_tuned_model.json", "r") as f:
+            with open(os.path.join(BASE_DIR, "fine_tuned_model.json"), "r") as f:
                 model_info = json.load(f)
                 return model_info["model"]
         except FileNotFoundError:

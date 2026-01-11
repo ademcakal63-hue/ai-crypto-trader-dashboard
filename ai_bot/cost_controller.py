@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 from dashboard_client import DashboardClient
 
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class CostController:
     """OpenAI API maliyet kontrolü ve limitleri"""
@@ -24,7 +27,7 @@ class CostController:
     OUTPUT_COST_PER_1M_TOKENS = 10.00  # $10 / 1M tokens (fine-tuned model)
     
     def __init__(self):
-        self.cost_tracking_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/cost_tracking.json"
+        self.cost_tracking_file = os.path.join(BASE_DIR, "cost_tracking.json")
         self.dashboard = DashboardClient()
         self._load_cost_tracking()
     

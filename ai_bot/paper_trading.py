@@ -4,11 +4,15 @@ Simulates trades without real money
 Tracks performance for first 100 trades before real trading
 """
 
+import os
 import json
 import time
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from dashboard_client import DashboardClient
+
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from models import Position, TradeRecord, normalize_params, validate_position_params
 
 class PaperTradingManager:
@@ -502,7 +506,7 @@ class PaperTradingManager:
             }
             
             # Dosyaya kaydet (learning manager tarafından okunacak)
-            trades_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/trade_history_for_learning.json"
+            trades_file = os.path.join(BASE_DIR, "trade_history_for_learning.json")
             try:
                 with open(trades_file, "r") as f:
                     trades = json.load(f)

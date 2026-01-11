@@ -3,10 +3,14 @@ Learning System A: Prompt Güncelleme Sistemi
 Haftalık analiz yapıp pattern bilgilerini günceller
 """
 
+import os
 import json
 from datetime import datetime, timedelta
 from typing import Dict, List
 from dashboard_client import DashboardClient
+
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class PromptLearningSystem:
     """Seçenek A: Basit prompt güncelleme ile öğrenme"""
@@ -63,7 +67,7 @@ class PromptLearningSystem:
         """Son 7 günün işlemlerini al"""
         from datetime import datetime, timedelta
         
-        trades_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/trade_history_for_learning.json"
+        trades_file = os.path.join(BASE_DIR, "trade_history_for_learning.json")
         
         try:
             with open(trades_file, "r") as f:
@@ -207,7 +211,7 @@ class PromptLearningSystem:
         learned_section += "\n".join(self.learned_rules)
         
         # pattern_knowledge.py'ye ekle (dosyaya yaz)
-        with open("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/learned_rules.txt", "w") as f:
+        with open(os.path.join(BASE_DIR, "learned_rules.txt"), "w") as f:
             f.write(learned_section)
         
         print(f"📝 Yeni kurallar learned_rules.txt dosyasına kaydedildi")
@@ -223,14 +227,14 @@ class PromptLearningSystem:
         self.model_version = f"v{new_version:.1f}"
         
         # Versiyonu kaydet
-        with open("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/model_version.txt", "w") as f:
+        with open(os.path.join(BASE_DIR, "model_version.txt"), "w") as f:
             f.write(self.model_version)
     
     def get_learned_rules(self) -> str:
         """Öğrenilen kuralları döndür (prompt'a eklenecek)"""
         
         try:
-            with open("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/learned_rules.txt", "r") as f:
+            with open(os.path.join(BASE_DIR, "learned_rules.txt"), "r") as f:
                 return f.read()
         except FileNotFoundError:
             return ""
@@ -239,7 +243,7 @@ class PromptLearningSystem:
         """Güncel model versiyonunu döndür"""
         
         try:
-            with open("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/model_version.txt", "r") as f:
+            with open(os.path.join(BASE_DIR, "model_version.txt"), "r") as f:
                 return f.read().strip()
         except FileNotFoundError:
             return "v1.0"

@@ -3,10 +3,14 @@ Fine-Tuning Güvenlik Mekanizmaları
 Yanlış strateji öğrenmesini önler
 """
 
+import os
 import random
 from typing import Dict, List, Tuple
 from datetime import datetime, timedelta
 from dashboard_client import DashboardClient
+
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class FineTuningSafety:
     """Fine-tuning güvenlik kontrolleri"""
@@ -246,8 +250,7 @@ class FineTuningSafety:
         print("\n🔄 Base model'e geri dönülüyor...")
         
         # Fine-tuned model dosyasını sil
-        import os
-        model_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/fine_tuned_model.json"
+        model_file = os.path.join(BASE_DIR, "fine_tuned_model.json")
         
         if os.path.exists(model_file):
             os.remove(model_file)

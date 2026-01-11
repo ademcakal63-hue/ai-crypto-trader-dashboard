@@ -1420,3 +1420,29 @@ Dashboard'dan tek tıkla:
 - [ ] Vitest testleri yazılacak
 - [ ] Dashboard'da AI Cost Tracking paneli eklenecek
 - [ ] Learning System dashboard entegrasyonu
+
+
+## Learning System Dosya Yolu Düzeltmeleri (Tamamlandı - 11 Ocak 2026)
+
+### Hardcoded Path'ler Düzeltildi
+- [x] learning_manager.py - BASE_DIR eklendi, start_date.txt yolu düzeltildi
+- [x] learning_system_a.py - BASE_DIR eklendi, trade_history_for_learning.json, learned_rules.txt, model_version.txt yolları düzeltildi
+- [x] learning_system_b.py - BASE_DIR eklendi, trade_history_for_learning.json, training_data.jsonl, fine_tuned_model.json yolları düzeltildi
+- [x] checkpoint_manager.py - BASE_DIR eklendi, checkpoints klasör yolu düzeltildi
+- [x] cost_controller.py - BASE_DIR eklendi, cost_tracking.json yolu düzeltildi
+- [x] finetuning_safety.py - BASE_DIR eklendi, fine_tuned_model.json yolu düzeltildi
+- [x] gradual_rollout.py - BASE_DIR eklendi, rollout_status.json yolu düzeltildi
+- [x] paper_trading.py - BASE_DIR eklendi, trade_history_for_learning.json yolu düzeltildi
+- [x] local_ai_decision.py - BASE_DIR eklendi, learned_rules.txt yolu düzeltildi
+- [x] performance_monitor.py - BASE_DIR eklendi, performance_tracking.json yolu düzeltildi
+
+### Eksik Dosya Oluşturuldu
+- [x] start_date.txt dosyası oluşturuldu (Learning System initialization için gerekli)
+
+### Log Mesajı Düzeltildi
+- [x] main_autonomous.py - "Using Local AI (OpenAI API)" → "Using Local AI ({provider} API)" (DeepSeek/OpenAI dinamik gösterim)
+
+### Sonuç
+- Tüm Python dosyaları artık dinamik BASE_DIR kullanıyor
+- Hem sandbox (/home/ubuntu/) hem VPS (/root/) ortamlarında çalışacak
+- Learning System initialization hatası giderildi

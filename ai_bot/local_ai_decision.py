@@ -17,6 +17,9 @@ import time
 from typing import Dict, List, Optional
 from openai import OpenAI
 
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Optimized system prompt - ~400 tokens (down from ~800)
 SYSTEM_PROMPT = """You are a professional BTC futures trader. Analyze data and decide.
 
@@ -109,7 +112,7 @@ class LocalAIDecision:
     def _load_learned_rules(self) -> str:
         """Load learned rules from learning system"""
         try:
-            rules_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/learned_rules.txt"
+            rules_file = os.path.join(BASE_DIR, "learned_rules.txt")
             with open(rules_file, "r") as f:
                 rules = f.read().strip()
             if rules:

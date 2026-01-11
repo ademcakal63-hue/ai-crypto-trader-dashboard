@@ -9,12 +9,15 @@ import random
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class GradualRollout:
     """Fine-tuned model'i kademeli olarak devreye alma"""
     
     def __init__(self):
-        self.rollout_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/rollout_status.json"
+        self.rollout_file = os.path.join(BASE_DIR, "rollout_status.json")
         self._load_rollout_status()
     
     def _load_rollout_status(self):

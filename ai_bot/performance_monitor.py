@@ -11,6 +11,9 @@ from typing import Dict, List, Tuple
 from dashboard_client import DashboardClient
 from gradual_rollout import GradualRollout
 
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class PerformanceMonitor:
     """Model performans izleme ve karşılaştırma"""
@@ -20,7 +23,7 @@ class PerformanceMonitor:
     MIN_TRADES_FOR_COMPARISON = 20  # En az 20 işlem gerekli
     
     def __init__(self):
-        self.performance_file = "/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/performance_tracking.json"
+        self.performance_file = os.path.join(BASE_DIR, "performance_tracking.json")
         self.dashboard = DashboardClient()
         self.rollout = GradualRollout()
         self._load_performance_data()

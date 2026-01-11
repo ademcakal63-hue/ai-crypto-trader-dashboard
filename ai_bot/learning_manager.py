@@ -9,6 +9,9 @@ import schedule
 import time
 from datetime import datetime, timedelta
 from learning_system_a import PromptLearningSystem
+
+# Base directory - works on both sandbox and VPS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from learning_system_b import FineTuningSystem
 from dashboard_client import DashboardClient
 from finetuning_safety import FineTuningSafety
@@ -36,13 +39,14 @@ class HybridLearningManager:
         print("\n🚀 Hybrid Learning Manager başlatılıyor...")
         
         # Başlangıç tarihini kaydet
-        if not os.path.exists("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/start_date.txt"):
+        start_date_file = os.path.join(BASE_DIR, "start_date.txt")
+        if not os.path.exists(start_date_file):
             self.start_date = datetime.now()
-            with open("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/start_date.txt", "w") as f:
+            with open(start_date_file, "w") as f:
                 f.write(self.start_date.isoformat())
             print(f"📅 Başlangıç tarihi kaydedildi: {self.start_date.strftime('%Y-%m-%d')}")
         else:
-            with open("/home/ubuntu/ai-crypto-trader-dashboard/ai_bot/start_date.txt", "r") as f:
+            with open(start_date_file, "r") as f:
                 self.start_date = datetime.fromisoformat(f.read().strip())
             print(f"📅 Başlangıç tarihi: {self.start_date.strftime('%Y-%m-%d')}")
         
