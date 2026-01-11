@@ -1469,3 +1469,10 @@ Dashboard'dan tek tıkla:
 ## Dashboard Uptime Sorunu (11 Ocak 2026)
 - [x] Dashboard'da "Çalışma Süresi" sürekli sıfırlanıyor (7-8sn sonra 1sn'ye dönüyor)
 - [x] Bot çalışıyor ama uptime doğru hesaplanmıyor - /proc/{pid} stat ile gerçek başlangıç zamanı alınıyor
+
+
+## Dashboard Kapsamlı Düzeltme (11 Ocak 2026)
+- [x] Uptime hala sıfırlanıyor - bot_status.json dosyasına kaydediliyor
+- [x] Loglar eski - bot.log dosyasından okunuyor
+- [x] Bot durdurma çalışmıyor - kill komutu düzeltildi
+- [ ] Cycle ilerlemiyor - paper_trading.py düzeltmesi VPS'te test edilecek
