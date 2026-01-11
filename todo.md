@@ -1446,3 +1446,21 @@ Dashboard'dan tek tıkla:
 - Tüm Python dosyaları artık dinamik BASE_DIR kullanıyor
 - Hem sandbox (/home/ubuntu/) hem VPS (/root/) ortamlarında çalışacak
 - Learning System initialization hatası giderildi
+
+
+## Cycle Persistence ve Log Düzeltmeleri (11 Ocak 2026)
+
+### Cycle Persistence Sorunu Düzeltildi
+- [x] paper_trading.py - _load_state fonksiyonu düzeltildi
+- [x] paperTradingState JSON string olarak database'de saklanıyor, parse edilmiyordu
+- [x] Hem camelCase (paperTradingState) hem snake_case (paper_trading_state) key'leri destekleniyor
+- [x] JSON string otomatik parse ediliyor
+
+### Log Mesajı
+- [x] main_autonomous.py - provider dinamik olarak gösteriliyor (önceki commit'te düzeltilmişti)
+- [x] local_ai_decision.py - provider attribute zaten doğru set ediliyor
+
+### Bot Zamanlama
+- [x] Bot zamanlama normal - 3 dakikada bir döngü çalışıyor
+- [x] State her trade sonrası ve bot kapanışında kaydediliyor
+- [x] Graceful shutdown handler mevcut

@@ -42,7 +42,22 @@ class PaperTradingManager:
         """Load paper trading state from database"""
         try:
             settings = self.dashboard.get_settings()
-            paper_state = settings.get('paper_trading_state', {})
+            
+            # paperTradingState is stored as JSON string in database
+            paper_state_raw = settings.get('paperTradingState') or settings.get('paper_trading_state')
+            
+            # Parse JSON string if needed
+            paper_state = {}
+            if paper_state_raw:
+                if isinstance(paper_state_raw, str):
+                    try:
+                        paper_state = json.loads(paper_state_raw)
+                        print(f"📥 Parsed paper trading state from JSON string")
+                    except json.JSONDecodeError as e:
+                        print(f"⚠️ Failed to parse paper trading state JSON: {e}")
+                        paper_state = {}
+                elif isinstance(paper_state_raw, dict):
+                    paper_state = paper_state_raw
             
             if paper_state:
                 # Load balance - check both camelCase and snake_case

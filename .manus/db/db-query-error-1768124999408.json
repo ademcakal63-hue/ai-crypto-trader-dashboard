@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, paperTradingState, updatedAt FROM bot_settings LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute SELECT id, paperTradingState, updatedAt FROM bot_settings LIMIT 1;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'papertradingstate' in 'field list'"
+  ]
+}

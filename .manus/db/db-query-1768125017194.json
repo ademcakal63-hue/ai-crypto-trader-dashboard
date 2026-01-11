@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, paper_trading_state, updated_at FROM bot_settings LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute SELECT id, paper_trading_state, updated_at FROM bot_settings LIMIT 1;",
+  "rows": [
+    {
+      "id": "120022",
+      "paper_trading_state": "{\"currentBalance\": 10000, \"initialBalance\": 10000, \"totalPnl\": 0, \"totalPnlPercent\": 0, \"currentCycle\": 1, \"tradesInCycle\": 0, \"tradesPerCycle\": 100, \"totalTrades\": 0, \"winRate\": 0, \"avgWin\": 0, \"avgLoss\": 0, \"largestWin\": 0, \"largestLoss\": 0, \"mode\": \"PAPER\", \"trades\": [], \"open_positions\": {}, \"daily_pnl\": {}, \"last_updated\": 1767808347.4634597}",
+      "updated_at": "2026-01-07 17:52:28"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpaper_trading_state\tupdated_at\n120022\t{\"currentBalance\": 10000, \"initialBalance\": 10000, \"totalPnl\": 0, \"totalPnlPercent\": 0, \"currentCycle\": 1, \"tradesInCycle\": 0, \"tradesPerCycle\": 100, \"totalTrades\": 0, \"winRate\": 0, \"avgWin\": 0, \"avgLoss\": 0, \"largestWin\": 0, \"largestLoss\": 0, \"mode\": \"PAPER\", \"trades\": [], \"open_positions\": {}, \"daily_pnl\": {}, \"last_updated\": 1767808347.4634597}\t2026-01-07 17:52:28\n",
+  "stderr": "",
+  "execution_time_ms": 1580
+}

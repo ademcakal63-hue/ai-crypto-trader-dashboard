@@ -1,0 +1,130 @@
+{
+  "query": "DESCRIBE bot_settings;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3oCjUaBWbkcCYWg.4ff8a16df108 --database PcBo2LBg3fPdbrKXjz4H4u --execute DESCRIBE bot_settings;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "binance_api_key",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "binance_api_secret",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "is_connected",
+      "Type": "tinyint(1)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "capital_limit",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "use_all_balance",
+      "Type": "tinyint(1)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1",
+      "Extra": ""
+    },
+    {
+      "Field": "compound_enabled",
+      "Type": "tinyint(1)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "daily_loss_limit_percent",
+      "Type": "varchar(10)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "4.00",
+      "Extra": ""
+    },
+    {
+      "Field": "risk_per_trade_percent",
+      "Type": "varchar(10)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "2.00",
+      "Extra": ""
+    },
+    {
+      "Field": "max_daily_trades",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "10",
+      "Extra": ""
+    },
+    {
+      "Field": "created_at",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updated_at",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "is_active",
+      "Type": "tinyint(1)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "paper_trading_state",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "openai_api_key",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nbinance_api_key\ttext\tYES\t\tNULL\t\nbinance_api_secret\ttext\tYES\t\tNULL\t\nis_connected\ttinyint(1)\tNO\t\t0\t\ncapital_limit\tvarchar(20)\tYES\t\tNULL\t\nuse_all_balance\ttinyint(1)\tNO\t\t1\t\ncompound_enabled\ttinyint(1)\tNO\t\t0\t\ndaily_loss_limit_percent\tvarchar(10)\tNO\t\t4.00\t\nrisk_per_trade_percent\tvarchar(10)\tNO\t\t2.00\t\nmax_daily_trades\tint(11)\tNO\t\t10\t\ncreated_at\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdated_at\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nis_active\ttinyint(1)\tNO\t\t0\t\npaper_trading_state\ttext\tYES\t\tNULL\t\nopenai_api_key\ttext\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 1628
+}
