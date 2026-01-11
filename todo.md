@@ -1464,3 +1464,8 @@ Dashboard'dan tek tıkla:
 - [x] Bot zamanlama normal - 3 dakikada bir döngü çalışıyor
 - [x] State her trade sonrası ve bot kapanışında kaydediliyor
 - [x] Graceful shutdown handler mevcut
+
+
+## Dashboard Uptime Sorunu (11 Ocak 2026)
+- [x] Dashboard'da "Çalışma Süresi" sürekli sıfırlanıyor (7-8sn sonra 1sn'ye dönüyor)
+- [x] Bot çalışıyor ama uptime doğru hesaplanmıyor - /proc/{pid} stat ile gerçek başlangıç zamanı alınıyor

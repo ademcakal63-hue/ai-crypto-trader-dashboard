@@ -276,21 +276,43 @@ export async function getBotStatus() {
         const symbolMatch = line.match(/--symbol\s+(\w+)/);
         const symbol = symbolMatch ? symbolMatch[1] : 'BTCUSDT';
         
+        // Get process start time from ps output (column 9 is START time)
+        // Format: HH:MM or Mon DD depending on how long ago
+        let startedAt: string;
+        const existingBot = botProcesses.get(symbol);
+        
+        // If we already have this bot tracked with same PID, keep the original startedAt
+        if (existingBot && existingBot.pid === pid && existingBot.startedAt) {
+          startedAt = existingBot.startedAt;
+        } else {
+          // Try to get actual process start time from /proc
+          try {
+            const statOutput = execSync(`stat -c %Y /proc/${pid}`, { encoding: 'utf-8' }).trim();
+            const startTimestamp = parseInt(statOutput) * 1000;
+            startedAt = new Date(startTimestamp).toISOString();
+          } catch {
+            // Fallback to current time only for new processes
+            startedAt = new Date().toISOString();
+          }
+        }
+        
         bots.push({
           symbol,
           pid,
-          startedAt: new Date().toISOString(),
+          startedAt,
           status: 'running',
         });
         
-        // Update memory tracking
-        botProcesses.set(symbol, {
-          symbol,
-          process: null,
-          pid,
-          startedAt: new Date().toISOString(),
-          status: 'running',
-        });
+        // Update memory tracking only if not already tracked or PID changed
+        if (!existingBot || existingBot.pid !== pid) {
+          botProcesses.set(symbol, {
+            symbol,
+            process: null,
+            pid,
+            startedAt,
+            status: 'running',
+          });
+        }
       }
     } catch (error) {
       // No running processes
