@@ -88,9 +88,7 @@ export default function Home() {
   const paperBalance = paperTradingStatus?.currentBalance || 10000;
   const paperPnL = paperTradingStatus?.totalPnl || 0;
   const paperPnLPercent = paperTradingStatus?.totalPnlPercent || 0;
-  const currentCycle = paperTradingStatus?.currentCycle || 1;
-  const cycleProgress = paperTradingStatus?.tradesInCycle || 0;
-  const tradesRemaining = (paperTradingStatus?.tradesPerCycle || 100) - cycleProgress;
+  // Haftalık öğrenme sistemi - cycle yerine toplam trade sayısı takip ediliyor
   const paperTotalTrades = paperTradingStatus?.totalTrades || 0;
   const paperWinRate = paperTradingStatus?.winRate || 0;
 
@@ -299,27 +297,27 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Cycle Progress */}
+            {/* Weekly Learning */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-neutral-400">
-                <RefreshCw className="h-4 w-4" />
-                Cycle {currentCycle}
+                <Brain className="h-4 w-4" />
+                Haftalık Öğrenme
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white">{cycleProgress}</span>
-                <span className="text-neutral-500">/100 trades</span>
+                <span className="text-3xl font-bold text-white">{paperTotalTrades}</span>
+                <span className="text-neutral-500">toplam işlem</span>
               </div>
-              <Progress value={cycleProgress} className="h-2 bg-neutral-800" />
+              <p className="text-xs text-neutral-500">Her Pazar 23:00 analiz</p>
             </div>
 
-            {/* Remaining Trades */}
+            {/* Win Rate */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-neutral-400">
-                <Timer className="h-4 w-4" />
-                Kalan İşlem
+                <Target className="h-4 w-4" />
+                Başarı Oranı
               </div>
-              <div className="text-3xl font-bold text-white">{tradesRemaining}</div>
-              <p className="text-xs text-neutral-500">Cycle tamamlanmasına</p>
+              <div className="text-3xl font-bold text-white">{paperWinRate.toFixed(1)}%</div>
+              <p className="text-xs text-neutral-500">Kazanan işlemler</p>
             </div>
           </div>
 
