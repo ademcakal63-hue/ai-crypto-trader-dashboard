@@ -25,7 +25,8 @@ import {
   Sparkles,
   Shield,
   Timer,
-  Flame
+  Flame,
+  Calendar
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -340,17 +341,17 @@ export default function Home() {
             </div>
             <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-amber-400 mb-1">
-                <Flame className="h-4 w-4" />
-                <span className="text-sm">Streak</span>
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm">Sonraki Öğrenme</span>
               </div>
-              <div className="text-xl font-bold text-white">0</div>
+              <div className="text-lg font-bold text-white">Pazar 23:00</div>
             </div>
             <div className="text-center p-3 rounded-lg bg-neutral-800/50">
               <div className="flex items-center justify-center gap-1 text-purple-400 mb-1">
-                <Shield className="h-4 w-4" />
-                <span className="text-sm">Risk Level</span>
+                <Brain className="h-4 w-4" />
+                <span className="text-sm">Model</span>
               </div>
-              <div className="text-xl font-bold text-white">Low</div>
+              <div className="text-lg font-bold text-white">v1.0</div>
             </div>
           </div>
         </CardContent>
