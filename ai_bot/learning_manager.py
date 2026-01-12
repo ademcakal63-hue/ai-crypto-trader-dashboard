@@ -8,6 +8,13 @@ import json
 import schedule
 import time
 from datetime import datetime, timedelta
+
+def parse_datetime_naive(dt_string: str) -> datetime:
+    """Parse datetime string and ensure it's timezone-naive"""
+    dt = datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    return dt
 from learning_system_a import PromptLearningSystem
 
 # Base directory - works on both sandbox and VPS
@@ -47,7 +54,7 @@ class HybridLearningManager:
             print(f"📅 Başlangıç tarihi kaydedildi: {self.start_date.strftime('%Y-%m-%d')}")
         else:
             with open(start_date_file, "r") as f:
-                self.start_date = datetime.fromisoformat(f.read().strip())
+                self.start_date = parse_datetime_naive(f.read().strip())
             print(f"📅 Başlangıç tarihi: {self.start_date.strftime('%Y-%m-%d')}")
         
         # Hangi haftadayız?

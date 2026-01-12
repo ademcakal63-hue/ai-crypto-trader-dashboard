@@ -9,6 +9,14 @@ import time
 import requests
 from datetime import datetime, timedelta
 from typing import Dict, List
+
+def parse_datetime_naive(dt_string: str) -> datetime:
+    """Parse datetime string and ensure it's timezone-naive"""
+    dt = datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    return dt
+
 from dashboard_client import DashboardClient
 
 # Base directory - works on both sandbox and VPS
@@ -227,12 +235,12 @@ class FineTuningSystem:
         last_checkpoint = self.checkpoint_manager.get_last_successful_checkpoint()
         
         if last_checkpoint:
-            last_date = datetime.fromisoformat(last_checkpoint.get("created_at", "2020-01-01"))
+            last_date = parse_datetime_naive(last_checkpoint.get("created_at", "2020-01-01"))
             
             new_trades = []
             for trade in all_trades:
                 try:
-                    exit_time = datetime.fromisoformat(trade.get("exit_time", ""))
+                    exit_time = parse_datetime_naive(trade.get("exit_time", ""))
                     if exit_time > last_date:
                         new_trades.append(trade)
                 except:

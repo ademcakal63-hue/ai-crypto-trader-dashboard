@@ -1476,3 +1476,8 @@ Dashboard'dan tek tıkla:
 - [x] Loglar eski - bot.log dosyasından okunuyor
 - [x] Bot durdurma çalışmıyor - kill komutu düzeltildi
 - [ ] Cycle ilerlemiyor - paper_trading.py düzeltmesi VPS'te test edilecek
+
+
+## Learning System Datetime Hatası (12 Ocak 2026)
+- [x] "can't subtract offset-naive and offset-aware datetimes" hatası - 6 dosyada düzeltildi
+- [x] parse_datetime_naive() fonksiyonu eklendi: learning_manager.py, learning_system_a.py, learning_system_b.py, gradual_rollout.py, performance_monitor.py, limit_order_manager.py

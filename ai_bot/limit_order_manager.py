@@ -7,6 +7,14 @@ import json
 import time
 from typing import Dict, List, Optional
 from datetime import datetime
+
+def parse_datetime_naive(dt_string: str) -> datetime:
+    """Parse datetime string and ensure it's timezone-naive"""
+    dt = datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    return dt
+
 from dashboard_client import DashboardClient
 from models import LimitOrder, normalize_params
 
@@ -134,7 +142,7 @@ class LimitOrderManager:
                 continue
             
             # Süre dolmuş mu?
-            expires_at = datetime.fromisoformat(order["expires_at"])
+            expires_at = parse_datetime_naive(order["expires_at"])
             if now > expires_at:
                 order["status"] = "EXPIRED"
                 order["cancelled_at"] = now.isoformat()

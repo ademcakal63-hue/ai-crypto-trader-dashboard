@@ -7,6 +7,13 @@ import os
 import json
 from datetime import datetime, timedelta
 from typing import Dict, List
+
+def parse_datetime_naive(dt_string: str) -> datetime:
+    """Parse datetime string and ensure it's timezone-naive"""
+    dt = datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    return dt
 from dashboard_client import DashboardClient
 
 # Base directory - works on both sandbox and VPS
@@ -82,7 +89,7 @@ class PromptLearningSystem:
         recent_trades = []
         for trade in all_trades:
             try:
-                exit_time = datetime.fromisoformat(trade.get("exit_time", ""))
+                exit_time = parse_datetime_naive(trade.get("exit_time", ""))
                 if exit_time >= week_ago:
                     recent_trades.append(trade)
             except:

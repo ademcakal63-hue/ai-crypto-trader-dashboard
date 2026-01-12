@@ -9,6 +9,13 @@ import random
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 
+def parse_datetime_naive(dt_string: str) -> datetime:
+    """Parse datetime string and ensure it's timezone-naive"""
+    dt = datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    return dt
+
 # Base directory - works on both sandbox and VPS
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -78,7 +85,7 @@ class GradualRollout:
         if not self.rollout_data["active"]:
             return
         
-        start_date = datetime.fromisoformat(self.rollout_data["start_date"])
+        start_date = parse_datetime_naive(self.rollout_data["start_date"])
         days_passed = (datetime.now() - start_date).days
         
         # Hangi fazda olmalıyız?
@@ -162,7 +169,7 @@ class GradualRollout:
                 "message": "Gradual rollout aktif değil"
             }
         
-        start_date = datetime.fromisoformat(self.rollout_data["start_date"])
+        start_date = parse_datetime_naive(self.rollout_data["start_date"])
         days_passed = (datetime.now() - start_date).days
         
         return {
@@ -184,7 +191,7 @@ class GradualRollout:
         
         if current_phase + 1 < len(phases):
             next_phase = phases[current_phase + 1]
-            start_date = datetime.fromisoformat(self.rollout_data["start_date"])
+            start_date = parse_datetime_naive(self.rollout_data["start_date"])
             next_date = start_date + timedelta(days=next_phase["day"])
             
             return {

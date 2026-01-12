@@ -8,6 +8,14 @@ import json
 import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
+
+def parse_datetime_naive(dt_string: str) -> datetime:
+    """Parse datetime string and ensure it's timezone-naive"""
+    dt = datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    return dt
+
 from dashboard_client import DashboardClient
 from gradual_rollout import GradualRollout
 
@@ -106,7 +114,7 @@ class PerformanceMonitor:
         
         recent_trades = [
             t for t in trades
-            if datetime.fromisoformat(t["date"]) >= cutoff_date
+            if parse_datetime_naive(t["date"]) >= cutoff_date
         ]
         
         return recent_trades
